@@ -6,10 +6,10 @@ export const version = .01
   *
   */
 
- export function log(x: string | unknown): void {
+export function log(x: string | unknown): void {
 	let prepend = `v${version} `
 	const omitDate = false
-	if (!omitDate) {  
+	if (!omitDate) {
 		prepend += new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })
 	}
 
