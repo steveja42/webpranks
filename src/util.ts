@@ -15,7 +15,7 @@ export function log(x: string | unknown): void {
 
 	if (x && typeof x === 'object')
 		x = JSON.stringify(x);
-	console.log(`${prepend} ${getFunctionName()}:${x}`);
+	console.log(`${prepend} ${getFunctionName()}: ${x}`);
 }
 
 /**
@@ -32,7 +32,8 @@ function getFunctionName() {
 	} catch (error) {
 		const replaced = /^\s*at\s*/
 		// The calling function we're interested in is up a few levels
-		functionName = error.stack.split('\n')[3].replace(replaced, '');
+		functionName = error.stack.split('\n')[3].replace(replaced, '')
+		functionName = functionName.replace(/\s\(.*\)/, '')
 	}
 	return functionName
 }
