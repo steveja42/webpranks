@@ -1,7 +1,7 @@
 import { log } from './util';
 
 //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live': 'https://www.resultify.live'
-const server =   'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'https://resultify.live'
+const server = 'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'https://resultify.live'
 
 /**
 	 * Performs http get request from our node.js server
@@ -9,26 +9,21 @@ const server =   'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'ht
 	 * @param {string} route the url .
 	 * @return [url of image blob ("" if error), error object]
 	 */
-export async function getImage(route: string): Promise<[string, string]> {
+export async function getImage(route: string): Promise<string> {
 	const url = `${server}/${route}`
-	try {
-		const response = await fetch(url, {
-			method: 'GET', // *GET, POST, PUT, DELETE, etc.
-			mode: 'cors', // no-cors, *cors, same-origin
-			cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-			headers: {
-				'Content-Type': 'image/jpeg'
-			}
-		})
-		if (!response.ok)
-			throw (await response.text()) 
-		const blob = await response.blob()
-		return [URL.createObjectURL(blob), ""];
-	}
-	catch (error) {
-		log(`error occurred ${error}`);
-		return ["", error]
-	}
+	const response = await fetch(url, {
+		method: 'GET', // *GET, POST, PUT, DELETE, etc.
+		mode: 'cors', // no-cors, *cors, same-origin
+		cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+		headers: {
+			'Content-Type': 'image/jpeg'
+		}
+	})
+	if (!response.ok)
+		throw (await response.text())
+
+	const blob = await response.blob()
+	return URL.createObjectURL(blob)
 }
 
 /**
@@ -37,17 +32,10 @@ export async function getImage(route: string): Promise<[string, string]> {
 	 * @param {string} route the url .
 	 * @return [response in JSON, ""]  or if error- ["", error object]
 	 */
-export async function getString(route: string): Promise<[string, string]> {
+export async function getString(route: string): Promise<string> {
 
-	try {
 		const response = await fetch(`${server}/${route}`);
-		return [await response.text(), ""]
-	}
-	catch (error) {
-		console.error(`get: error occurred ${error}`);
-		return [
-			"", error]
-	}
+		return await response.text()
 }
 
 /**

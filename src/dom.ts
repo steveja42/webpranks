@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { log } from './util';
 
 //nodeType
@@ -69,7 +70,7 @@ export class PositionedElements {
 
   restorePositionStyles(): void {
     //for (let [node,posInfo] of this.elementPositions) {
-    this.savedElementStyles.forEach(function (posInfo:PositionInfo, node: HTMLElement) {
+    this.savedElementStyles.forEach(function (posInfo: PositionInfo, node: HTMLElement) {
       node.style.position = '';
       node.style.left = '';
       node.style.top = '';
@@ -95,7 +96,7 @@ export class PositionedElements {
     const viewportWidth = this.window?.innerWidth;
     const outerRect = getOuterRect(document.body);
 
-    this.savedElementStyles.forEach(function (posInfo:PositionInfo, node: HTMLElement) {
+    this.savedElementStyles.forEach(function (posInfo: PositionInfo, node: HTMLElement) {
       const computedStyle = window.getComputedStyle(node);
 
       node.style.position = 'fixed';
@@ -159,7 +160,7 @@ export class PositionedElements {
 
   }
   move(x: number, y: number): void {
-    this.savedElementStyles.forEach(function (posInfo:PositionInfo, node: HTMLElement) {
+    this.savedElementStyles.forEach(function (posInfo: PositionInfo, node: HTMLElement) {
       posInfo.left += x;
       posInfo.top += y;
       node.style.left = (posInfo.left - window.scrollX).toString() + "px";
@@ -218,75 +219,93 @@ function getOuterRect(el: HTMLElement) {
  * @param node 
  * @param level 
  */
-function logNode(node, level) {
+function logNode(node, level: number, usePosAttr = false) {
+
+  let value = node.nodeValue?.trim()
+  if (node.nodeType === nodeTypes.text && !value) // skip blank text nodes
+    return;
   const indentDelta = '   ';
   const indent = indentDelta.repeat(level);
-  let value = node.nodeValue;
-  let background
+  let background = ''
 
-  if (value) {
-    value = value.trim();
-  }
-
-  // skip blank text nodes
-  if (node.nodeType === nodeTypes.text && value === "")
-    return;
   const ownerWindow = node.ownerDocument.defaultView
   value = value ? `"${value}"` : "";
-  let id = node.id ? ` #${node.id} ` : " ";
-  if (node.className)
-    id = id + `.${node.className}`;
-  let positioning = ' ';
 
+  let id = node.name ? ` ${node.name}` : " ";
+  id += node.id ? `#${node.id}` : "";
+  id += node.className ? `.${node.className}` : "";
+
+  //The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
+  //clientHeight can be calculated as: CSS height + CSS padding - height of horizontal scrollbar (if present).
+  // boundingclientrect smallest rectangle which contains the entire element, including its padding and border-width
   if (node.nodeType === nodeTypes.element) {
-    const computedStyle = ownerWindow.getComputedStyle(node);
-    if (computedStyle.position !== 'static') {
-      positioning = `<${computedStyle.position}>`;
+
+    let positioning = ' ';
+    const parent = (level === 0) ? ` parent:${node.parentNode}` : ''
+    let computedStyle = ownerWindow?.getComputedStyle(node)
+    let clientRects
+    let boundingRect = node.getBoundingClientRect()
+    let paddingRect = { x: boundingRect.x + node.clientLeft, y: boundingRect.y + node.clientTop, width: node.clientWidth, height: node.clientHeight }
+    if (usePosAttr) {
+      const posAttr = node.getAttribute('__pos__')
+      if (posAttr) {
+        const pos = JSON.parse(posAttr)
+          //computedStyle = pos?.computedStyle
+          ; ({ clientRects, boundingRect, paddingRect } = pos)
+      }
     }
-    positioning = positioning + `offset:${node.offsetLeft},${node.offsetTop}`;
-    if (computedStyle.lineHeight)
-      positioning = positioning + ` lh:${computedStyle.lineHeight}`;
-    if (computedStyle.backgroundImage !== 'none') {
-      background = computedStyle.background
+
+    if (computedStyle) {
+      if (computedStyle.position !== 'static') {
+        positioning = `<${computedStyle.position}>`;
+      }
+
+      if (computedStyle.lineHeight)
+        positioning = positioning + ` lh:${computedStyle.lineHeight}`;
+      if (computedStyle.backgroundImage !== 'none') {
+        background = computedStyle.background
+      }
     }
 
     const size = (node.width || node.height) ? `size: ${node.width} x ${node.height} ` : ' ';
     //  ${nodeTypeNames[node.nodeType]}
     let br = ' ';
-    if (node.getBoundingClientRect) {
-      const rect = node.getBoundingClientRect();
-      br = `boundingClientRect[${rect.left},${rect.top} ${rect.right},${rect.bottom}] `;
+    if (boundingRect) {
+      br = `boundingClientRect[${boundingRect.left},${boundingRect.top} ${boundingRect.right},${boundingRect.bottom}] `;
     }
-    log(`${indent}${node.nodeName}${id}${positioning}${size} ${br}parent:${node.parentNode} ${value}
-  ${background}`);
+
+    log(`${indent}${node.nodeName}${id}${positioning}${size} ${br}${parent} ${value} ${background}`);
   }
 }
 
-export function logDomTree(startNode): void {
+export function logDomTree(startNode: HTMLElement, usePosAttr = false): void {
 
-  const body = document.body;
+  const ownerWindow = startNode.ownerDocument.defaultView
+  const doc = startNode.ownerDocument
+  const body = doc.body;
   const box = startNode.getBoundingClientRect();
   const docEl = document.documentElement;
 
-  const scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-  const scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+  const scrollTop = ownerWindow?.pageYOffset || docEl.scrollTop || body.scrollTop;
+  const scrollLeft = ownerWindow?.pageXOffset || docEl.scrollLeft || body.scrollLeft;
 
   const clientTop = docEl.clientTop || body.clientTop || 0;
   const clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
   const top = box.top + scrollTop - clientTop;
   const left = box.left + scrollLeft - clientLeft;
-  walkDom(startNode, logNode, 0);
+  log(`logDomTree in document ${doc} window ${ownerWindow} clientTop ${clientTop} clientLeft ${clientLeft} scrollLeft ${scrollLeft} scrollTop ${scrollTop}`)
+  walkDom(startNode, logNode, 0, usePosAttr);
 }
 
-function walkDom(startNode, func, level) {
-  func(startNode, level);
+function walkDom(startNode, func, level, param = undefined) {
+  func(startNode, level, param);
   if (!startNode.hasChildNodes())
     return;
   //const children = []
 
   ++level;
   for (const child of startNode.childNodes) {
-    walkDom(child, func, level);
+    walkDom(child, func, level, param);
   }
 }

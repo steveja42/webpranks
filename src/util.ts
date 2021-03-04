@@ -1,16 +1,13 @@
-export const version = .01
-
-
 /**
   * logs to console, prepends version, date and name of calling function
   *
   */
 
 export function log(x: string | unknown): void {
-	let prepend = `v${version} `
+	let prepend = ``
 	const omitDate = false
 	if (!omitDate) {
-		prepend += new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })
+		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",","").replace("/20","/").replace(/\s([AP])/,"$1")
 	}
 
 	if (x && typeof x === 'object')

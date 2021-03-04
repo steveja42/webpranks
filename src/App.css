@@ -1,3 +1,10 @@
+.foo {
+  width:80%;
+  text-align: center;
+  align-items: center;
+
+}
+
 .App {
   text-align: center;
 }

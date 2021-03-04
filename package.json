@@ -12,6 +12,7 @@
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
     "bootstrap": "^4.5.3",
+    "matter-js": "^0.16.1",
     "puppeteer": "^5.5.0",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.3",
@@ -38,8 +39,9 @@
     ],
     "rules": {
       "@typescript-eslint/no-explicit-any": "off",
+      "@prefer-const": "off",
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/explicit-module-boundary-types":"off"
+      "@typescript-eslint/explicit-module-boundary-types": "off"
     }
   },
   "browserslist": {
