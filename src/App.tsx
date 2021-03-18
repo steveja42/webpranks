@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { log } from './util'
 import './App.css'
 //import Form from 'react-bootstrap/Form'
@@ -7,15 +7,16 @@ import Button from 'react-bootstrap/Button'
 import { Form } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
+import {doPhysics} from './physics'
 import { logDomTree, PositionedElements } from './dom'
 export const version = .01
 
 log(`version ${version} starting`)
-
+//className="App-header"
 function App(): JSX.Element {
   return (
     <div className="App">
-      <header className="App-header">
+      <header >
 
         <PrankUI url="" />
       </header>
@@ -53,6 +54,7 @@ function PrankUI(props: any) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { x: xMouse, y: yMouse } = useMousePosition(window);
   const { x: xMouse2, y: yMouse2 } = useMousePosition(childFrame?.contentWindow);
+  const canvasRef = useRef(null)
 
 
   const getPage = (event: React.FormEvent) => {
@@ -117,6 +119,9 @@ function PrankUI(props: any) {
       <p> Window size: {windowWidth}:{windowHeight} Mouse position1: {xMouse}:{yMouse} Mouse position2: {xMouse2}:{yMouse2} </p>
       <MyUrl url={targetUrl} isLoading={isLoading} onSubmit={getPage} handleChange={handleURLChange} />
       <MoveDom />
+    <Button onClick={e => doPhysics(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
+    <canvas id="canvas" ref={canvasRef} width={windowWidth} height={windowHeight}> </canvas>
+
       <img src={screenShot} className="Screenshot" alt="screen capture of the webpage at url" />
     </div>
     <div>
@@ -127,7 +132,7 @@ function PrankUI(props: any) {
 //sandbox="" srcDoc={html} {blobURL}
 
 /**
- * Displays form to get a URL from the user
+ * Displays buttons to move elements
  * @param props 
  */
 
@@ -169,10 +174,10 @@ function MyUrl(props: any): JSX.Element {
       props.handleChange('')
     }
   }
-  return <div className="foo">
+  return <div >
     <Form onSubmit={props.onSubmit}>
       <Form.Group controlId="formURL">
-        <Form.Label>URL</Form.Label>
+     
         <Form.Control name="targetUrl" type="url" value={url} onFocus={onFocus} onBlur={onBlur} onChange={(e) => props.handleChange(e.target.value)} className="foo" placeholder="Enter a URL" required />
       </Form.Group>
       <Button type="submit" value="Submit" disabled={isLoading} >

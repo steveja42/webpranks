@@ -1,8 +1,11 @@
 .foo {
-  width:80%;
+  width: 80%;
   text-align: center;
   align-items: center;
+}
 
+.unused {
+  width: 80%;
 }
 
 .App {
