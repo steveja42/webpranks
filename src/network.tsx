@@ -3,6 +3,17 @@ import { log } from './util';
 //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live': 'https://www.resultify.live'
 const server = 'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'https://resultify.live'
 
+
+
+export async function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
+	let route = `puppet?url=${encodeURIComponent(targetUrl)}&action=snapshot&width=${windowWidth}&height=${windowHeight}`;
+	const imagePromise = getImage(route)
+	route = `puppet?url=${encodeURIComponent(targetUrl)}&action=render&width=${windowWidth}&height=${windowHeight}`;
+	const htmlPromise = getString(route)
+	return await Promise.all([imagePromise, htmlPromise])
+ }
+
+
 /**
 	 * Performs http get request from our node.js server
 	 *

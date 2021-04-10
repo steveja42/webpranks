@@ -35,25 +35,12 @@ interface PositionInfo {
 }
 
 
-export function expandBelow(nodeAbove: HTMLElement, nodeBelow: HTMLIFrameElement): void {
-  const rectAbove = getOuterRect(nodeAbove);
-  const viewportHeight = window.innerHeight
-  const viewportWidth = window.innerWidth;
-  nodeBelow.style.position = 'fixed';
-  //node.style.position  = 'absolute'; 
-  nodeBelow.style.left = "0 px";
-  nodeBelow.style.top = (rectAbove.bottom + 1).toString() + "px";
-  nodeBelow.width = (viewportWidth - 1).toString()
-  nodeBelow.height = (viewportHeight - rectAbove.bottom).toString()
-  nodeBelow.style.right = (viewportWidth - 1).toString() + "px";
-  nodeBelow.style.bottom = (viewportHeight - 1).toString() + "px";
+/**
+ *  A class which, given a dom tree, saves the positioning styles of the nodes and converts the nodes to use fixed positioning. 
+ * The nodes can then be moved using the move(x,y) method or restored to original state using  restorePositionStyles
+ * 
+ */
 
-
-}
-
-
-
-///////////////////////////
 export class PositionedElements {
   savedElementStyles = new Map<HTMLElement, PositionInfo>();
   window: (Window & typeof globalThis) | null
@@ -68,6 +55,9 @@ export class PositionedElements {
     this.setFixedPosition();
   }
 
+  /**
+   *  restores the elements positioning info to what it originally was
+   */
   restorePositionStyles(): void {
     //for (let [node,posInfo] of this.elementPositions) {
     this.savedElementStyles.forEach(function (posInfo: PositionInfo, node: HTMLElement) {
@@ -123,7 +113,7 @@ export class PositionedElements {
     })
   }
   /**
-   * save positioning style of element so it can be restored later and add it to collection of elements that can be moved
+   * Save positioning style of element so it can be restored later and add it to collection of elements that can be moved
    * @param el element  
    * @param level depth into dom tree
    */
@@ -309,3 +299,23 @@ function walkDom(startNode, func, level, param = undefined) {
     walkDom(child, func, level, param);
   }
 }
+
+
+
+export function expandBelow(nodeAbove: HTMLElement, nodeBelow: HTMLIFrameElement): void {
+  const rectAbove = getOuterRect(nodeAbove);
+  const viewportHeight = window.innerHeight
+  const viewportWidth = window.innerWidth;
+  nodeBelow.style.position = 'fixed';
+  //node.style.position  = 'absolute'; 
+  nodeBelow.style.left = "0 px";
+  nodeBelow.style.top = (rectAbove.bottom + 1).toString() + "px";
+  nodeBelow.width = (viewportWidth - 1).toString()
+  nodeBelow.height = (viewportHeight - rectAbove.bottom).toString()
+  nodeBelow.style.right = (viewportWidth - 1).toString() + "px";
+  nodeBelow.style.bottom = (viewportHeight - 1).toString() + "px";
+
+
+}
+
+

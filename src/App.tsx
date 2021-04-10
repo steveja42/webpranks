@@ -7,8 +7,8 @@ import Button from 'react-bootstrap/Button'
 import { Form } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
-import {doPhysics} from './physics'
-import { logDomTree, PositionedElements } from './dom'
+import { makeWorld } from './physics'
+import { logDomTree, PositionedElements } from './moveabledom'
 export const version = .01
 
 log(`version ${version} starting`)
@@ -57,41 +57,27 @@ function PrankUI(props: any) {
   const canvasRef = useRef(null)
 
 
-  const getPage = (event: React.FormEvent) => {
-    event.preventDefault()
+  const onSubmit = async (event: React.FormEvent) => {
 
-    async function fetchData() {
-      let route = `puppet?url=status`
-     // log(await network.getString(route))
-      route = `puppet?url=${encodeURIComponent(targetUrl)}&action=snapshot&width=${windowWidth}&height=${windowHeight}`;
-      const imagePromise = network.getImage(route)
-      route = `puppet?url=${encodeURIComponent(targetUrl)}&action=render&width=${windowWidth}&height=${windowHeight}`;
-      const htmlPromise = network.getString(route)
+    try {
+      event.preventDefault()
+      setLoading(true)
+      setChildFrame(null)
 
-      Promise.all([imagePromise, htmlPromise])
-        .then(values => {
-          const x = values
+      const [imageURL, html] = await network.getImageandHtml(targetUrl, windowWidth, windowHeight)
+      setLoading(false)
 
-          setLoading(false)
-
-          const [imageURL, html] = values
-          setScreenshot(imageURL)
-          const parser = new DOMParser();
-          const doc: HTMLDocument = parser.parseFromString(html, "text/html")
-          //setHtml(html)
-        //  logDomTree(doc.body, true)
-
-        })
-        .catch(reason => {
-          log(`yo! an error occurred ${reason}`);
-          setLoading(false)
-
-
-        })
+      setScreenshot(imageURL)
+      makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600, imageURL)
+      const parser = new DOMParser();
+      const doc: HTMLDocument = parser.parseFromString(html, "text/html")
+      //setHtml(html)
+      logDomTree(doc.body, true)
     }
-    setLoading(true)
-    setChildFrame(null)
-    fetchData()
+    catch (error) {
+      log(`yo! an error occurred ${error}`);
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -100,7 +86,7 @@ function PrankUI(props: any) {
 
 
 
-  const onLoad = (e) => {
+  const onIFrameLoad = (e) => {
     log('frame loaded')
     if (childFrame && elems)
       elems.restorePositionStyles();
@@ -117,15 +103,15 @@ function PrankUI(props: any) {
   return <div id="foo">
     <div>
       <p> Window size: {windowWidth}:{windowHeight} Mouse position1: {xMouse}:{yMouse} Mouse position2: {xMouse2}:{yMouse2} </p>
-      <MyUrl url={targetUrl} isLoading={isLoading} onSubmit={getPage} handleChange={handleURLChange} />
+      <MyUrl url={targetUrl} isLoading={isLoading} onSubmit={onSubmit} handleChange={handleURLChange} />
       <MoveDom />
-    <Button onClick={e => doPhysics(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
-    <canvas id="canvas" ref={canvasRef} width={windowWidth} height={windowHeight}> </canvas>
+      <Button onClick={e => makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
+      <canvas id="canvas" ref={canvasRef} width={windowWidth} height={windowHeight}> </canvas>
 
       <img src={screenShot} className="Screenshot" alt="screen capture of the webpage at url" />
     </div>
     <div>
-      <iframe src="about:blank" srcDoc={html} title="page to be pranked" onLoad={onLoad} width={windowWidth} height={windowHeight}></iframe>
+      <iframe src="about:blank" srcDoc={html} title="page to be pranked" onLoad={onIFrameLoad} width={windowWidth} height={windowHeight}></iframe>
     </div>
   </div>
 }
@@ -177,7 +163,7 @@ function MyUrl(props: any): JSX.Element {
   return <div >
     <Form onSubmit={props.onSubmit}>
       <Form.Group controlId="formURL">
-     
+
         <Form.Control name="targetUrl" type="url" value={url} onFocus={onFocus} onBlur={onBlur} onChange={(e) => props.handleChange(e.target.value)} className="foo" placeholder="Enter a URL" required />
       </Form.Group>
       <Button type="submit" value="Submit" disabled={isLoading} >

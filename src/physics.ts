@@ -1,9 +1,9 @@
 import { Engine, Render, Bodies, World } from "matter-js";
 
-export function doPhysics(canvas: HTMLCanvasElement, width, height) {
+export function makeWorld(canvas: HTMLCanvasElement, width, height, background = '') {
 	// Create an engine
 	const engine = Engine.create();
-
+	const world = engine.world
 	// Create a renderer
 	const render = Render.create({
 		//element: document.body,
@@ -15,7 +15,7 @@ export function doPhysics(canvas: HTMLCanvasElement, width, height) {
 			wireframes: false
 		}
 	})
-  
+	world.gravity.y = .5 //gravity; // 1 by default,
 
 	const boxA = Bodies.rectangle(400, 200, 80, 80);
 	const ballA = Bodies.circle(380, 100, 40);
@@ -24,8 +24,19 @@ export function doPhysics(canvas: HTMLCanvasElement, width, height) {
 
 	World.add(engine.world, [boxA, ballA, ballB, ground]);
 	// Add all of the bodies to the world
-
-
+if (background)
+{	const gridBackground = Bodies.rectangle(0, 0, 1, 1, {
+		isStatic: true,
+		isSensor: true,
+		render: {
+			sprite: {
+				texture: background,
+				xScale: .1,
+				yScale: .1
+			}
+		}
+	});
+	World.add(world, gridBackground);}
 	// Run the engine
 	Engine.run(engine);
 
