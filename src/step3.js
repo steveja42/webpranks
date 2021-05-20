@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Matter from 'matter-js'
 
 const STATIC_DENSITY = 15

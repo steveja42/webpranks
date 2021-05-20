@@ -4,7 +4,6 @@ import { log } from './util';
 const server = 'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'https://resultify.live'
 
 
-
 export async function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
 	let route = `puppet?url=${encodeURIComponent(targetUrl)}&action=snapshot&width=${windowWidth}&height=${windowHeight}`;
 	const imagePromise = getImage(route)
