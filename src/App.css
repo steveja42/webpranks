@@ -2,8 +2,11 @@
   width: 80%;
   text-align: center;
   align-items: center;
+  display: inline-block;
 }
-
+.world {
+  display: block;
+}
 .unused {
   width: 80%;
 }

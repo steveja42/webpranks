@@ -12,10 +12,8 @@ const nodeTypes = {
 	documentFragment: 11,
 }
 
-
-
 export function addDomToWorld(world: World, doc: HTMLDocument, pageImage: HTMLImageElement, setDebugImage, canvas) {
-	scratchCanvas = canvas
+	//scratchCanvas = canvas
 	logDomTree(doc.body, true)
 	const stuff = {
 		pageImage,
@@ -26,7 +24,7 @@ export function addDomToWorld(world: World, doc: HTMLDocument, pageImage: HTMLIm
 	if (stuff.bodies.length)
 		World.add(world, stuff.bodies)
 }
- 
+
 /**
  * Walks a dom tree starting with startNode, calling func(level, param) on each node,
  * where level is the level of the tree and param is an optional paramater. 
@@ -80,13 +78,13 @@ function domNodeToSprites(node: HTMLElement, level: number, stuff) {
 		const foo = stuff.pageImage
 		const image = getImagePortion(stuff.pageImage, boundingRect)
 		stuff.setDebugImage(image)
-		const options = {render: {sprite:{texture: image, xScale:1, yScale:1}}}
-		const body = Bodies.rectangle(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height, options )
+		const options = { render: { sprite: { texture: image, xScale: 1, yScale: 1 } } }
+		const body = Bodies.rectangle(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height, options)
 		stuff.bodies.push(body)
 	}
 }
 
-export let scratchCanvas = document.createElement('canvas')
+export const scratchCanvas = document.createElement('canvas')
 function getImagePortion(image, rect) {
 	scratchCanvas.width = rect.width;
 	scratchCanvas.height = rect.height;
@@ -106,7 +104,6 @@ function logNode(node, level: number, usePosAttr = false) {
 		return;
 	const indentDelta = '   ';
 	const indent = indentDelta.repeat(level);
-	let background = ''
 
 	const ownerWindow = node.ownerDocument.defaultView
 	value = value ? `"${value}"` : "";
@@ -114,6 +111,7 @@ function logNode(node, level: number, usePosAttr = false) {
 	let id = node.name ? ` ${node.name}` : " ";
 	id += node.id ? `#${node.id}` : "";
 	id += node.className ? `.${node.className}` : "";
+
 
 	//The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
 	//clientHeight can be calculated as: CSS height + CSS padding - height of horizontal scrollbar (if present).
@@ -126,16 +124,19 @@ function logNode(node, level: number, usePosAttr = false) {
 		let clientRects
 		let boundingRect = node.getBoundingClientRect()
 		let paddingRect = { x: boundingRect.x + node.clientLeft, y: boundingRect.y + node.clientTop, width: node.clientWidth, height: node.clientHeight }
+		let bgColor
+		let background = ''
+
 		if (usePosAttr) {
 			const posAttr = node.getAttribute('__pos__')
 			if (posAttr) {
 				const pos = JSON.parse(posAttr)
 					//computedStyle = pos?.computedStyle
-					; ({ clientRects, boundingRect, paddingRect } = pos)
+					; ({ clientRects, boundingRect, paddingRect, bgColor } = pos)
+					if (bgColor)
+						background+= ` ${bgColor}`
 			}
-		}
-
-		if (computedStyle) {
+		} else if (computedStyle) {
 			if (computedStyle.position !== 'static') {
 				positioning = `<${computedStyle.position}>`;
 			}

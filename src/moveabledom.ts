@@ -213,3 +213,45 @@ export function expandBelow(nodeAbove: HTMLElement, nodeBelow: HTMLIFrameElement
 }
 
 
+/*
+let elems: PositionedElements
+
+ <div>
+      <iframe src="about:blank" srcDoc={html} title="page to be pranked" onLoad={onIFrameLoad} width={windowWidth} height={windowHeight}></iframe>
+    </div>
+
+
+  const onIFrameLoad = (e) => {
+    log('frame loaded')
+    if (childFrame && elems)
+      elems.restorePositionStyles();
+    if (e?.target?.contentDocument?.body) {
+      //logDomTree(e.target.contentDocument.body)
+      setChildFrame(e.target)
+      elems = new PositionedElements(e.target.contentDocument.body)
+    }
+  }
+
+  /**
+ * Displays buttons to move elements
+ * @param props 
+ */
+/*
+ function MoveDom(props: any): JSX.Element {
+  const [xToMove, setXToMove] = useState(0)
+  const [yToMove, setYToMove] = useState(0)
+
+  function move(x: number, y: number) {
+
+    if (elems)
+      elems.move(x, y)
+
+  }
+  return <div id="foo2">
+    <input name="xToMove" type="number" value={xToMove} size={4} onChange={(e) => setXToMove(parseInt(e.target.value))} placeholder="Enter a number for X" />
+    <input name="yToMove" type="number" value={yToMove} size={4} onChange={(e) => setYToMove(parseInt(e.target.value))} placeholder="Enter a number for Y" />
+    <Button onClick={e => move(xToMove, yToMove)}>Move</Button>
+  </div>
+
+}
+*/
