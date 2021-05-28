@@ -7,8 +7,6 @@ import Button from 'react-bootstrap/Button'
 import { Form } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
-import { makeWorld } from './physics'
-import { PositionedElements } from './moveabledom'
 import Popout from './popout'
 import { logDomTree, addDomToWorld, scratchCanvas } from './domtomatter'
 export const version = .01
@@ -34,8 +32,6 @@ const getBlobURL = (code, type) => {
   return URL.createObjectURL(blob)
 }
 
-
-
 /**
  * Calls server to get the page at URL,
  *  and then pranks the page by manipulating the display of the page
@@ -60,30 +56,14 @@ function PrankUI(props: any) {
   //<canvas id="canvas" ref={scratchCanvasRef} width={windowWidth} height={windowHeight}> </canvas>
 
   const onSubmit = async (event: React.FormEvent) => {
-    let resolveImageLoaded
 
     try {
       event.preventDefault()
       setLoading(true)
       const [imageURL, html] = await network.getImageandHtml(targetUrl, windowWidth, windowHeight)
       setLoading(false)
-
       setScreenshot(imageURL)
-      const pageImage = new Image()
-      
-      pageImage.onload = function () {
-        resolveImageLoaded(pageImage.src)
-      }
-      const imageLoaded = new Promise((resolve) => resolveImageLoaded = resolve)
-      pageImage.src = imageURL;
-
-      const world = makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, windowHeight)
-      const parser = new DOMParser();
-      const doc: HTMLDocument = parser.parseFromString(html, "text/html")
-      //const pageImage = document.getElementById("pageImage") as HTMLImageElement
-      //setHtml(html)
-      await imageLoaded
-      addDomToWorld(world, doc, pageImage, setDebugImage, scratchCanvasRef.current)
+      addDomToWorld(imageURL, html, setDebugImage, canvasRef.current, windowWidth, windowHeight)
     }
     catch (error) {
       log(`yo! an error occurred ${error}`);
@@ -105,13 +85,13 @@ function PrankUI(props: any) {
     <div>
       {getPopout()}
       <URLForm url={targetUrl} isLoading={isLoading} onSubmit={onSubmit} handleChange={handleURLChange} />
-      <Button onClick={e => makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
       <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button>
       <canvas id="canvas" ref={canvasRef} className="world" > </canvas>
     </div>
 
   </div>
 
+//<Button onClick={e => makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
 
   // This returns the HTML for the popout, or null if the popout isn't visible
   function getPopout() {

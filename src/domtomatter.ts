@@ -1,5 +1,6 @@
 import { log } from './util'
 import { Engine, Render, Bodies, World } from "matter-js"
+import { makeWorld } from './physics'
 
 const nodeTypes = {
 	element: 1, //An Element node such as <p> or <div>.
@@ -11,9 +12,29 @@ const nodeTypes = {
 	documentType: 10,   //A DocumentType node e.g. <!DOCTYPE html> for HTML5 documents.
 	documentFragment: 11,
 }
+/**
+ * sets image.src to imageURL and returns promise that resolves when image has been loaded with imageURL 
+ * @param image 
+ * @param imageURL 
+ */
+function loadImage(image: HTMLImageElement, imageURL: string): Promise<unknown> {
+	let resolveImageLoaded
+	image.onload = function () {
+		resolveImageLoaded(image.src)
+	}
+	const imageLoaded = new Promise((resolve) => resolveImageLoaded = resolve)
+	image.src = imageURL;
+	return imageLoaded
+}
 
-export function addDomToWorld(world: World, doc: HTMLDocument, pageImage: HTMLImageElement, setDebugImage, canvas) {
+export async function addDomToWorld(imageURL: string, html: string, setDebugImage, canvas:HTMLCanvasElement,width:number, height:number) {
 	//scratchCanvas = canvas
+	const pageImage = new Image()
+	const imageLoaded = loadImage(pageImage, imageURL)
+	const world = makeWorld(canvas, width, height)
+	const parser = new DOMParser();
+	const doc: HTMLDocument = parser.parseFromString(html, "text/html")
+	await imageLoaded
 	logDomTree(doc.body, true)
 	const stuff = {
 		pageImage,
@@ -133,8 +154,8 @@ function logNode(node, level: number, usePosAttr = false) {
 				const pos = JSON.parse(posAttr)
 					//computedStyle = pos?.computedStyle
 					; ({ clientRects, boundingRect, paddingRect, bgColor } = pos)
-					if (bgColor)
-						background+= ` ${bgColor}`
+				if (bgColor)
+					background += ` ${bgColor}`
 			}
 		} else if (computedStyle) {
 			if (computedStyle.position !== 'static') {
