@@ -43,7 +43,8 @@
       "@typescript-eslint/no-explicit-any": "off",
       "prefer-const": "warn",
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off"
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "react-hooks/exhaustive-deps":"off"
     }
   },
   "browserslist": {

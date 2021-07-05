@@ -23,14 +23,14 @@ export const MatterStepThree = () => {
   }
 
   useEffect(() => {
-    let Engine = Matter.Engine
-    let Render = Matter.Render
-    let World = Matter.World
-    let Bodies = Matter.Bodies
+    const Engine = Matter.Engine
+    const Render = Matter.Render
+    const World = Matter.World
+    const Bodies = Matter.Bodies
 
-    let engine = Engine.create({})
+    const engine = Engine.create({})
 
-    let render = Render.create({
+    const render = Render.create({
       element: boxRef.current,
       engine: engine,
       canvas: canvasRef.current,
@@ -66,7 +66,7 @@ export const MatterStepThree = () => {
 
   useEffect(() => {
     if (constraints) {
-      let { width, height } = constraints
+      const { width, height } = constraints
 
       // Dynamically update canvas and bounds
       scene.bounds.max.x = width

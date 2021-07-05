@@ -8,8 +8,10 @@ import { Form } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
-import { logDomTree, addDomToWorld, scratchCanvas } from './domtomatter'
+import { addDomToWorld, scratchCanvas, modInfo } from './domtomatter'
+import {doPageEffect} from './pageEffects/allfalldown'
 export const version = .01
+let prevKey = ""
 
 log(`version ${version} starting`)
 //className="App-header"
@@ -25,13 +27,6 @@ function App(): JSX.Element {
   );
 }
 
-
-
-const getBlobURL = (code, type) => {
-  const blob = new Blob([code], { type })
-  return URL.createObjectURL(blob)
-}
-
 /**
  * Calls server to get the page at URL,
  *  and then pranks the page by manipulating the display of the page
@@ -43,17 +38,51 @@ function PrankUI(props: any) {
   const [html, setHtml] = useState("")
   const [screenShot, setScreenshot] = useState("")
   const [debugImage, setDebugImage] = useState(santaImage)
-  const [blobURL, setBlobURL] = useState("about:blank")
+  const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
   const canvasRef = useRef(null)
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { x: xMouse, y: yMouse } = useMousePosition(window);
-  const scratchCanvasRef = useRef(null)
-  //<canvas id="canvas" ref={scratchCanvasRef} width={windowWidth} height={windowHeight}> </canvas>    {scratchCanvas || null}
 
+  useEffect(() => {
+    setShowPopout(true)
 
-  //<canvas id="canvas" ref={scratchCanvasRef} width={windowWidth} height={windowHeight}> </canvas>
+    /**
+     * opens popout info window if Ctrl or Alt + "42" is pressed. Toggle display of controls if "Esc" is pressed
+     * @param event 
+     */
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key
+      //log(`${key} ${event.altKey} ${event.ctrlKey} ${prevKey}`)
+      if (key === "Alt" || key === "Control")
+        return
+      if (key === "Escape") {   //esc key
+        setShowControls(prev => !prev)
+      }
+      else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")
+          setShowPopout(true)
+        else
+          if (event.altKey || event.ctrlKey)
+            prevKey = key
+
+    }
+
+    const handleUnload = (e:BeforeUnloadEvent) => {
+    //  e.preventDefault();
+     console.log('window unloading')
+    // if (showPopout)
+        setShowPopout(false)
+     //alert("HEY");
+    }
+    window.addEventListener('beforeunload',handleUnload )
+    document.addEventListener("keydown", handleKeyDown, false);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, false);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []);
 
   const onSubmit = async (event: React.FormEvent) => {
 
@@ -63,7 +92,10 @@ function PrankUI(props: any) {
       const [imageURL, html] = await network.getImageandHtml(targetUrl, windowWidth, windowHeight)
       setLoading(false)
       setScreenshot(imageURL)
-      addDomToWorld(imageURL, html, setDebugImage, canvasRef.current, windowWidth, windowHeight)
+      setShowControls(false)
+      const modInfo:modInfo = await addDomToWorld(imageURL, html, setDebugImage, canvasRef.current, windowWidth, windowHeight)
+      //modInfo.
+      doPageEffect(modInfo)
     }
     catch (error) {
       log(`yo! an error occurred ${error}`);
@@ -72,7 +104,7 @@ function PrankUI(props: any) {
   }
 
   useEffect(() => {
-    document.title = `URL: ${targetUrl} `;
+    document.title = `Pranking: ${targetUrl} `;
   }, [targetUrl]);
 
   //const handleChange=(e: React.ChangeEvent<HTMLInputElement>) => setUrl(url) 
@@ -80,18 +112,22 @@ function PrankUI(props: any) {
   const { x: worldX, y: worldY } = canvasRef?.current?.getBoundingClientRect() || {}
   //worldX+= window.scrollX
   //worldY+= window.scrollY  
- 
+
   return <div id="foo">
     <div>
       {getPopout()}
-      <URLForm url={targetUrl} isLoading={isLoading} onSubmit={onSubmit} handleChange={handleURLChange} />
-      <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button>
+      {showControls ? <div id="togglediv">
+        <URLForm url={targetUrl} isLoading={isLoading} onSubmit={onSubmit} handleChange={handleURLChange} />
+        <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button>
+      </div> : null}
+
       <canvas id="canvas" ref={canvasRef} className="world" > </canvas>
     </div>
 
   </div>
 
-//<Button onClick={e => makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
+  // <button onClick={() => setShowControls(!showControls)}>fuck</button>
+  //<Button onClick={e => makeWorld(canvasRef.current as HTMLCanvasElement, windowWidth, 600)}>physics</Button>
 
   // This returns the HTML for the popout, or null if the popout isn't visible
   function getPopout() {
