@@ -9,7 +9,7 @@ export async function getImageandHtml(targetUrl:string, windowWidth:number, wind
 	const imagePromise = getImage(route)
 	route = `puppet?url=${encodeURIComponent(targetUrl)}&action=render&width=${windowWidth}&height=${windowHeight}`;
 	const htmlPromise = getString(route)
-	return await Promise.all([imagePromise, htmlPromise])
+	return Promise.all([imagePromise, htmlPromise])
  }
 
 
