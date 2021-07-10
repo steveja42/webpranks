@@ -1,8 +1,45 @@
-.foo {
-  width: 80%;
-  text-align: center;
-  align-items: center;
+.myform *, input[type="url"], input[type="url"]:autofill, input[type="url"]:-webkit-autofill,
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus
+input:-webkit-autofill
+{
+  color: chocolate;
+}
+
+.btn-primary, .btn-primary:focus, .btn-primary:active,  .btn-primary:hover,  .btn-primary.disabled, .btn-primary:disabled {
+  color: cornsilk;
+  background-color: chocolate;
+  border-color: chocolate;
+}
+
+body {
+  background-color: cornsilk;
+  color: chocolate;
+}
+
+input[type="url"]::placeholder {
+  color: chocolate;
+}
+.form-control:not(active){
+  color: chocolate;
+}
+
+.form-control:focus{
+  color:chocolate;
+}
+
+.myform > * {
   display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.myform > *:not(:first-child) {
+  margin-left: .5em;
+}
+.myform > input, .myform .form-group{
+  width: 25%;
+  min-width: 25em;
 }
 .world {
   display: block;

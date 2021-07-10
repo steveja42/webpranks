@@ -105,7 +105,7 @@ function logNode(node, level: number, usePosAttr = false) {
 
 }
 
-export function logDomTree(startNode: HTMLElement, usePosAttr = false): void {
+export function logDomTree(startNode: HTMLElement, usePosAttr = true): void {
 
 	const ownerWindow = startNode.ownerDocument.defaultView
 	const doc = startNode.ownerDocument

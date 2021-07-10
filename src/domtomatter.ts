@@ -1,5 +1,5 @@
 import { log } from './util'
-import { Engine, Render, Bodies, World, Body } from "matter-js"
+import { Engine, Render, Bodies, World, Body,Runner } from "matter-js"
 import { setupWorld } from './physics'
 import { walkDom, logDomTree, nodeTypes } from './dom'
 import {CollisionCategory} from './physics'
@@ -33,7 +33,7 @@ function loadImage(image: HTMLImageElement, imageURL: string): Promise<unknown> 
  * doc:HTMLDocument,
  * world: World
  */
-export interface modInfo {
+export interface ModInfo {
 	pageImage: HTMLImageElement,
 	bodies: Body[],
 	backgroundBodies: Body[],
@@ -43,18 +43,25 @@ export interface modInfo {
 	render: Render,
 	engine: Engine
 }
-export async function addDomToWorld(imageURL: string, html: string, setDebugImage, canvas: HTMLCanvasElement, width: number, height: number): Promise<modInfo> {
+
+
+export async function resetWorld(modInfo:ModInfo) {
+	Render.stop(modInfo.render)
+	//Runner.stop(modInfo.engine)
+}
+export async function createWorldFromDOM(imageURL: string, html: string, setDebugImage, canvas: HTMLCanvasElement, width: number, height: number): Promise<ModInfo> {
 	//scratchCanvas = canvas
+	log(`start ${imageURL}`)
 	const pageImage = new Image()
 	const imageLoaded = loadImage(pageImage, imageURL)
 	const parser = new DOMParser();
 	const doc: HTMLDocument = parser.parseFromString(html, "text/html")
 	const bgColor = JSON.parse(doc.body?.getAttribute('__pos__'))?.bgColor
 	await imageLoaded
-	logDomTree(doc.body, true)
+	//logDomTree(doc.body, true)
 	const {world, render, engine} = setupWorld(canvas, width, height, bgColor)
 
-	const stuff: modInfo = {
+	const modInfo: ModInfo = {
 		pageImage,
 		bodies: [],
 		backgroundBodies: [],
@@ -64,13 +71,15 @@ export async function addDomToWorld(imageURL: string, html: string, setDebugImag
 		render,
 		engine
 	}
-	walkDom(doc.body, domNodeToSprites, 0, stuff)
+	walkDom(doc.body, domNodeToSprites, 0, modInfo)
 
-	if (stuff.backgroundBodies.length)
-		World.add(world, stuff.backgroundBodies)
-	if (stuff.bodies.length)
-		World.add(world, stuff.bodies)
-	return { ...stuff, doc, world }
+	if (modInfo.backgroundBodies.length)
+		World.add(world, modInfo.backgroundBodies)
+	if (modInfo.bodies.length)
+		World.add(world, modInfo.bodies)
+	log(`done ${imageURL}`)
+
+	return { ...modInfo, doc, world }
 }
 
 /**
@@ -78,7 +87,7 @@ export async function addDomToWorld(imageURL: string, html: string, setDebugImag
  * @param node 
  * @param level - how many levels deep are we in the dom tree
  */
-function domNodeToSprites(node: HTMLElement, level: number, stuff: modInfo) {
+function domNodeToSprites(node: HTMLElement, level: number, stuff: ModInfo) {
 
 	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P']
 
