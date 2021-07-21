@@ -48,12 +48,14 @@ function PrankUI(props: any) {
   const [html, setHtml] = useState("")
   const [screenShot, setScreenshot] = useState("")
   const [modInfo, setModInfo] = useState<ModInfo>(null)
-  const [debugImage, setDebugImage] = useState(santaImage)
+  //const [debugImage, setDebugImage] = useState(santaImage)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
   const [shouldWorldUpdate, setShouldWorldUpdate] = useState(false)
   const canvasRef = useRef(null)
+  const debugPageImage = useRef(null)
+  const debugImage = useRef(null)
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { x: xMouse, y: yMouse } = useMousePosition(window);
 
@@ -103,7 +105,7 @@ function PrankUI(props: any) {
   useEffect(() => {
     if (shouldWorldUpdate && modInfo) {
       resetWorld(modInfo)
-      createWorldFromDOM(screenShot, html, setDebugImage, canvasRef.current, windowWidth, windowHeight)
+      createWorldFromDOM(screenShot, html, debugPageImage.current, debugImage.current, canvasRef.current, windowWidth, windowHeight)
         .then(result => setModInfo(result))
         .catch(error => { log(error); setModInfo(null) })
       setShouldWorldUpdate(false)
@@ -167,9 +169,9 @@ function PrankUI(props: any) {
       setUrl('')
     } else {
       getPageScreenshotAndHTML(targetUrl, windowWidth, windowHeight)
-        .then(result => createWorldFromDOM(result[0], result[1], setDebugImage, canvasRef.current, windowWidth, windowHeight))
+        .then(result => createWorldFromDOM(result[0], result[1], debugPageImage.current, debugImage.current, canvasRef.current, windowWidth, windowHeight))
         .then(result => setModInfo(result))
-        .catch(error => { log(error); setModInfo(null) })
+        .catch(error => { log(error.message); setModInfo(null) })
     }
   }
 
@@ -229,13 +231,13 @@ function PrankUI(props: any) {
           <p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
           <Button onClick={e => logDomTree(modInfo.doc.body)} disabled={!modInfo?.doc?.body}>log dom</Button>
         </div>
-        <img id="debugImage" src={debugImage} className="Screenshot" alt="debug" />
-        <img id="pageImage" src={screenShot} className="Screenshot" alt="screen capture of the webpage at url" />
+        <img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
+        <img id="pageImage" ref={debugPageImage}  className="Screenshot" alt="screen capture of the webpage at url" />
 
       </Popout>
     );
   }
 }
-
+//src={screenShot}
 export default App;
 
