@@ -32,6 +32,29 @@ export function walkDom(startNode, func, level = 0, param = undefined) {
 	}
 }
 
+/**
+ * Walks a dom tree starting with startNode, calling func(level, param) on each node,
+ * where level is the level of the tree and param is an optional paramater. 
+ * @param startNode node to start with 
+ * @param func callback function
+ * @param level is incremented on recursive calls
+ * @param param parameter passed to the callback function
+ * @param parentReturn what the parent returned is passed to the callback function
+ *  
+ */
+export async function walkDom2(startNode, func, level = 0, param = undefined, parentReturn = undefined) {
+	let ret = func(startNode, level, param, parentReturn)
+	if (ret?.then)
+		ret = await ret
+	if (!startNode.hasChildNodes())
+		return;
+
+	++level;
+	for (const child of startNode.childNodes) {
+		await walkDom2(child, func, level, param, ret);
+	}
+}
+
 
 /**
  * logs information about a DOM node, with indentation based on level
