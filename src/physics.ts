@@ -1,9 +1,11 @@
-import { Engine, Render, Bodies, World } from "matter-js";
-
+import { Engine, Render, Bodies, World, Mouse, Composite, MouseConstraint } from "matter-js";
+import { ModInfo } from "./domtomatter"
 export enum CollisionCategory {
 	default = 1,
 	ground = 2,
-	moving = 4
+	domBackground = 4,
+	dom = 8,
+	movingDom = 16
 }
 
 export function setupWorld(canvas: HTMLCanvasElement, width, height, background = ''): any {
@@ -22,26 +24,34 @@ export function setupWorld(canvas: HTMLCanvasElement, width, height, background 
 			background
 		}
 	})
-	
+
 	world.gravity.y = 0 //gravity; // 1 by default,
-	
-	
+
+
 
 	// Run the engine
 	Engine.run(engine);
 
 	// Run the renderer
 	Render.run(render);
-	return {world, render, engine}
+	return { world, render, engine }
 
 }
 
-/*var ball = Bodies.circle(90, 280, 20, {
-  render: {
-	 sprite: {
-		texture: "path/to/soccer_ball.png",
-		xScale: 0.4,
-		yScale: 0.4
-	 }
-  }
-});*/
+export function allowMouseToMoveWorldObjects(modInfo:ModInfo) {
+	const mouse = Mouse.create(modInfo.render.canvas),
+		mouseConstraint = MouseConstraint.create(modInfo.engine, {   
+			mouse: mouse,
+			constraint: {   //IConstraintDefinition 
+				stiffness: 0.2,
+				render: {
+					visible: false
+				}
+			}
+		});
+
+		Composite.add(modInfo.world, mouseConstraint);
+
+	// keep the mouse in sync with rendering
+	//modInfo.render.mouse = mouse;
+}

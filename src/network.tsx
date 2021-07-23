@@ -1,7 +1,7 @@
 import { log } from './util';
 
 //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live': 'https://www.resultify.live'
-const server = 'http://localhost:8080' // 'https://sj-td.herokuapp.com'  //'https://resultify.live'
+const server = 'https://sj-td.herokuapp.com'  //'http://localhost:8080' // 'https://sj-td.herokuapp.com' 
 
 
 export async function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
@@ -66,4 +66,35 @@ export async function getJSON(route: string): Promise<[string, string]> {
 		return [
 			"", error]
 	}
+}
+
+/**
+	 * Performs http post request to our node.js server
+	 *
+	 * @param {string} data json to be posted .
+	 * @param {string} route route to use.
+	 * @return [response in JSON(null if error), error object]
+	 */
+ export async function post(data:Record<string,unknown>, route='feedback') {
+	
+	try {
+		const response = await fetch(`${server}/${route}`, { 
+			method: 'POST',
+			body: JSON.stringify(data),
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json',
+			},
+
+		});
+		if (response.ok)
+			return [true];
+		const text = await response.text()	
+		return [false, `error: status ${response.status} ${response.statusText} ${text}`]
+	}
+
+catch (error) {
+	console.error(`post: error occurred with fetch ${error}`);
+	return [false, error]
+}
 }

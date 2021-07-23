@@ -2,7 +2,7 @@ import { log } from './util'
 import { Engine, Render, Bodies, World, Body, Runner } from "matter-js"
 import { setupWorld } from './physics'
 import { walkDom2, logDomTree, nodeTypes } from './dom'
-import { CollisionCategory } from './physics'
+import { CollisionCategory, allowMouseToMoveWorldObjects } from './physics'
 
 /**
  * sets image.src to imageURL and returns promise that resolves when image has been loaded with imageURL 
@@ -76,9 +76,9 @@ export async function createWorldFromDOM(imageURL: string, html: string, debugPa
 		World.add(world, modInfo.backgroundBodies)
 	if (modInfo.bodies.length)
 		World.add(world, modInfo.bodies)
-	log(`done ${imageURL}`)
-
-	return { ...modInfo, doc, world }
+	log(`done ${imageURL} ${modInfo.bodies.length} bodies added ${modInfo.backgroundBodies.length} backgrounds objects set`)
+	allowMouseToMoveWorldObjects(modInfo)
+	return modInfo
 }
 
 function getAttributes(node) {
@@ -146,15 +146,16 @@ async function domNodeToSprites(node: HTMLElement, level: number, modInfo: ModIn
 	if (!isOnScreen(boundingRect))
 		return parentAdded
 
-	if (!isTextNode && bgColor) {    //create a body to fill in the background, but not collide with anything
+	if (!isTextNode && bgColor) {    //create a body to fill in the background, but not collide with dom objects
 		/*const ctx = stuff.canvas.getContext('2d')
 		ctx.fillStyle = bgColor
 		ctx.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height) */
 		const options = {
 			render: { fillStyle: bgColor },
 			collisionFilter: {
-				group: -2,
-				category: 0
+				//group: -2,
+				mask: CollisionCategory.default | CollisionCategory.ground,
+				category: CollisionCategory.domBackground
 			}
 		}
 		const body = Bodies.rectangle(boundingRect.x + boundingRect.width / 2, boundingRect.y + boundingRect.height / 2, boundingRect.width, boundingRect.height, options)
@@ -167,7 +168,7 @@ async function domNodeToSprites(node: HTMLElement, level: number, modInfo: ModIn
 	if (isTextNode || spriteAbleElements.includes(node.nodeName)) {
 		const image = getImagePortion(modInfo.pageImage, boundingRect)
 		if (debugThis) {
-			log(`adding ${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height}`)
+			log(`adding ${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent}"`)
 			if (modInfo.debugImage) {
 				const imageLoaded = loadImage(modInfo.debugImage, image)
 				await imageLoaded
@@ -176,12 +177,12 @@ async function domNodeToSprites(node: HTMLElement, level: number, modInfo: ModIn
 		const options = {
 			render: { sprite: { texture: image, xScale: 1, yScale: 1 } },
 			collisionFilter: {
-				mask: CollisionCategory.default | CollisionCategory.ground,
-				group: 1
+				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom,
+				category: CollisionCategory.dom
 			}
 		}
-		if (debugThis) 
-			options.collisionFilter.group = -2
+		//if (debugThis) 
+			//options.collisionFilter.group = -2
 		const body = Bodies.rectangle(boundingRect.x + boundingRect.width / 2, boundingRect.y + boundingRect.height / 2, boundingRect.width, boundingRect.height, options)
 		modInfo.bodies.push(body)
 		return true

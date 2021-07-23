@@ -4,21 +4,17 @@ import './App.css'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
-import { Form } from 'react-bootstrap'
+import { Form, Alert } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
 import { createWorldFromDOM, resetWorld, scratchCanvas, ModInfo } from './domtomatter'
-import { santaImage } from './images'
 //import * as allfalldown from './pageEffects/birthday'
 import { logDomTree } from './dom'
+import {effectModules} from './pageEffects/modulelist'
 export const version = .01
 let prevKey = ""
-
-const effectModules = [
-  { title: "All Fall Down", fileName: 'allfalldown' },
-  { title: "Happy Birthday", fileName: 'birthday' }
-]
+let urlUsed = ""
 
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
@@ -52,6 +48,7 @@ function PrankUI(props: any) {
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
+  const [showFailure, setShowFailure] = useState("")
   const [shouldWorldUpdate, setShouldWorldUpdate] = useState(false)
   const canvasRef = useRef(null)
   const debugPageImage = useRef(null)
@@ -61,6 +58,8 @@ function PrankUI(props: any) {
 
   /** effect run on component load */
   useEffect(() => {
+    network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
+
     // setShowPopout(true)
 
     /**
@@ -87,11 +86,8 @@ function PrankUI(props: any) {
     }
 
     const handleUnload = (e: BeforeUnloadEvent) => {
-      //  e.preventDefault();
       console.log('window unloading')
-      // if (showPopout)
       setShowPopout(false)
-      //alert("HEY");
     }
     window.addEventListener('beforeunload', handleUnload)
     document.addEventListener("keydown", handleKeyDown, false);
@@ -130,7 +126,8 @@ function PrankUI(props: any) {
       return [imageURL, html]
     }
     catch (error) {
-      log(`yo! an error occurred ${error}`);
+      log(`yo! an error occurred ${error}`)
+      setShowFailure(`Unable to get web page at ${url}`)
       setLoading(false)
       setScreenshot("")
       setHtml("")
@@ -167,11 +164,19 @@ function PrankUI(props: any) {
   const onBlur = () => {
     if (targetUrl.trim() === protocol) {
       setUrl('')
-    } else {
+    } else if (targetUrl.trim() !== "" && urlUsed !== targetUrl) {
+      urlUsed = targetUrl
       getPageScreenshotAndHTML(targetUrl, windowWidth, windowHeight)
         .then(result => createWorldFromDOM(result[0], result[1], debugPageImage.current, debugImage.current, canvasRef.current, windowWidth, windowHeight))
-        .then(result => setModInfo(result))
-        .catch(error => { log(error.message); setModInfo(null) })
+        .then(result => {
+          setShowFailure("")
+          setModInfo(result)
+        })
+        .catch(error => {
+          log(error.message)
+          //urlUsed = ""
+          setModInfo(null)
+        })
     }
   }
 
@@ -185,9 +190,12 @@ function PrankUI(props: any) {
       {getPopout()}
       {showControls ? <div id="togglediv">
         <Form onSubmit={onSubmit} className="myform" >
+        <Alert show={showFailure!==""}  transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
+            <Alert.Heading>Error. {showFailure}</Alert.Heading>
+          </Alert>
           <Form.Group controlId="url">
             <Form.Label>Choose a website</Form.Label>
-            <Form.Control name="targetUrl" type="url" value={targetUrl} onFocus={onFocus} onBlur={onBlur} onChange={(e) => setUrl(e.target.value)} placeholder="Enter a URL" required />
+            <Form.Control name="targetUrl" type="url" value={targetUrl} onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={(e) => setUrl(e.target.value)} placeholder="Enter a URL" required />
           </Form.Group>
           <Form.Group controlId="prank">
             <Form.Label>Choose a prank</Form.Label>
@@ -232,7 +240,7 @@ function PrankUI(props: any) {
           <Button onClick={e => logDomTree(modInfo.doc.body)} disabled={!modInfo?.doc?.body}>log dom</Button>
         </div>
         <img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
-        <img id="pageImage" ref={debugPageImage}  className="Screenshot" alt="screen capture of the webpage at url" />
+        <img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />
 
       </Popout>
     );

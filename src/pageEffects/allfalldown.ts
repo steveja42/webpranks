@@ -2,6 +2,7 @@ import { Engine, Render, Bodies, World, Body } from "matter-js"
 import { ModInfo } from '../domtomatter'
 import { log } from '../util'
 import {CollisionCategory} from '../physics'
+import {center, ms, getRandomInt} from '../modhelper'
 
 export async function doPageEffect({ world, bodies, render }: ModInfo) {
 	//world.gravity.y = 1
@@ -12,7 +13,7 @@ export async function doPageEffect({ world, bodies, render }: ModInfo) {
 		isStatic: true,
 		render: { fillStyle: "blue" },
 		collisionFilter: {
-			mask: CollisionCategory.ground | CollisionCategory.moving,
+			mask: CollisionCategory.ground | CollisionCategory.movingDom,
 			category: CollisionCategory.ground
 		}
 	});
@@ -24,34 +25,11 @@ export async function doPageEffect({ world, bodies, render }: ModInfo) {
 		const i = getRandomInt(bodiesToDo.length)
 		log (`moving body ${bodiesToDo[i]}`)
 		const body = bodies[bodiesToDo[i]]
-		body.collisionFilter.category = CollisionCategory.moving
-		body.collisionFilter.mask = CollisionCategory.ground | CollisionCategory.moving
+		body.collisionFilter.category = CollisionCategory.movingDom
+		body.collisionFilter.mask = CollisionCategory.ground | CollisionCategory.movingDom
 		Body.setVelocity(body, { x: 0, y: 10 })
 		bodiesToDo.splice(i, 1)
 		await ms(1000)
 	}
 }
 
-function center(start, end) {
-
-	return start + (end - start) / 2
-}
-
-/**
- * returns promise that resolves in time given by milliSeconds
- * @param milliSeconds 
- * bla bla
- * more
- */
-async function ms(milliSeconds: number) {
-
-	return new Promise<void>(resolve => {
-		setTimeout(() => {
-			resolve();
-		}, milliSeconds);
-	});
-}
-
-function getRandomInt(max) {
-	return Math.floor(Math.random() * max);
-}
