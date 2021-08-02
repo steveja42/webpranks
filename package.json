@@ -13,6 +13,7 @@
     "@types/react-dom": "^16.9.8",
     "bootstrap": "^4.5.3",
     "matter-js": "^0.17.1",
+    "phaser": "^3.55.2",
     "poly-decomp": "^0.3.0",
     "react": "^17.0.1",
     "react-bootstrap": "^1.6.1",

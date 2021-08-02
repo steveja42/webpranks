@@ -1,11 +1,11 @@
 import { Engine, Render, Bodies, World, Body, Composite, Constraint, MouseConstraint } from "matter-js"
-import { ModInfo } from '../domtomatter'
+import { PageGraphics } from '../domtoobjects'
 import { log } from '../util'
-import { CollisionCategory } from '../physics'
+import { CollisionCategory } from '../phaseri'
 import {center, ms, getRandomInt} from '../modhelper'
 
-export async function doPageEffect({ world, bodies, render, engine }: ModInfo) {
-	//world.gravity.y = 1
+export async function doPageEffect(m: PageGraphics) {
+	/* //world.gravity.y = 1
 	const width = render.canvas.width
 	const height = render.canvas.height
 	const groundHeight = 10
@@ -39,6 +39,6 @@ export async function doPageEffect({ world, bodies, render, engine }: ModInfo) {
 		pointA: { x: width/2, y: -100 },
 		bodyB: wreckingBall
 	}));
-
+*/
 }
 

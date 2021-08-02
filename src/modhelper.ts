@@ -1,3 +1,9 @@
+import { PageGraphics } from "./domtoobjects";
+
+export interface PrankSceneI {
+	name:string
+}
+
 /** returns center of start and end */
 export function center(start, end) {
 
@@ -23,3 +29,14 @@ export function getRandomInt(max) {
 	return Math.floor(Math.random() * max);
 }
 
+export function displayDomObjects(scene:Phaser.Scene, page:PageGraphics) {
+	if (page.bgColor)
+		scene.cameras.main.setBackgroundColor(page.bgColor)
+	for (const backgroundRect of page.backgroundRects) {
+		//const url = URL.createObjectURL(domElement.imageURL)
+		scene.add.rectangle(center(backgroundRect.boundingRect.x, backgroundRect.boundingRect.right), center(backgroundRect.boundingRect.y, backgroundRect.boundingRect.bottom), backgroundRect.boundingRect.width, backgroundRect.boundingRect.height, backgroundRect.bgColor)
+	}
+	page.domElementsImages.forEach((domElement, i) => {
+		scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`)
+	})
+}

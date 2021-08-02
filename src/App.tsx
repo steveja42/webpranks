@@ -8,14 +8,18 @@ import { Form, Alert } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
-import { createWorldFromDOM, resetWorld, scratchCanvas, ModInfo } from './domtomatter'
+import { domToObjects, scratchCanvas, PageGraphics } from './domtoobjects'
 //import * as allfalldown from './pageEffects/birthday'
 import { logDomTree } from './dom'
 import {effectModules} from './pageEffects/modulelist'
+import { PhaserGame } from './phaser'
+import { setupWorld,resetWorld,resetAndLoadImagesForNewPageScene } from './phaseri'
+import {PrankSceneI } from './modhelper'
+
 export const version = .01
 let prevKey = ""
 let urlUsed = ""
-
+let game:Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
 log(`version ${version} starting`)
@@ -43,14 +47,14 @@ function PrankUI(props: any) {
   const [whichPrank, setWhichPrank] = useState(0)
   const [html, setHtml] = useState("")
   const [screenShot, setScreenshot] = useState("")
-  const [modInfo, setModInfo] = useState<ModInfo>(null)
-  //const [debugImage, setDebugImage] = useState(santaImage)
+  const [pageGraphics, setPageGraphics] = useState<PageGraphics>(null)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
-  const [showFailure, setShowFailure] = useState("")
   const [shouldWorldUpdate, setShouldWorldUpdate] = useState(false)
-  const canvasRef = useRef(null)
+  const [currentScene, setCurrentScene] = useState<PrankSceneI>()
+  const [showFailure, setShowFailure] = useState("")
+  const phaserParent = useRef(null)
   const debugPageImage = useRef(null)
   const debugImage = useRef(null)
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -59,6 +63,7 @@ function PrankUI(props: any) {
   /** effect run on component load */
   useEffect(() => {
     network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
+    game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 
     // setShowPopout(true)
 
@@ -99,11 +104,11 @@ function PrankUI(props: any) {
   }, []);
 
   useEffect(() => {
-    if (shouldWorldUpdate && modInfo) {
-      resetWorld(modInfo)
-      createWorldFromDOM(screenShot, html, debugPageImage.current, debugImage.current, canvasRef.current, windowWidth, windowHeight)
-        .then(result => setModInfo(result))
-        .catch(error => { log(error); setModInfo(null) })
+    if (shouldWorldUpdate && pageGraphics) {
+      resetWorld(pageGraphics)
+      domToObjects(screenShot, html, debugPageImage.current, debugImage.current, windowWidth, windowHeight)
+        .then(result => setPageGraphics(result))
+        .catch(error => { log(error); setPageGraphics(null) })
       setShouldWorldUpdate(false)
     }
   }, [shouldWorldUpdate])
@@ -140,11 +145,11 @@ function PrankUI(props: any) {
     try {
       event.preventDefault()
       //const [imageURL, html] = await getPage(targetUrl, windowWidth, windowHeight)
-      if (screenShot && modInfo) {
+      if (screenShot && pageGraphics) {
         setShowControls(false)
         log(`running prank ${effectModules[whichPrank].title}`)
         import(`./pageEffects/${effectModules[whichPrank].fileName}`)
-          .then(module => module.doPageEffect(modInfo))
+          .then(module => setCurrentScene(module.doPageEffect(pageGraphics)))
           .catch(err => log(err.message))
       }
     } catch { }
@@ -167,21 +172,22 @@ function PrankUI(props: any) {
     } else if (targetUrl.trim() !== "" && urlUsed !== targetUrl) {
       urlUsed = targetUrl
       getPageScreenshotAndHTML(targetUrl, windowWidth, windowHeight)
-        .then(result => createWorldFromDOM(result[0], result[1], debugPageImage.current, debugImage.current, canvasRef.current, windowWidth, windowHeight))
-        .then(result => {
+        .then(result => domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight))
+        .then(pageGraphics => {
           setShowFailure("")
-          setModInfo(result)
-        })
+          pageGraphics.game = game
+          return resetAndLoadImagesForNewPageScene(pageGraphics, currentScene)
+        }).then(pageGraphics=>setPageGraphics(pageGraphics))
         .catch(error => {
           log(error.message)
           //urlUsed = ""
-          setModInfo(null)
+          setPageGraphics(null)
         })
     }
   }
 
   //const handleChange=(e: React.ChangeEvent<HTMLInputElement>) => setUrl(url) 
-  const { x: worldX, y: worldY } = canvasRef?.current?.getBoundingClientRect() || {}
+  const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
   //worldX+= window.scrollX
   //worldY+= window.scrollY  
 
@@ -210,7 +216,7 @@ function PrankUI(props: any) {
               {prankList}
             </Form.Control>
           </Form.Group>
-          <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && modInfo)} >
+          <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageGraphics)} >
             {isLoading ? 'Loading…' : 'Prank It'}
             {isLoading && <Spinner animation="border" role="status " size="sm">
               <span className="sr-only">Loading...</span>
@@ -221,10 +227,10 @@ function PrankUI(props: any) {
         </Form>
         {process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
       </div> : null}
-
-      <canvas id="canvas" ref={canvasRef} className="world" > </canvas>
-    </div>
-
+      <div ref={phaserParent} />        
+      <canvas id="canvas"  className="world" > </canvas>
+    </div >
+     
   </div>
 
   /** This returns the HTML for the popout, or null if the popout isn't visible */
@@ -237,7 +243,7 @@ function PrankUI(props: any) {
       <Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
         <div>
           <p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
-          <Button onClick={e => logDomTree(modInfo.doc.body)} disabled={!modInfo?.doc?.body}>log dom</Button>
+          <Button onClick={e => logDomTree(pageGraphics.doc.body)} disabled={!pageGraphics?.doc?.body}>log dom</Button>
         </div>
         <img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
         <img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />
