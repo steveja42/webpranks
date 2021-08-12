@@ -1,3 +1,10 @@
+
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
 .myform *, input[type="url"], input[type="url"]:autofill, input[type="url"]:-webkit-autofill,
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 

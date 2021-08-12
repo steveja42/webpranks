@@ -1,46 +1,11 @@
-import { Engine, Render, Bodies, World, Body } from "matter-js"
-import { PageGraphics } from '../domtoobjects'
-import { log } from '../util'
-import { CollisionCategory } from '../phaseri'
-import { center, ms, getRandomInt, displayDomObjects,PrankSceneI } from '../modhelper'
+import { PageInfo, log, center, getRandomInt} from '../modhelper'
 
-export function doPageEffect(pageGraphics: PageGraphics) {
+export function doPageEffect(page: PageInfo) {
 
-	const sceneName = `PageScene`
-	mySceneConfig.key = sceneName
-
-	const pageScene = new PageScene(pageGraphics, sceneName)
-	pageGraphics.game.scene.add(sceneName, pageScene)
+	const pageScene = new PageScene(page)
+	page.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene
 }
-
-//world.gravity.y = 1
-	/*const width = render.canvas.width
-	const height = render.canvas.height
-	const groundHeight = 10
-	const ground = Bodies.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, {
-		isStatic: true,
-		render: { fillStyle: "blue" },
-		collisionFilter: {
-			mask: CollisionCategory.ground | CollisionCategory.movingDom,
-			category: CollisionCategory.ground
-		}
-	});
-
-	World.add(world, [ground]);
-	await ms(2000)
-	const bodiesToDo = bodies.map((value, index) => index)
-	while (bodiesToDo.length) {
-		const i = getRandomInt(bodiesToDo.length)
-		log (`moving body ${bodiesToDo[i]}`)
-		const body = bodies[bodiesToDo[i]]
-		body.collisionFilter.category = CollisionCategory.movingDom
-		body.collisionFilter.mask = CollisionCategory.ground | CollisionCategory.movingDom
-		Body.setVelocity(body, { x: 0, y: 10 })
-		bodiesToDo.splice(i, 1)
-		await ms(1000)
-	}
-	*/
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	active: true,
@@ -48,13 +13,18 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	key: `PageScene`
 };
 
-export class PageScene extends Phaser.Scene implements PrankSceneI {
+export class PageScene extends Phaser.Scene {
 	private square: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body };
-	backgroundRects:Phaser.GameObjects.Rectangle[] =[]
-	domImages:Phaser.GameObjects.Image [] = []
+	backgroundRects: Phaser.GameObjects.Rectangle[] = []
+	domImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
+	bodiesToDo: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
+	removeDelta = 1000
+	deltaElapsed = 0
+	foo: Phaser.Physics.Arcade.Image
 
-	constructor(public page: PageGraphics, readonly name: string) {
+	constructor(public page: PageInfo) {
 		super(mySceneConfig);
+		log('constructing scene')
 	}
 
 	public preload() {
@@ -63,44 +33,40 @@ export class PageScene extends Phaser.Scene implements PrankSceneI {
 
 	public create() {
 		log('creating scene')
+		//set background color of scene to match that of the web page
 		if (this.page.bgColor)
 			this.cameras.main.setBackgroundColor(this.page.bgColor)
+		//add rectangles to the scene to match the web page elements that had different background colors than the whole page 	
 		for (const backgroundRect of this.page.backgroundRects) {
 			//const url = URL.createObjectURL(domElement.imageURL)
 			const rect = this.add.rectangle(center(backgroundRect.boundingRect.x, backgroundRect.boundingRect.right), center(backgroundRect.boundingRect.y, backgroundRect.boundingRect.bottom), backgroundRect.boundingRect.width, backgroundRect.boundingRect.height, backgroundRect.bgColor)
 			this.backgroundRects.push(rect)
 		}
+		// add the images for web page elements to the scene as game objects 
 		this.page.domElementsImages.forEach((domElement, i) => {
-			const img = this.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`
-			)
+			const img = this.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`)
+
+			img.body.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)).setCollideWorldBounds(true).setAllowGravity(false)
 			this.domImages.push(img)
 		})
 
-
+		this.bodiesToDo = [...this.domImages]
 		this.square = this.add.rectangle(400, 400, 100, 100, 0xFFFFFF) as any;
 		this.physics.add.existing(this.square)
-		this.physics.add.group(this.domImages)
-		// player.setBounce(0.2);
-		//player.setCollideWorldBounds(true);
 	}
 
-	public update() {
-		const cursorKeys = this.input.keyboard.createCursorKeys();
+	public update(time: number, delta: number) {
+		this.deltaElapsed += delta
 
-		if (cursorKeys.up.isDown) {
-			this.square.body.setVelocityY(-500);
-		} else if (cursorKeys.down.isDown) {
-			this.square.body.setVelocityY(500);
-		} else {
-			this.square.body.setVelocityY(0);
+		if (this.bodiesToDo.length && this.deltaElapsed > this.removeDelta) {
+			this.deltaElapsed = 0
+			const i = getRandomInt(this.bodiesToDo.length)
+			log(`moving body ${i}`)
+			this.bodiesToDo[i].setVelocity(0, 500).setDamping(false).setDragY(500).body.setAllowGravity(true)
+			this.bodiesToDo.splice(i, 1)
 		}
 
-		if (cursorKeys.right.isDown) {
-			this.square.body.setVelocityX(500);
-		} else if (cursorKeys.left.isDown) {
-			this.square.body.setVelocityX(-500);
-		} else {
-			this.square.body.setVelocityX(0);
-		}
 	}
+
 }
+

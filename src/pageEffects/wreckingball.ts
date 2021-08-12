@@ -1,10 +1,10 @@
 import { Engine, Render, Bodies, World, Body, Composite, Constraint, MouseConstraint } from "matter-js"
-import { PageGraphics } from '../domtoobjects'
+import { PageInfo } from '../domtoobjects'
 import { log } from '../util'
 import { CollisionCategory } from '../phaseri'
 import {center, ms, getRandomInt} from '../modhelper'
 
-export async function doPageEffect(m: PageGraphics) {
+export async function doPageEffect(m: PageInfo) {
 	/* //world.gravity.y = 1
 	const width = render.canvas.width
 	const height = render.canvas.height

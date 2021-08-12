@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
-import { PageGraphics } from "./domtoobjects"
-import { center, displayDomObjects, PrankSceneI } from './modhelper'
+import { PageInfo } from "./domtoobjects"
+import { center, displayDomObjects} from './modhelper'
 import { log } from './util'
 export enum CollisionCategory {
 	default = 1,
@@ -13,18 +13,18 @@ export enum CollisionCategory {
 export function setupWorld(parentElement: HTMLElement, width, height, background = ''): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
 		type: Phaser.AUTO,
-		parent: parentElement,
+		//parent: parentElement,
 		width: width,
 		height: height,
 		physics: {
 			default: 'arcade',
 			arcade: {
 				gravity: { y: 300 },
-				debug: true
+				//debug: true
 			}
 		},
 		scene: null,
-		backgroundColor: 0xfff8dc  //'cornsilk'
+		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk'
 	};
 	const game = new Phaser.Game(config);
 
@@ -32,14 +32,14 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 
 }
 let gs: PageScene
-let prevPage: PageGraphics
+let prevPage: PageInfo
 
 
-export async function resetAndLoadImagesForNewPageScene(page: PageGraphics, currentScene: PrankSceneI): Promise<PageGraphics> {
+export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentScene:Phaser.Scene): Promise<PageInfo> {
 	if (prevPage) {
 		log(`textures: ${Object.keys(page.game.textures.list).length - 3}`)
 		if (currentScene)
-			page.game.scene.remove(currentScene.name)
+			currentScene.scene.remove()	  //page.game.scene.remove(currentScene.name)
 		for (let i = 0; i < prevPage.domElementsImages.length; i++) {
 			page.game.textures.remove(`dom${i}`)
 		}
@@ -60,24 +60,20 @@ export async function resetAndLoadImagesForNewPageScene(page: PageGraphics, curr
 		page.game.textures.addBase64(`dom${i++}`, domElement.imageURL)
 	}
 	await texturesLoaded
-	const nextSceneName = `PageScene${++sceneNumber}-`
-	mySceneConfig.key = nextSceneName
-
 	//gs = new PageScene(page, nextSceneName)
 	//game.scene.add(nextSceneName, gs)
 	return page
 }
 
-export async function resetWorld(modInfo: PageGraphics) {
+export async function resetScene(modInfo: PageInfo, currentScene: Phaser.Scene) {
 	//Runner.stop(modInfo.engine)
+	currentScene.scene.restart()
 }
 
-export function allowMouseToMoveWorldObjects(modInfo: PageGraphics) {
+export function allowMouseToMoveWorldObjects(modInfo: PageInfo) {
 
 	return 1
 }
-
-let sceneNumber = 0
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	active: true,
@@ -88,7 +84,7 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 export class PageScene extends Phaser.Scene {
 	private square: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body };
 
-	constructor(public page: PageGraphics, readonly name: string) {
+	constructor(public page: PageInfo, readonly name: string) {
 		super(mySceneConfig);
 	}
 

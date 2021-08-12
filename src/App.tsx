@@ -8,18 +8,16 @@ import { Form, Alert } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
-import { domToObjects, scratchCanvas, PageGraphics } from './domtoobjects'
+import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
 //import * as allfalldown from './pageEffects/birthday'
 import { logDomTree } from './dom'
-import {effectModules} from './pageEffects/modulelist'
-import { PhaserGame } from './phaser'
-import { setupWorld,resetWorld,resetAndLoadImagesForNewPageScene } from './phaseri'
-import {PrankSceneI } from './modhelper'
+import { effectModules } from './pageEffects/modulelist'
+import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
 
 export const version = .01
 let prevKey = ""
 let urlUsed = ""
-let game:Phaser.Game
+let game: Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
 log(`version ${version} starting`)
@@ -47,12 +45,12 @@ function PrankUI(props: any) {
   const [whichPrank, setWhichPrank] = useState(0)
   const [html, setHtml] = useState("")
   const [screenShot, setScreenshot] = useState("")
-  const [pageGraphics, setPageGraphics] = useState<PageGraphics>(null)
+  const [pageGraphics, setPageGraphics] = useState<PageInfo>(null)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
-  const [shouldWorldUpdate, setShouldWorldUpdate] = useState(false)
-  const [currentScene, setCurrentScene] = useState<PrankSceneI>()
+  const [pauseScene, setPauseScene] = useState(false)
+  const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
   const [showFailure, setShowFailure] = useState("")
   const phaserParent = useRef(null)
   const debugPageImage = useRef(null)
@@ -79,7 +77,7 @@ function PrankUI(props: any) {
       if (key === "Alt" || key === "Control")
         return
       if (key === "Escape") {   //esc key
-        setShouldWorldUpdate(true)
+        setPauseScene(prev => !prev)
         setShowControls(prev => !prev)
       }
       else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")
@@ -104,14 +102,14 @@ function PrankUI(props: any) {
   }, []);
 
   useEffect(() => {
-    if (shouldWorldUpdate && pageGraphics) {
-      resetWorld(pageGraphics)
-      domToObjects(screenShot, html, debugPageImage.current, debugImage.current, windowWidth, windowHeight)
-        .then(result => setPageGraphics(result))
-        .catch(error => { log(error); setPageGraphics(null) })
-      setShouldWorldUpdate(false)
+    if (pageGraphics && currentScene) {
+      if (pauseScene) {
+        currentScene.scene.pause()
+      }
+      else
+        currentScene.scene.resume()
     }
-  }, [shouldWorldUpdate])
+  }, [pauseScene])
 
   /**
    * getPage gets the screenshot and html of page at targetUrl
@@ -148,11 +146,16 @@ function PrankUI(props: any) {
       if (screenShot && pageGraphics) {
         setShowControls(false)
         log(`running prank ${effectModules[whichPrank].title}`)
+        //setPauseScene(true)
+        if (currentScene)
+          currentScene.scene.remove()
         import(`./pageEffects/${effectModules[whichPrank].fileName}`)
           .then(module => setCurrentScene(module.doPageEffect(pageGraphics)))
           .catch(err => log(err.message))
       }
-    } catch { }
+    } catch (error) {
+      log(error.message)
+    }
   }
 
   useEffect(() => {
@@ -177,7 +180,10 @@ function PrankUI(props: any) {
           setShowFailure("")
           pageGraphics.game = game
           return resetAndLoadImagesForNewPageScene(pageGraphics, currentScene)
-        }).then(pageGraphics=>setPageGraphics(pageGraphics))
+        }).then(pageGraphics => {
+          setPageGraphics(pageGraphics)
+          setCurrentScene(null)
+        })
         .catch(error => {
           log(error.message)
           //urlUsed = ""
@@ -192,45 +198,41 @@ function PrankUI(props: any) {
   //worldY+= window.scrollY  
 
   return <div id="foo">
-    <div>
-      {getPopout()}
-      {showControls ? <div id="togglediv">
-        <Form onSubmit={onSubmit} className="myform" >
-        <Alert show={showFailure!==""}  transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
-            <Alert.Heading>Error. {showFailure}</Alert.Heading>
-          </Alert>
-          <Form.Group controlId="url">
-            <Form.Label>Choose a website</Form.Label>
-            <Form.Control name="targetUrl" type="url" value={targetUrl} onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={(e) => setUrl(e.target.value)} placeholder="Enter a URL" required />
-          </Form.Group>
-          <Form.Group controlId="prank">
-            <Form.Label>Choose a prank</Form.Label>
-            <Form.Control
-              as="select"
-              value={whichPrank}
-              onChange={e => {
-                console.log("e.target.value", e.target.value);
-                setWhichPrank(parseInt(e.target.value))
-              }}
-            >
-              {prankList}
-            </Form.Control>
-          </Form.Group>
-          <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageGraphics)} >
-            {isLoading ? 'Loading…' : 'Prank It'}
-            {isLoading && <Spinner animation="border" role="status " size="sm">
-              <span className="sr-only">Loading...</span>
-            </Spinner>}
-          </Button>
+    {getPopout()}
+    {showControls ? <div id="togglediv">
+      <Form onSubmit={onSubmit} className="myform" >
+        <Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
+          <Alert.Heading>Error. {showFailure}</Alert.Heading>
+        </Alert>
+        <Form.Group controlId="url">
+          <Form.Label>Choose a website</Form.Label>
+          <Form.Control name="targetUrl" type="url" value={targetUrl} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={(e) => setUrl(e.target.value)} placeholder="Enter a URL" required />
+        </Form.Group>
+        <Form.Group controlId="prank">
+          <Form.Label>Choose a prank</Form.Label>
+          <Form.Control
+            as="select"
+            value={whichPrank}
+            onChange={e => {
+              console.log("e.target.value", e.target.value);
+              setWhichPrank(parseInt(e.target.value))
+            }}
+          >
+            {prankList}
+          </Form.Control>
+        </Form.Group>
+        <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageGraphics)} >
+          {isLoading ? 'Loading…' : 'Prank It'}
+          {isLoading && <Spinner animation="border" role="status " size="sm">
+            <span className="sr-only">Loading...</span>
+          </Spinner>}
+        </Button>
 
 
-        </Form>
-        {process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
-      </div> : null}
-      <div ref={phaserParent} />        
-      <canvas id="canvas"  className="world" > </canvas>
-    </div >
-     
+      </Form>
+      {process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
+    </div> : null}
+    <div className="game" ref={phaserParent} />
   </div>
 
   /** This returns the HTML for the popout, or null if the popout isn't visible */

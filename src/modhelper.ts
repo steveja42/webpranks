@@ -1,4 +1,6 @@
-import { PageGraphics } from "./domtoobjects";
+import { PageInfo } from "./domtoobjects";
+export type { PageInfo}  from "./domtoobjects"
+export { log } from './util'
 
 export interface PrankSceneI {
 	name:string
@@ -29,7 +31,7 @@ export function getRandomInt(max) {
 	return Math.floor(Math.random() * max);
 }
 
-export function displayDomObjects(scene:Phaser.Scene, page:PageGraphics) {
+export function displayDomObjects(scene:Phaser.Scene, page:PageInfo) {
 	if (page.bgColor)
 		scene.cameras.main.setBackgroundColor(page.bgColor)
 	for (const backgroundRect of page.backgroundRects) {

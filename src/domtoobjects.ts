@@ -29,7 +29,7 @@ type DomElementImage = {
  * doc:HTMLDocument,
  * world: World
  */
-export interface PageGraphics {
+export interface PageInfo {
 	pageImage: HTMLImageElement,
 	domElementsImages: DomElementImage[],
 	backgroundRects: BackGroundRect[],
@@ -44,7 +44,7 @@ let fooHeight = 0
 
 
 
-export async function domToObjects(imageURL: string, html: string, debugPageImage: HTMLImageElement, debugImage: HTMLImageElement, width: number, height: number): Promise<PageGraphics> {
+export async function domToObjects(imageURL: string, html: string, debugPageImage: HTMLImageElement, debugImage: HTMLImageElement, width: number, height: number): Promise<PageInfo> {
 	//scratchCanvas = canvas
 	log(`start ${imageURL}`)
 	const pageImage = debugPageImage || new Image()
@@ -57,7 +57,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	await imageLoaded
 	//logDomTree(doc.body, true)
 
-	const modInfo: PageGraphics = {
+	const modInfo: PageInfo = {
 		pageImage,
 		domElementsImages: [],
 		backgroundRects: [],
@@ -94,7 +94,7 @@ function getAttributes(node) {
  * @param modInfo -info used by prank modules
  * @param parentAdded - true if a dom ancestor added a sprite, otherwise false
  */
-async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageGraphics, parentAdded) {
+async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageInfo, parentAdded) {
 
 	const debugThis = true
 	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG', 'LI', 'TD', 'TH', 'BUTTON', 'INPUT', 'LABEL', 'LEGEND', 'SELECT', 'TEXTAREA', 'A'] //, 'IFRAME'
