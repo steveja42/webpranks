@@ -1,14 +1,8 @@
 import * as Phaser from 'phaser';
 import { PageInfo } from "./domtoobjects"
-import { center, displayDomObjects} from './modhelper'
+import { center, setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
-export enum CollisionCategory {
-	default = 1,
-	ground = 2,
-	domBackground = 4,
-	dom = 8,
-	movingDom = 16
-}
+
 
 export function setupWorld(parentElement: HTMLElement, width, height, background = ''): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
@@ -21,6 +15,10 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 			arcade: {
 				gravity: { y: 300 },
 				//debug: true
+			},
+			matter: {
+				debug: true,
+				gravity: { y: 0.5 }
 			}
 		},
 		scene: null,
@@ -35,7 +33,7 @@ let gs: PageScene
 let prevPage: PageInfo
 
 
-export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentScene:Phaser.Scene): Promise<PageInfo> {
+export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentScene: Phaser.Scene): Promise<PageInfo> {
 	if (prevPage) {
 		log(`textures: ${Object.keys(page.game.textures.list).length - 3}`)
 		if (currentScene)
@@ -94,7 +92,7 @@ export class PageScene extends Phaser.Scene {
 
 	public create() {
 		log('creating scene')
-		displayDomObjects(this, this.page)
+		setBackgroundAndCreateDomObjects(this, this.page)
 
 		this.square = this.add.rectangle(400, 400, 100, 100, 0xFFFFFF) as any;
 		this.physics.add.existing(this.square);

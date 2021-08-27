@@ -45,7 +45,7 @@ function PrankUI(props: any) {
   const [whichPrank, setWhichPrank] = useState(0)
   const [html, setHtml] = useState("")
   const [screenShot, setScreenshot] = useState("")
-  const [pageGraphics, setPageGraphics] = useState<PageInfo>(null)
+  const [pageInfo, setPageInfo] = useState<PageInfo>(null)
   const [showControls, setShowControls] = useState(true)
   const [isLoading, setLoading] = useState(false)
   const [showPopout, setShowPopout] = useState(false)
@@ -102,7 +102,7 @@ function PrankUI(props: any) {
   }, []);
 
   useEffect(() => {
-    if (pageGraphics && currentScene) {
+    if (pageInfo && currentScene) {
       if (pauseScene) {
         currentScene.scene.pause()
       }
@@ -143,18 +143,19 @@ function PrankUI(props: any) {
     try {
       event.preventDefault()
       //const [imageURL, html] = await getPage(targetUrl, windowWidth, windowHeight)
-      if (screenShot && pageGraphics) {
+      if (screenShot && pageInfo) {
         setShowControls(false)
         log(`running prank ${effectModules[whichPrank].title}`)
         //setPauseScene(true)
         if (currentScene)
           currentScene.scene.remove()
         import(`./pageEffects/${effectModules[whichPrank].fileName}`)
-          .then(module => setCurrentScene(module.doPageEffect(pageGraphics)))
+          .then(module => setCurrentScene(module.doPageEffect(pageInfo)))
           .catch(err => log(err.message))
       }
     } catch (error) {
       log(error.message)
+      setCurrentScene(null)
     }
   }
 
@@ -181,13 +182,13 @@ function PrankUI(props: any) {
           pageGraphics.game = game
           return resetAndLoadImagesForNewPageScene(pageGraphics, currentScene)
         }).then(pageGraphics => {
-          setPageGraphics(pageGraphics)
+          setPageInfo(pageGraphics)
           setCurrentScene(null)
         })
         .catch(error => {
           log(error.message)
           //urlUsed = ""
-          setPageGraphics(null)
+          setPageInfo(null)
         })
     }
   }
@@ -221,7 +222,7 @@ function PrankUI(props: any) {
             {prankList}
           </Form.Control>
         </Form.Group>
-        <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageGraphics)} >
+        <Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageInfo)} >
           {isLoading ? 'Loading…' : 'Prank It'}
           {isLoading && <Spinner animation="border" role="status " size="sm">
             <span className="sr-only">Loading...</span>
@@ -245,7 +246,7 @@ function PrankUI(props: any) {
       <Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
         <div>
           <p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
-          <Button onClick={e => logDomTree(pageGraphics.doc.body)} disabled={!pageGraphics?.doc?.body}>log dom</Button>
+          <Button onClick={e => logDomTree(pageInfo.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
         </div>
         <img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
         <img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />

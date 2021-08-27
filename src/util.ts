@@ -7,11 +7,12 @@ export function log(x: string | unknown): void {
 	let prepend = ``
 	const omitDate = false
 	if (!omitDate) {
-		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",","").replace("/20","/").replace(/\s([AP])/,"$1")
+		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",", "").replace("/20", "/").replace(/\s([AP])/, "$1")
 	}
 
-	if (x && typeof x === 'object')
-		x = JSON.stringify(x);
+	if (x && typeof x === 'object') {
+		x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
+	} 
 	console.log(`${prepend} ${getFunctionName()}: ${x}`);
 }
 
