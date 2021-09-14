@@ -11,9 +11,9 @@ import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { effectModules } from './pageEffects/modulelist'
 import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
+import { useParams, useHistory } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
-let urlUsed = ""
 let game: Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
@@ -25,11 +25,13 @@ const prankList = effectModules.map((effectModule, index) => <option key={index}
 
 export function PrankForm(props: any) {
 
-	const [targetUrl, setUrl] = useState(props.url)
+	const history = useHistory();
+	const params = useParams();
+	const [inputURL, setInputURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
 	const [showControls, setShowControls] = useState(true)
-	const [isLoading, setLoading] = useState(false)
+	const [isLoading, setLoading] = useState(null)
 	const [showPopout, setShowPopout] = useState(false)
 	const [toggleScenePause, setTogglePauseScene] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
@@ -41,17 +43,28 @@ export function PrankForm(props: any) {
 	const { x: xMouse, y: yMouse } = useMousePosition(window);
 	const protocol = 'http://'
 	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
-	
+
 	useEffect(() => {    /** effect run on component load */
+		log(`component load`)
 		game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 		// setShowPopout(true)
 		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
-		const handleUnload = (e: BeforeUnloadEvent) => {
-			console.log('window unloading')
-			setShowPopout(false)
-		}
+		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
+
 		window.addEventListener('beforeunload', handleUnload)
-		document.addEventListener("keydown", handleKeyDown, false);
+		document.addEventListener("keydown", handleKeyDown, false)
+		let loadingPromise
+		if (params.url) {
+			const url = decodeURIComponent(params.url)
+			setInputURL(url)
+			loadingPromise = loadPage(url)
+		}
+		let i
+		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
+			setWhichPrank(i)
+			if (params.url)
+				runPrank(i, loadingPromise)
+		}
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown, false);
@@ -70,66 +83,84 @@ export function PrankForm(props: any) {
 		}
 	}, [toggleScenePause])
 
+	//load webpage when url changes
+	function loadPage(url: string) {
+		const loadingPromise = network.getImageandHtml(url, windowWidth, windowHeight)
+			.then(result => {
+				setShowFailure("")
+				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight)
+			},
+				reason => {
+					log(`oh! an error occurred ${reason}`)
+					setShowFailure(`Unable to get web page at ${url}`)
+					setLoading(false)
+					throw new Error(reason)
+				}
+			)
+			.then(newPageInfo => {
+				newPageInfo.game = game
+				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
+			}).then(newPageInfo => {
+				setPageInfo(newPageInfo)
+				setLoading(null)
+				setCurrentScene(null)
+				return newPageInfo
+			})
+			.catch(error => {
+				log(error.message)
+				setPageInfo(null)
+			})
+		setLoading(loadingPromise)
+		return loadingPromise
+	}
+
 	useEffect(() => {
-		document.title = `Pranking: ${targetUrl} `;
-	}, [targetUrl]);
-	
-	const onSubmit = async (event: React.FormEvent) => {
+		document.title = `Pranking: ${inputURL} `;
+	}, [inputURL]);
+
+
+	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
 		try {
-			event.preventDefault()
-			if (pageInfo) {
+			let pi
+			if (loadingPromise)
+				pi = await loadingPromise
+			else
+				pi = pageInfo
+			if (pi) {
 				setShowControls(false)
-				log(`running prank ${effectModules[whichPrank].title}`)
+				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene)
 					currentScene.scene.remove()
-				import(`./pageEffects/${effectModules[whichPrank].fileName}`)
-					.then(module => setCurrentScene(module.doPageEffect(pageInfo)))
+				import(`./pageEffects/${effectModules[iPrank].fileName}`)
+					.then(module => setCurrentScene(module.doPageEffect(pi)))
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
 			log(error.message)
 			setCurrentScene(null)
 		}
+
+	}
+
+	const onSubmit = async (event: React.FormEvent) => {
+		event.preventDefault()
+		runPrank()
 	}
 
 	const onFocus = () => {
-		if (targetUrl.trim() === '') {
-			setUrl(protocol)
+		if (inputURL.trim() === '') {
+			setInputURL(protocol)
 		}
 	}
-	const onChange = (e:React.ChangeEvent<HTMLInputElement>) => {
-		setUrl(e.target.value)
+	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setInputURL(e.target.value)
 	}
 	const onBlur = () => {
-		if (targetUrl.trim() === protocol) {
-			setUrl('')
-		} else if (targetUrl.trim() !== "" && urlUsed !== targetUrl) {
-			urlUsed = targetUrl
-			setLoading(true)
-			network.getImageandHtml(targetUrl, windowWidth, windowHeight)
-				.then(result => {
-					setLoading(false)
-					setShowFailure("")
-					return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight)
-				},
-					reason => {
-						log(`oh! an error occurred ${reason}`)
-						setShowFailure(`Unable to get web page at ${targetUrl}`)
-						setLoading(false)
-						throw new Error(reason)
-					}
-				)
-				.then(newPageInfo => {
-					newPageInfo.game = game
-					return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
-				}).then(newPageInfo => {
-					setPageInfo(newPageInfo)
-					setCurrentScene(null)
-				})
-				.catch(error => {
-					log(error.message)
-					setPageInfo(null)
-				})
+		if (inputURL.trim() === protocol) {
+			setInputURL('')
+		} else if (inputURL.trim() !== "") {
+			loadPage(inputURL)
+			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
 		}
 	}
 
@@ -142,7 +173,7 @@ export function PrankForm(props: any) {
 				</Alert>
 				<Form.Group controlId="url">
 					<Form.Label>Choose a website</Form.Label>
-					<Form.Control name="targetUrl" type="url" value={targetUrl} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={onChange} placeholder="Enter a URL" required />
+					<Form.Control name="targetUrl" type="url" value={inputURL} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={onChange} placeholder="Enter a URL" required />
 				</Form.Group>
 				<Form.Group controlId="prank">
 					<Form.Label>Choose a prank</Form.Label>
@@ -150,8 +181,10 @@ export function PrankForm(props: any) {
 						as="select"
 						value={whichPrank}
 						onChange={e => {
-							console.log("e.target.value", e.target.value);
-							setWhichPrank(parseInt(e.target.value))
+							const x = parseInt(e.target.value)
+							setWhichPrank(x)
+							history.push(`/${x}/${encodeURIComponent(inputURL)}`)
+
 						}}
 					>
 						{prankList}
