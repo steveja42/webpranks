@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
-import { log } from './util'
+import { log, keyBoardHandler } from './util'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -8,35 +8,14 @@ import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
 import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
-//import * as allfalldown from './pageEffects/birthday'
 import { logDomTree } from './dom'
 import { effectModules } from './pageEffects/modulelist'
 import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
 
-let prevKey = ""
+network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 let urlUsed = ""
 let game: Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
-
-const initialState = {
-	game: undefined as Phaser.Game
-}
-
-function reducer(state, action) {
-	switch (action.type) {
-		case 'startup':
-			network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
-			return { game: undefined }
-
-		case 'foo':
-			return { game: undefined }
-		default:
-			throw new Error();
-	}
-}
-
-
-
 
 /**
  * Calls server to get the page at URL,
@@ -45,8 +24,6 @@ function reducer(state, action) {
  */
 
 export function PrankForm(props: any) {
-
-	//const [state, dispatch] = useReducer(reducer, initialState);
 
 	const [targetUrl, setUrl] = useState(props.url)
 	const [whichPrank, setWhichPrank] = useState(0)
@@ -62,39 +39,13 @@ export function PrankForm(props: any) {
 	const debugImage = useRef(null)
 	const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 	const { x: xMouse, y: yMouse } = useMousePosition(window);
-
-	/** effect run on component load */
-	useEffect(() => {
-		network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
+	const protocol = 'http://'
+	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
+	
+	useEffect(() => {    /** effect run on component load */
 		game = setupWorld(phaserParent.current, windowWidth, windowHeight)
-		//dispatch({type: 'startup', payload:phaserParent.current})
 		// setShowPopout(true)
-
-		/**
-		 * keydown handler that:
-		 *    opens popout debugging info window if Ctrl or Alt + "42" is pressed. 
-		 *    toggles display of controls if "Esc" is pressed
-		 * @param event 
-		 */
-		const handleKeyDown = (event: KeyboardEvent) => {
-			const key = event.key
-			//log(`${key} ${event.altKey} ${event.ctrlKey} ${prevKey}`)
-			if (key === "Alt" || key === "Control")
-				return
-			if (key === "Escape") {   //esc key
-				setTogglePauseScene(prev => !prev)
-			}
-			else if (key === " " && event.ctrlKey) {
-				setShowControls(prev => { return !prev })
-			}
-			else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")
-				setShowPopout(true)
-			else
-				if (event.altKey || event.ctrlKey)
-					prevKey = key
-
-		}
-
+		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
 		const handleUnload = (e: BeforeUnloadEvent) => {
 			console.log('window unloading')
 			setShowPopout(false)
@@ -116,18 +67,19 @@ export function PrankForm(props: any) {
 			else {
 				currentScene.scene.pause()
 			}
-
 		}
 	}, [toggleScenePause])
 
+	useEffect(() => {
+		document.title = `Pranking: ${targetUrl} `;
+	}, [targetUrl]);
+	
 	const onSubmit = async (event: React.FormEvent) => {
 		try {
 			event.preventDefault()
-			//const [imageURL, html] = await getPage(targetUrl, windowWidth, windowHeight)
 			if (pageInfo) {
 				setShowControls(false)
 				log(`running prank ${effectModules[whichPrank].title}`)
-				//setPauseScene(true)
 				if (currentScene)
 					currentScene.scene.remove()
 				import(`./pageEffects/${effectModules[whichPrank].fileName}`)
@@ -140,18 +92,12 @@ export function PrankForm(props: any) {
 		}
 	}
 
-	useEffect(() => {
-		document.title = `Pranking: ${targetUrl} `;
-	}, [targetUrl]);
-
-	const protocol = 'http://'
-
 	const onFocus = () => {
 		if (targetUrl.trim() === '') {
 			setUrl(protocol)
 		}
 	}
-	const onChange = (e) => {
+	const onChange = (e:React.ChangeEvent<HTMLInputElement>) => {
 		setUrl(e.target.value)
 	}
 	const onBlur = () => {
@@ -187,13 +133,8 @@ export function PrankForm(props: any) {
 		}
 	}
 
-	//const handleChange=(e: React.ChangeEvent<HTMLInputElement>) => setUrl(url) 
-	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
-	//worldX+= window.scrollX
-	//worldY+= window.scrollY  
-
 	return <div id="foo">
-		{getPopout()}
+		{showPopout ? getPopout() : null}
 		{showControls ? <div id="togglediv">
 			<Form onSubmit={onSubmit} className="myform" >
 				<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
@@ -222,19 +163,14 @@ export function PrankForm(props: any) {
 						<span className="sr-only">Loading...</span>
 					</Spinner>}
 				</Button>
-
-
 			</Form>
 			{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
 		</div> : null}
 		<div className="game" ref={phaserParent} />
 	</div>
 
-	/** This returns the HTML for the popout, or null if the popout isn't visible */
+	/** This returns the HTML for the popout*/
 	function getPopout() {
-		if (!showPopout) {
-			return null;
-		}
 
 		return (
 			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
@@ -244,9 +180,9 @@ export function PrankForm(props: any) {
 				</div>
 				<img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
 				<img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />
-
 			</Popout>
 		);
 	}
 }
- //src={screenShot}
+
+
