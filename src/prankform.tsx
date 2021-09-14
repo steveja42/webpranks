@@ -50,8 +50,6 @@ export function PrankForm(props: any) {
 
 	const [targetUrl, setUrl] = useState(props.url)
 	const [whichPrank, setWhichPrank] = useState(0)
-	const [html, setHtml] = useState("")
-	const [screenShot, setScreenshot] = useState("")
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
 	const [showControls, setShowControls] = useState(true)
 	const [isLoading, setLoading] = useState(false)
@@ -86,8 +84,8 @@ export function PrankForm(props: any) {
 			if (key === "Escape") {   //esc key
 				setTogglePauseScene(prev => !prev)
 			}
-			else if (key === " " && event.ctrlKey ){
-				setShowControls(prev =>{return !prev})
+			else if (key === " " && event.ctrlKey) {
+				setShowControls(prev => { return !prev })
 			}
 			else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")
 				setShowPopout(true)
@@ -118,43 +116,15 @@ export function PrankForm(props: any) {
 			else {
 				currentScene.scene.pause()
 			}
-			
+
 		}
 	}, [toggleScenePause])
-
-	/**
-	 * getPage gets the screenshot and html of page at targetUrl
-	 * @param url 
-	 * @param windowWidth 
-	 * @param windowHeight 
-	 */
-	async function getPageScreenshotAndHTML(url: string, windowWidth: number, windowHeight: number): Promise<[string, string]> {
-		try {
-			log(`start ${url} `)
-			setLoading(true)
-			const [imageURL, html] = await network.getImageandHtml(url, windowWidth, windowHeight)
-			setLoading(false)
-			setScreenshot(imageURL)
-			setHtml(html)
-			log(`done ${url} `)
-			return [imageURL, html]
-		}
-		catch (error) {
-			log(`yo! an error occurred ${error}`)
-			setShowFailure(`Unable to get web page at ${url}`)
-			setLoading(false)
-			setScreenshot("")
-			setHtml("")
-			//return [null, null]
-			throw (error)
-		}
-	}
 
 	const onSubmit = async (event: React.FormEvent) => {
 		try {
 			event.preventDefault()
 			//const [imageURL, html] = await getPage(targetUrl, windowWidth, windowHeight)
-			if (screenShot && pageInfo) {
+			if (pageInfo) {
 				setShowControls(false)
 				log(`running prank ${effectModules[whichPrank].title}`)
 				//setPauseScene(true)
@@ -189,19 +159,29 @@ export function PrankForm(props: any) {
 			setUrl('')
 		} else if (targetUrl.trim() !== "" && urlUsed !== targetUrl) {
 			urlUsed = targetUrl
-			getPageScreenshotAndHTML(targetUrl, windowWidth, windowHeight)
-				.then(result => domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight))
-				.then(pageGraphics => {
+			setLoading(true)
+			network.getImageandHtml(targetUrl, windowWidth, windowHeight)
+				.then(result => {
+					setLoading(false)
 					setShowFailure("")
-					pageGraphics.game = game
-					return resetAndLoadImagesForNewPageScene(pageGraphics, currentScene)
-				}).then(pageGraphics => {
-					setPageInfo(pageGraphics)
+					return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight)
+				},
+					reason => {
+						log(`oh! an error occurred ${reason}`)
+						setShowFailure(`Unable to get web page at ${targetUrl}`)
+						setLoading(false)
+						throw new Error(reason)
+					}
+				)
+				.then(newPageInfo => {
+					newPageInfo.game = game
+					return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
+				}).then(newPageInfo => {
+					setPageInfo(newPageInfo)
 					setCurrentScene(null)
 				})
 				.catch(error => {
 					log(error.message)
-					//urlUsed = ""
 					setPageInfo(null)
 				})
 		}
@@ -236,7 +216,7 @@ export function PrankForm(props: any) {
 						{prankList}
 					</Form.Control>
 				</Form.Group>
-				<Button type="submit" value="Submit" disabled={isLoading || !(screenShot && pageInfo)} >
+				<Button type="submit" value="Submit" disabled={isLoading || !pageInfo} >
 					{isLoading ? 'Loading…' : 'Prank It'}
 					{isLoading && <Spinner animation="border" role="status " size="sm">
 						<span className="sr-only">Loading...</span>
