@@ -127,12 +127,11 @@ export function PrankForm(props: any) {
 			else
 				pi = pageInfo
 			if (pi) {
-				setShowControls(false)
 				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene)
 					currentScene.scene.remove()
-				import(`./pageEffects/${effectModules[iPrank].fileName}`)
-					.then(module => setCurrentScene(module.doPageEffect(pi)))
+				import(/*  webpackMode: "eager" */ `./pageEffects/${effectModules[iPrank].fileName}`)    
+				.then(module => {setShowControls(false); return setCurrentScene(module.doPageEffect(pi))}) 
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
