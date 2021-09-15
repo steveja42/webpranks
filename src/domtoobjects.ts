@@ -2,7 +2,7 @@ import { log } from './util'
 import { Engine, Render, Bodies, World, Body, Runner } from "matter-js"
 import { walkDom2, logDomTree, nodeTypes } from './dom'
 import { allowMouseToMoveWorldObjects } from './phaseri'
-import {CollisionCategory} from './modhelper'
+import { CollisionCategory } from './modhelper'
 import * as Phaser from 'phaser';
 
 
@@ -64,8 +64,8 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 		backgroundRects: [],
 		debugImage,
 		doc,
-		bgColor:undefined,
-		game:undefined
+		bgColor: undefined,
+		game: undefined
 	}
 	await walkDom2(doc.body, domNodeToObjects, 0, modInfo)
 
@@ -97,7 +97,7 @@ function getAttributes(node) {
  */
 async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageInfo, parentAdded) {
 
-	const debugThis = true
+	const debugThis = false
 	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG', 'LI', 'TD', 'TH', 'BUTTON', 'INPUT', 'LABEL', 'LEGEND', 'SELECT', 'TEXTAREA', 'A'] //, 'IFRAME'
 	const isTextNode = node.nodeType === nodeTypes.text
 	//The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
@@ -154,7 +154,8 @@ async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageI
 				category: CollisionCategory.domBackground
 			}
 		}
-		log(`adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+		if (debugThis)
+			log(`adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 		const color = Phaser.Display.Color.RGBStringToColor(bgColor).color
 		if (node.nodeName === 'BODY')
 			modInfo.bgColor = color
@@ -168,7 +169,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageI
 	if (isTextNode || spriteAbleElements.includes(node.nodeName)) {
 		const imageURL = getImagePortion(modInfo.pageImage, boundingRect)
 		if (debugThis) {
-			log(`adding ${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0,30)}"`)
+			log(`adding ${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 			if (modInfo.debugImage) {
 				const imageLoaded = loadImage(modInfo.debugImage, imageURL)
 				await imageLoaded

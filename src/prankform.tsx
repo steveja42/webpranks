@@ -130,7 +130,28 @@ export function PrankForm(props: any) {
 				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene)
 					currentScene.scene.remove()
-				import(/*webpackIgnore: true*/ `./pageEffects/${effectModules[iPrank].fileName}`)   
+				// eslint-disable-next-line no-debugger
+				debugger ; log ("oh fuck");
+				try {log ( await import(/*webpackIgnore: true*/ `./pageEffects/${effectModules[iPrank].fileName}`)   ) } catch (error) {log(error.message)}
+				
+				log ("oh fuck1");
+				try {log ( await import(/*webpackIgnore: true*/ `./pageEffects/${effectModules[iPrank].fileName}.js`)   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck2");
+				try {log ( await import(/*webpackMode: "eager"*/ `./pageEffects/${effectModules[iPrank].fileName}.js`)   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck3");
+				try {log ( await import( `./pageEffects/${effectModules[iPrank].fileName}.js`)   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck4");
+				try {log ( await import(/*webpackIgnore: true*/ './pageEffects/allfalldown')   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck5");
+				try {log ( await import(/*webpackMode: "eager" */ './pageEffects/allfalldown')   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck6");
+				try {log ( await import('./pageEffects/allfalldown')   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck7");
+				try {log ( await import(/*webpackMode: "eager" */ './pageEffects/' + effectModules[iPrank].fileName)   ) ; } catch (error) {log(error.message)}
+				log ("oh fuck8");
+				try {log ( await import('./pageEffects/'  + effectModules[iPrank].fileName)   ) ; 	} catch (error) {log(error.message)}
+				log ("oh fuck9");
+				import('./pageEffects/allfalldown')   
 				.then(module => {setShowControls(false); return setCurrentScene(module.doPageEffect(pi))}) 
 					.catch(err => log(err.message))
 			}
