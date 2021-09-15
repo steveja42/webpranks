@@ -16,6 +16,7 @@ import { useParams, useHistory } from "react-router-dom";
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 let game: Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
+let prevUrl
 
 /**
  * Calls server to get the page at URL,
@@ -57,6 +58,7 @@ export function PrankForm(props: any) {
 		if (params.url) {
 			const url = decodeURIComponent(params.url)
 			setInputURL(url)
+			prevUrl = url
 			loadingPromise = loadPage(url)
 		}
 		let i
@@ -131,8 +133,8 @@ export function PrankForm(props: any) {
 				if (currentScene)
 					currentScene.scene.remove()
 
-				import('./pageEffects/'  + effectModules[iPrank].fileName) 
-				.then(module => {setShowControls(false); return setCurrentScene(module.doPageEffect(pi))}) 
+				import('./pageEffects/' + effectModules[iPrank].fileName)
+					.then(module => { setShowControls(false); return setCurrentScene(module.doPageEffect(pi)) })
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
@@ -159,10 +161,14 @@ export function PrankForm(props: any) {
 		if (inputURL.trim() === protocol) {
 			setInputURL('')
 		} else if (inputURL.trim() !== "") {
-			loadPage(inputURL)
-			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
+			if (inputURL !== prevUrl) {
+				prevUrl = inputURL
+				loadPage(inputURL)
+				history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
+			}
 		}
 	}
+
 
 	return <div id="foo">
 		{showPopout ? getPopout() : null}
