@@ -5,13 +5,14 @@ body {
   overflow: hidden;
 }
 
-.myform *, input[type="url"], input[type="url"]:autofill, input[type="url"]:-webkit-autofill,
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus
-input:-webkit-autofill
-{
-  color: chocolate;
+@keyframes AutoFillStart {
+}
+
+@keyframes AutoFillCancel {
+}
+
+input:-webkit-autofill {
+  animation-name: AutoFillStart;
 }
 
 .btn-primary, .btn-primary:focus, .btn-primary:active,  .btn-primary:hover,  .btn-primary.disabled, .btn-primary:disabled {

@@ -10,9 +10,9 @@ export function log(x: string | unknown): void {
 		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",", "").replace("/20", "/").replace(/\s([AP])/, "$1")
 	}
 
-	if (x && typeof x === 'object') {
+/*	if (x && typeof x === 'object') {
 		x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
-	} 
+	} */
 	console.log(`${prepend} ${getFunctionName()}: ${x}`);
 }
 
@@ -54,8 +54,9 @@ export function keyBoardHandler(setTogglePauseScene, setShowControls, setShowPop
 		if (key === "Escape") {   //esc key
 			setTogglePauseScene(prev => !prev)
 		}
-		else if (key === " " && event.ctrlKey) {
+		else if (key === "Backspace" || key === "Cancel" || (key === " " && event.ctrlKey)) {
 			setShowControls(prev => { return !prev })
+			return false
 		}
 		else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")
 			setShowPopout(true)

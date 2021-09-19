@@ -35,17 +35,17 @@ export class PageScene extends Phaser.Scene {
 	public create() {
 		log('creating scene')
 		const { backgroundRectangles, domArcadeElementImages:domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
-		const rects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
+		const rectsWithPhysics: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
 		// add the images for web page elements to the scene as game objects 
 		domElementImages.forEach((img) => {
 			img.body.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)).setCollideWorldBounds(true).setAllowGravity(false)
 			this.domImages.push(img)
 		})
 		backgroundRectangles.forEach((rect) => {
-			rects.push (this.physics.add.existing(rect) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody )
+			rectsWithPhysics.push (this.physics.add.existing(rect) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody )
 		})
 
-		this.bodiesToDo = [...this.domImages, ...rects]
+		this.bodiesToDo = [...domElementImages, ...rectsWithPhysics]
 	}
 
 	public update(time: number, delta: number) {

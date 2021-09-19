@@ -68,10 +68,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 		game: undefined
 	}
 	await walkDom2(doc.body, domNodeToObjects, 0, modInfo)
-
-
-	log(`done ${imageURL} ${modInfo.domElementsImages.length} bodies added ${modInfo.backgroundRects.length} backgrounds objects set`)
-	allowMouseToMoveWorldObjects(modInfo)
+	log(`done ${imageURL} ${modInfo.domElementsImages.length} dom elements and ${modInfo.backgroundRects.length} background objects added`)
 	return modInfo
 }
 

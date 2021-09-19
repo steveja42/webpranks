@@ -11,7 +11,7 @@ import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { effectModules } from './pageEffects/modulelist'
 import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 let game: Phaser.Game
@@ -26,6 +26,7 @@ let prevUrl
 
 export function PrankForm(props: any) {
 
+	const location = useLocation();
 	const history = useHistory();
 	const params = useParams();
 	const [inputURL, setInputURL] = useState("")
@@ -73,6 +74,10 @@ export function PrankForm(props: any) {
 			window.removeEventListener('beforeunload', handleUnload);
 		};
 	}, []);
+	useEffect(() => {
+		log(`path changed: ${location.pathname}`);
+		//ga.send(["pageview", location.pathname]);
+	}, [location]);
 
 	useEffect(() => {
 		if (currentScene) {
@@ -157,18 +162,28 @@ export function PrankForm(props: any) {
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setInputURL(e.target.value)
 	}
+
+	function onURLInput() {
+		if (inputURL !== prevUrl) {
+			prevUrl = inputURL
+			loadPage(inputURL)
+			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
+		}
+	}
+
 	const onBlur = () => {
 		if (inputURL.trim() === protocol) {
 			setInputURL('')
 		} else if (inputURL.trim() !== "") {
-			if (inputURL !== prevUrl) {
-				prevUrl = inputURL
-				loadPage(inputURL)
-				history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
-			}
+			onURLInput()
 		}
 	}
 
+	const onAnimationStart = (animEvent) => {
+		log(`anim start ${animEvent.animationName}`)
+		if (animEvent.animationName === 'AutoFillStart')
+			onURLInput()
+	}
 
 	return <div id="foo">
 		{showPopout ? getPopout() : null}
@@ -179,7 +194,7 @@ export function PrankForm(props: any) {
 				</Alert>
 				<Form.Group controlId="url">
 					<Form.Label>Choose a website</Form.Label>
-					<Form.Control name="targetUrl" type="url" value={inputURL} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={onChange} placeholder="Enter a URL" required />
+					<Form.Control name="targetUrl" type="url" value={inputURL} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a URL" required />
 				</Form.Group>
 				<Form.Group controlId="prank">
 					<Form.Label>Choose a prank</Form.Label>
