@@ -12,10 +12,14 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	key: `PageScene`
 };
 
+type GameObjectwithArcadeBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
+	body: Phaser.Physics.Arcade.Body
+};
+
 export class PageScene extends Phaser.Scene {
 	backgroundRects: Phaser.GameObjects.Rectangle[] = []
 	domImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
-	bodiesToDo: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
+	bodiesToDo: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
 	removeDelta = 500
 	deltaElapsed = 0
 
@@ -31,15 +35,17 @@ export class PageScene extends Phaser.Scene {
 	public create() {
 		log('creating scene')
 		const { backgroundRectangles, domArcadeElementImages:domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
-
+		const rects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
 		// add the images for web page elements to the scene as game objects 
 		domElementImages.forEach((img) => {
 			img.body.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)).setCollideWorldBounds(true).setAllowGravity(false)
 			this.domImages.push(img)
 		})
+		backgroundRectangles.forEach((rect) => {
+			rects.push (this.physics.add.existing(rect) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody )
+		})
 
-
-		this.bodiesToDo = [...this.domImages]
+		this.bodiesToDo = [...this.domImages, ...rects]
 	}
 
 	public update(time: number, delta: number) {
@@ -49,7 +55,7 @@ export class PageScene extends Phaser.Scene {
 			this.deltaElapsed = 0
 			const i = getRandomInt(this.bodiesToDo.length)
 			log(`moving body ${i}`)
-			this.bodiesToDo[i].setVelocity(0, 500).setDamping(false).setDragY(500).body.setAllowGravity(true)
+			this.bodiesToDo[i].body.setVelocity(0, 500).setDamping(false).setDragY(500).setAllowGravity(true)
 			this.bodiesToDo.splice(i, 1)
 		}
 
