@@ -137,7 +137,7 @@ export function PrankForm(props: any) {
 				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene)
 					currentScene.scene.remove()
-
+				//phaserParent.current.focus()
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => { setShowControls(false); return setCurrentScene(module.doPageEffect(pi)) })
 					.catch(err => log(err.message))
@@ -164,22 +164,29 @@ export function PrankForm(props: any) {
 	}
 
 	function onURLInput() {
+		if ((inputURL.trim() === protocol) || (inputURL.trim() === ""))
+			return
 		if (inputURL !== prevUrl) {
 			prevUrl = inputURL
 			loadPage(inputURL)
 			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
 		}
 	}
-
+	const onKeyDown = (e:React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' ) 
+			e.preventDefault();
+			if (e.key === "Backspace")
+				e.stopPropagation()
+	}
 	const onBlur = () => {
 		if (inputURL.trim() === protocol) {
 			setInputURL('')
-		} else if (inputURL.trim() !== "") {
+		} else {
 			onURLInput()
 		}
 	}
 
-	const onAnimationStart = (animEvent) => {
+	const onAnimationStart = (animEvent:React.AnimationEvent<HTMLInputElement>) => {
 		log(`anim start ${animEvent.animationName}`)
 		if (animEvent.animationName === 'AutoFillStart')
 			onURLInput()
@@ -188,13 +195,15 @@ export function PrankForm(props: any) {
 	return <div id="foo">
 		{showPopout ? getPopout() : null}
 		{showControls ? <div id="togglediv">
+		
 			<Form onSubmit={onSubmit} className="myform" >
+
 				<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
 					<Alert.Heading>Error. {showFailure}</Alert.Heading>
 				</Alert>
 				<Form.Group controlId="url">
 					<Form.Label>Choose a website</Form.Label>
-					<Form.Control name="targetUrl" type="url" value={inputURL} autoFocus onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a URL" required />
+					<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a URL" required />
 				</Form.Group>
 				<Form.Group controlId="prank">
 					<Form.Label>Choose a prank</Form.Label>

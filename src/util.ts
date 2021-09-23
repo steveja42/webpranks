@@ -10,9 +10,9 @@ export function log(x: string | unknown): void {
 		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",", "").replace("/20", "/").replace(/\s([AP])/, "$1")
 	}
 
-/*	if (x && typeof x === 'object') {
-		x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
-	} */
+	/*	if (x && typeof x === 'object') {
+			x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
+		} */
 	console.log(`${prepend} ${getFunctionName()}: ${x}`);
 }
 
@@ -46,7 +46,7 @@ export function keyBoardHandler(setTogglePauseScene, setShowControls, setShowPop
 	 */
 	let prevKey = ""
 
-	return function handleKeyDown (event: KeyboardEvent){
+	return function handleKeyDown(event: KeyboardEvent) {
 		const key = event.key
 		//log(`${key} ${event.altKey} ${event.ctrlKey} ${prevKey}`)
 		if (key === "Alt" || key === "Control")

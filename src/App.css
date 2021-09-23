@@ -1,21 +1,74 @@
-
-
 body {
   margin: 0;
   overflow: hidden;
 }
 
-@keyframes AutoFillStart {
+.fubr:-webkit-autofill {
+  animation: gack 1s infinite;
 }
 
-@keyframes AutoFillCancel {
+.fubr {
+  background-color: greenyellow;
+  height: 90px;
+  width: 90px;
+  left: 0px;
+  top: 0px;
+  position: absolute;
 }
+
+@keyframes sampleanimation {
+  0% {
+    left: 0px;
+    top: 0px;
+  }
+  25% {
+    left: 300px;
+    top: 0px;
+  }
+  50% {
+    left: 300px;
+    top: 150px;
+  }
+  75% {
+    left: 0px;
+    top: 150px;
+  }
+}
+
+@keyframes gack {
+  from {
+    background-color: purple(0%);
+  }
+  to {
+    background-color: red(100%);
+  }
+}
+
+@keyframes AutoFillStart {
+  from {
+    background-color: purple(0%);
+  }
+  to {
+    background-color: red(100%);
+  }
+}
+@keyframes fooAutoFillStart {
+  from {
+    background-color: purple(0%);
+  }
+  to {
+    background-color: red(100%);
+  }
+}
+
+@keyframes AutoFillCancel {}
 
 input:-webkit-autofill {
-  animation-name: AutoFillStart;
+  animation: AutoFillStart 1s;
+    transition: background-color 50000s ease-in-out 0s;
 }
 
-.btn-primary, .btn-primary:focus, .btn-primary:active,  .btn-primary:hover,  .btn-primary.disabled, .btn-primary:disabled {
+.btn-primary, .btn-primary:focus, .btn-primary:active, .btn-primary:hover, .btn-primary.disabled, .btn-primary:disabled {
   color: cornsilk;
   background-color: chocolate;
   border-color: chocolate;
@@ -29,29 +82,33 @@ body {
 input[type="url"]::placeholder {
   color: chocolate;
 }
-.form-control:not(active){
+
+.form-control:not(active) {
   color: chocolate;
 }
 
-.form-control:focus{
-  color:chocolate;
+.form-control:focus {
+  color: chocolate;
 }
 
-.myform > * {
+.myform>* {
   display: inline-block;
   margin-bottom: 1rem;
 }
 
-.myform > *:not(:first-child) {
+.myform>*:not(:first-child) {
   margin-left: .5em;
 }
-.myform > input, .myform .form-group{
+
+.myform>input, .myform .form-group {
   width: 25%;
   min-width: 25em;
 }
+
 .world {
   display: block;
 }
+
 .unused {
   width: 80%;
 }
