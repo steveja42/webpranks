@@ -5,7 +5,7 @@ export function doPageEffect(page: PageInfo) {
 	page.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene
 }
-
+//mdn Object.keys;
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	active: true,
 	visible: true,
@@ -23,17 +23,19 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 type GameObjectwithMatterBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
 	body: MatterJS.BodyType
 };
-
+let cursors
 
 export class PageScene extends Phaser.Scene {
 	backgroundRects: GameObjectwithMatterBody[] = []
 	domImages: Phaser.Physics.Matter.Image[] = []
 	deltaElapsed = 0
 	lastTime = 0
+	lastInitialMovement = 0
 	fulcrum: GameObjectwithMatterBody
 	wreckingBall: GameObjectwithMatterBody
 	chain: GameObjectwithMatterBody[] = []
-
+	initY = 0
+	distanceMoved = 0
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
 		log('constructing scene')
@@ -46,22 +48,29 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public async create() {
+		const domDensity = .1
+		const domRestitution = 0
 		log('creating scene')
 		const { width, height } = this.sys.game.canvas
-		//this.matter.world.setBounds(0, 0, width, height);
+		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
-		const { backgroundRectangles, domMatterElementImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
+		cursors = this.input.keyboard.createCursorKeys();
+
+		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 
 		backgroundRectangles.forEach(rect => {
 			this.backgroundRects.push(this.matter.add.gameObject(rect, {
-				ignoreGravity: true, collisionFilter: {
+				ignoreGravity: true, density: domDensity, restitution: domRestitution, collisionFilter: {
 					group: CollisonGroup.Dom,
 					mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
 					category: CollisionCategory.dom
 				}
 			}) as GameObjectwithMatterBody)
 		});
-
+		domElementImages.forEach(di => {
+			di.setDensity(domDensity)
+			di.setBounce(domRestitution)
+		})
 		this.domImages = domElementImages
 
 		const groundHeight = 10
@@ -78,26 +87,29 @@ export class PageScene extends Phaser.Scene {
 		});
 
 		//await ms(2000)
-
-		let x = width / 2
-		const y = 10
-		const MetalDensity = .1
+		const yNudge = 20
 		const wreckingballRadius = width / 18
+		let x = width / 2
+		const y = - wreckingballRadius
+		this.initY = y
+		const MetalDensity = 5
 		const fulcrumRadius = 10
 		const chainlinkRadius = 16
+		const numLinks = 8
+		const chainLength = fulcrumRadius + wreckingballRadius + ((chainlinkRadius * numLinks) * 2)
 
 		this.fulcrum = this.matter.add.gameObject(this.add.rectangle(x, y, fulcrumRadius * 2, fulcrumRadius * 2, 0x000000), {
 			isStatic: true, density: 0.04, frictionAir: 0.005, ignoreGravity: true, render: { fillColor: 0xfff },
 			collisionFilter: {
-				group: 2,
-				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom | CollisionCategory.domBackground,
-				category: CollisionCategory.default
+				group: CollisonGroup.Dom,
+				mask: CollisionCategory.ground,
+				category: CollisionCategory.none
 			}
 		}) as GameObjectwithMatterBody
 		this.chain.push(this.fulcrum)
 		let prevRadius = fulcrumRadius
 		let prev = this.fulcrum.body
-		for (let i = 0; i < 6; i++) {
+		for (let i = 0; i < numLinks; i++) {
 			x -= prevRadius + chainlinkRadius
 			const chainLink = this.matter.add.image(x, y, 'chainlink', null, {
 				density: MetalDensity, collisionFilter: {
@@ -113,7 +125,7 @@ export class PageScene extends Phaser.Scene {
 		x -= prevRadius + wreckingballRadius
 
 		this.wreckingBall = this.matter.add.gameObject(this.add.circle(x, y, wreckingballRadius, 0x000000), {
-			density: MetalDensity, friction: 0, frictionAir: 0, render: { fillColor: 0x000000 },
+			density: MetalDensity, restitution: domRestitution, friction: 0, frictionAir: 0, render: { fillColor: 0x000000 },
 			collisionFilter: {
 				group: 2,
 				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom | CollisionCategory.domBackground,
@@ -123,28 +135,91 @@ export class PageScene extends Phaser.Scene {
 
 		const con = this.matter.add.constraint(prev, this.wreckingBall.body, undefined, 1)//,40,.4) wreckingballWidth / 2 + 16
 		this.chain.push(this.wreckingBall)
-
+		this.wreckingBall.body.onCollideCallback = this.onCollide
+		/*		const targetAngle = 30
+				const startAngle = Phaser.Math.DegToRad(targetAngle)
+				const y1 = chainLength * Math.sin(startAngle)
+				const x1 = chainLength * Math.cos(startAngle)
+				this.wreckingBall.setPosition(width / 2 - x1, y - y1)
+				const force = 11510
+				const forceAngle = Phaser.Math.DegToRad(0)
+			//	this.matter.applyForce(this.wreckingBall.body, {x: Math.cos(startAngle) * force, y: Math.sin(startAngle) * force }) // .setVelocity(this.wreckingBall.body, -5,10)
+			*/
+		this.matter.world.engine.timing.timeScale = .6
+	}
+	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
+		//log(`collided with ${data.bodyA.id}`) //${data.bodyA.body.id}
 	}
 
 	public update(time: number, delta: number) {
 		this.deltaElapsed += delta
+
+		this.adjustChainLinksAngle()
+		this.allowCursorMovement(this.fulcrum)
+		if (this.deltaElapsed < 2000)
+			this.initialMovement(1000, this.wreckingBall.width / 2 + 10, this.fulcrum)
+		if (this.deltaElapsed > 5000)
+			this.matter.world.engine.timing.timeScale = 1
+
+	}
+
+	initialMovement(duration, totalDistance, player) {
+		const timeIncrement = 200
+		if (this.distanceMoved < totalDistance && this.deltaElapsed - this.lastInitialMovement > timeIncrement) {
+			const distance = totalDistance / (duration / timeIncrement)
+			this.distanceMoved += distance
+			player.setPosition(player.x, player.y + distance)
+			this.lastInitialMovement = this.deltaElapsed
+		}
+	}
+
+	keepBallMovingFast() {
+		const ballAngle = Phaser.Math.RadToDeg(this.wreckingBall.body.angle)
+		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
+		if (this.deltaElapsed - this.lastTime > 100) {
+			this.lastTime = this.deltaElapsed
+			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
+		}
+		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
+			this.matter.setVelocityX(this.wreckingBall.body, 10)  //applyForce(this.wreckingBall.body,{x:9, y:0})
+			log("woosh")
+		}
+	}
+	adjustChainLinksAngle() {
 		if (this.chain.length) {
-			for (let i = 1; i < this.chain.length - 1; i++) {
+			for (let i = 1; i < this.chain.length; i++) {
 				let angle = Phaser.Math.Angle.BetweenPoints(this.chain[i - 1].body.position, this.chain[i].body.position)
 				angle = Phaser.Math.RadToDeg(angle) - 90
 				this.chain[i].setAngle(angle)
 			}
 		}
-		if (this.deltaElapsed - this.lastTime > 500) {
-			this.lastTime = this.deltaElapsed
-			log(this.wreckingBall.body.velocity)
-			log(`${Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)} `)
+	}
+	allowCursorMovement(player) {
+		const increment = 5
+		if (cursors.left.isDown) {
+			player.setPosition(player.x - increment, player.y);
 		}
-		if (Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y) < 2) {
-			this.matter.applyForceFromAngle(this.wreckingBall.body, 4)
-			log("woosh")
+		else if (cursors.right.isDown) {
+			player.setPosition(player.x + increment, player.y);
 		}
+		else {
+			player.setVelocityX(0);
+		}
+		if (cursors.up.isDown) {
+			player.setPosition(player.x, player.y - increment);
+		}
+		else if (cursors.down.isDown) {
+			player.setPosition(player.x, player.y + increment);
+		}
+		else {
+			player.setVelocityY(0);
+		}
+
 	}
 
+
+
 }
+
+
 
