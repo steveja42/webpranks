@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { log } from './util'
 
 interface Props {
     title: string;                          // The title of the popout window
@@ -16,6 +17,7 @@ interface State {
 export default class Popout extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
+        log("----------------------")
         this.state = {
             externalWindow: null,
             containerElement: null
@@ -24,6 +26,7 @@ export default class Popout extends React.Component<Props, State> {
 
     // When we create this component, open a new window
     public componentDidMount() {
+        log("----------------------")
         const features = `width=${this.props.width || 800}, height=${this.props.height || 500}, left=300, top=200`;
         const externalWindow = window.open('', '', features);
 
