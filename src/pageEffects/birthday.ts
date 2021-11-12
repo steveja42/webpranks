@@ -1,68 +1,91 @@
-import { Engine, Render, Bodies, World, Body, Composite, Constraint, MouseConstraint } from "matter-js"
-import { PageInfo, log, center, getRandomInt ,CollisionCategory} from '../modhelper'
+import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
 
-export function doPageEffect(page: PageInfo) {
-	const pageScene = new PageScene(page)
-	page.game.scene.add(mySceneConfig.key, pageScene)
+const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`,physics :{arcade:{debug:true}}}
+
+export function doPageEffect(pageInfo: PageInfo) {
+	const pageScene = new PageScene(pageInfo)
+	pageInfo.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene
 }
 
-const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
-	active: true,
-	visible: true,
-	key: `PageScene`,
-	physics: {
-		default: 'matter',
-		matter: {
-			debug: false,
-			gravity: { x: 0, y: 1 }
-		}
-	}
-
-}
-
 export class PageScene extends Phaser.Scene {
-	backgroundRects: MatterJS.BodyType[] = []
-	domImages: Phaser.Physics.Matter.Image[] = []
+	bodiesToDo: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
+	removeDelta = 500
 	deltaElapsed = 0
-	fulcrum: MatterJS.BodyType
-	wreckingBall: MatterJS.BodyType
 
-	constructor(public page: PageInfo) {
+	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
-		log('constructing scene')
 	}
 
 	public preload() {
-		log(`start`)
-
+		this.load.image('red', 'assets/particles/red.png')
+		this.load.atlas('flares', 'assets/particles/flares.png', 'assets/particles/flares.json')
+		this.load.image('fire', 'assets/particles/muzzleflash3.png')
+		this.load.image('candle', 'assets/candle.jpg')
 	}
 
 	public create() {
-		log('creating scene')
 		const { width, height } = this.sys.game.canvas
-		const groundHeight = 30
-
-		const ground = this.matter.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, {
-			isStatic: true,
-			render: { fillColor: 0x0000ff },
-			collisionFilter: {
-				group: 1,
-				mask: CollisionCategory.ground | CollisionCategory.movingDom,
-				category: CollisionCategory.ground
-			}
-		});
-		const x = 30
-		const y = 0
-		const color = 0x0000ff
-		this.matter.add.rectangle(10,10, 30, 30, { render: { fillColor: 0x0000ff, lineColor:0xff0000 } })
+		const { domBackgroundRects, domImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false)
+		let x = width/4
+		const y = height/3
+		const candle = this.add.image(x, y, "candle").setScale(.1,.1)
+		this.makeFlame(x,y - 53)
+		x*= 3
+		this.add.image(x, y, "candle").setScale(.1,.1)
+		this.makeFlame(x,y - 55)
 		
-		this.matter.add.rectangle(10,50, 30, 30, {render: { fillColor: 0x0000ff, fillOpacity:1, lineColor:0x00ff00 } })
-		this.matter.add.rectangle(10,100, 30, 30, {ignoreGravity:true, render: { fillColor: 0x0000ff, fillOpacity:1, lineColor:0x0000ff } })
-			
+		const emitter = this.add.particles('red').createEmitter({
+			speed: 100,
+			scale: { start: .1, end: .9 },
+			blendMode: 'NORMAL'
+		});
 
-		const rect = this.add.rectangle(100,100,40,40,0xff0000);
-this.matter.add.gameObject(rect, {ignoreGravity:true})
+		const emitter2 = this.add.particles('red').createEmitter({
+			speed: 100,
+			scale: { start: .1, end: .9 },
+			blendMode: 'NORMAL'
+		});
+		
+		const text = this.add.text(400, 100, 'Happy Birthday!', {
+			fontFamily: 'Quicksand',
+			fontSize: '48px',
+			color: '#F8E71C',
+			fontStyle: 'normal',
+			stroke: '#000000',
+			strokeThickness: 3,
+			shadow: { fill: true, offsetY: null, offsetX: null, stroke: false }
+		})
+		const message = this.physics.add.existing(text) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody
+
+		message.body.setVelocity(100, 200).setBounce(1, 1).setCollideWorldBounds(true);
+
+		emitter.startFollow(message);
+		emitter2.startFollow(message, text.width);
 
 	}
+
+	public update(time: number, delta: number) {
+		this.deltaElapsed += delta
+
+	}
+
+	private makeFlame(x,y){
+		return this.add.particles('fire').createEmitter({
+			alpha: { start: 1, end: 0 },
+			scale: { start: 0.5, end: 2.5 },
+			//tint: { start: 0xff945e, end: 0xff945e },
+			speed: 20,
+			accelerationY: -300,
+			angle: { min: -85, max: -95 },
+			rotate: { min: -180, max: 180 },
+			lifespan: { min: 1000, max: 1100 },
+			blendMode: 'NORMAL',
+			frequency: 110,
+			//maxParticles: 10,
+			x,
+			y,
+		})
+	}
 }
+
