@@ -89,16 +89,17 @@ function logNode(node, level: number, usePosAttr = false) {
 		let boundingRect = node.getBoundingClientRect()
 		let paddingRect = { x: boundingRect.x + node.clientLeft, y: boundingRect.y + node.clientTop, width: node.clientWidth, height: node.clientHeight }
 		let bgColor
+		let bgImage
 		let background = ''
 
 		if (usePosAttr) {
 			const posAttr = node.getAttribute('__pos__')
 			if (posAttr) {
-				const pos = JSON.parse(posAttr)
-					//computedStyle = pos?.computedStyle
-					; ({ clientRects, boundingRect, paddingRect, bgColor } = pos)
+				({ clientRects, boundingRect, paddingRect, bgColor, bgImage } = JSON.parse(posAttr))
 				if (bgColor)
 					background += ` ${bgColor}`
+				if (bgImage)
+					background += ` ${bgImage}`
 			}
 		} else if (computedStyle) {
 			if (computedStyle.position !== 'static') {

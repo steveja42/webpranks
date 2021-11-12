@@ -41,6 +41,7 @@ export function PrankForm(props: any) {
 	const phaserParent = useRef(null)
 	const debugPageImage = useRef(null)
 	const debugImage = useRef(null)
+	const bgDiv = useRef(null)
 	const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 	const { x: xMouse, y: yMouse } = useMousePosition(window);
 	const protocol = 'http://'
@@ -49,7 +50,8 @@ export function PrankForm(props: any) {
 	useEffect(() => {    /** effect run on component load */
 		log(`component load`)
 		game = setupWorld(phaserParent.current, windowWidth, windowHeight)
-		// setShowPopout(true)
+
+		setShowPopout(true)
 		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
 		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
 
@@ -83,9 +85,11 @@ export function PrankForm(props: any) {
 		if (currentScene) {
 			if (currentScene.scene.isPaused()) {
 				currentScene.scene.resume()
+				currentScene.matter?.world?.resume()
 			}
 			else {
 				currentScene.scene.pause()
+				currentScene.matter?.world?.pause()
 			}
 		}
 	}, [toggleScenePause])
@@ -95,7 +99,7 @@ export function PrankForm(props: any) {
 		const loadingPromise = network.getImageandHtml(url, windowWidth, windowHeight)
 			.then(result => {
 				setShowFailure("")
-				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight)
+				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight, bgDiv.current)
 			},
 				reason => {
 					log(`oh! an error occurred ${reason}`)
@@ -105,7 +109,11 @@ export function PrankForm(props: any) {
 				}
 			)
 			.then(newPageInfo => {
+				if (!game)
+					game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 				newPageInfo.game = game
+				newPageInfo.baseScene = game.scene.getScene("rootScene")
+				
 				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
 			}).then(newPageInfo => {
 				setPageInfo(newPageInfo)
@@ -128,6 +136,8 @@ export function PrankForm(props: any) {
 
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
 		try {
+
+
 			let pi
 			if (loadingPromise)
 				pi = await loadingPromise
@@ -172,11 +182,11 @@ export function PrankForm(props: any) {
 			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
 		}
 	}
-	const onKeyDown = (e:React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter' ) 
+	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter')
 			e.preventDefault();
-			if (e.key === "Backspace")
-				e.stopPropagation()
+		if (e.key === "Backspace")
+			e.stopPropagation()
 	}
 	const onBlur = () => {
 		if (inputURL.trim() === protocol) {
@@ -186,16 +196,17 @@ export function PrankForm(props: any) {
 		}
 	}
 
-	const onAnimationStart = (animEvent:React.AnimationEvent<HTMLInputElement>) => {
+	const onAnimationStart = (animEvent: React.AnimationEvent<HTMLInputElement>) => {
 		log(`anim start ${animEvent.animationName}`)
 		if (animEvent.animationName === 'AutoFillStart')
 			onURLInput()
 	}
 
 	return <div id="foo">
+				<div id="bgDiv" ref={bgDiv} style={{display:"none"}}></div>
 		{showPopout ? getPopout() : null}
 		{showControls ? <div id="togglediv">
-		
+
 			<Form onSubmit={onSubmit} className="myform" >
 
 				<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>

@@ -21,7 +21,7 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 				gravity: { y: 0.5 }
 			}
 		},
-		scene: null,
+		scene: {key:"rootScene",visible: false},
 		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk'
 	};
 	const game = new Phaser.Game(config);
@@ -35,19 +35,19 @@ let prevPage: PageInfo
 
 export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentScene: Phaser.Scene): Promise<PageInfo> {
 	if (prevPage) {
-		log(`textures: ${Object.keys(page.game.textures.list).length - 3}`)
+		log(`textures: ${Object.keys(page.baseScene.textures.list).length - 3}`)
 		if (currentScene)
 			currentScene.scene.remove()	  //page.game.scene.remove(currentScene.name)
 		for (let i = 0; i < prevPage.domElementsImages.length; i++) {
-			page.game.textures.remove(`dom${i}`)
+			page.baseScene.textures.remove(`dom${i}`)
 		}
 		//
 	}
+	let imagesYetToLoadCount = page.domElementsImages.length
 	const texturesLoaded = new Promise(resolve => {
-		page.game.textures.on('addtexture',
-			(key: string, texture) => {
-				if (key === `dom${page.domElementsImages.length - 1}`) {
-					page.game.textures.off('addtexture')
+		page.baseScene.textures.on('addtexture', (key: string, texture) => {
+				if (--imagesYetToLoadCount === 0) {
+					page.baseScene.textures.off('addtexture')
 					resolve(key)
 				}
 			})
@@ -55,7 +55,7 @@ export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentS
 	prevPage = page
 	let i = 0
 	for (const domElement of page.domElementsImages) {
-		page.game.textures.addBase64(`dom${i++}`, domElement.imageURL)
+		page.baseScene.textures.addBase64(`dom${i++}`, domElement.imageURL)
 	}
 	await texturesLoaded
 	//gs = new PageScene(page, nextSceneName)

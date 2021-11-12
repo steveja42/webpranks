@@ -6,6 +6,10 @@ export interface PrankSceneI {
 	name: string
 }
 
+type GameObjectwithArcadeBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
+	body: Phaser.Physics.Arcade.Body
+};
+
 export enum CollisonGroup {
 	Dom = -2
 }
@@ -43,10 +47,11 @@ export function getRandomInt(max) {
 }
 
 type DomObjects = {
-	backgroundRectangles: Phaser.GameObjects.Rectangle[]
-	domGameElementImages: Phaser.GameObjects.Image[]
-	domArcadeElementImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[]
-	domMatterElementImages: Phaser.Physics.Matter.Image[]
+	domBackgroundRects: Phaser.GameObjects.Rectangle[]
+	domArcadeBackgroundRects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[]
+	domImages: Phaser.GameObjects.Image[]
+	domArcadeImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[]
+	domMatterImages: Phaser.Physics.Matter.Image[]
 }
 
 /**
@@ -60,41 +65,48 @@ type DomObjects = {
  * @param pageInfo 
  */
 export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: PageInfo, useArcade = true, useMatter = false): DomObjects {
-	const backgroundRectangles: Phaser.GameObjects.Rectangle[] = []
-	const domGameElementImages: Phaser.GameObjects.Image[] = []
-	const domArcadeElementImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
-	const domMatterElementImages: Phaser.Physics.Matter.Image[] = []
+	const domBackgroundRects: Phaser.GameObjects.Rectangle[] = []
+	const domArcadeBackgroundRects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
+	const domImages: Phaser.GameObjects.Image[] = []
+	const domArcadeImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
+	const domMatterImages: Phaser.Physics.Matter.Image[] = []
 
 	if (pageInfo.bgColor)
 		scene.cameras.main.setBackgroundColor(pageInfo.bgColor)
+
 	for (const backgroundRect of pageInfo.backgroundRects) {
-		//const url = URL.createObjectURL(domElement.imageURL)
-		backgroundRectangles.push(scene.add.rectangle(center(backgroundRect.boundingRect.x, backgroundRect.boundingRect.right), center(backgroundRect.boundingRect.y, backgroundRect.boundingRect.bottom), backgroundRect.boundingRect.width, backgroundRect.boundingRect.height, backgroundRect.bgColor))
+		domBackgroundRects.push(scene.add.rectangle(center(backgroundRect.boundingRect.x, backgroundRect.boundingRect.right), center(backgroundRect.boundingRect.y, backgroundRect.boundingRect.bottom), backgroundRect.boundingRect.width, backgroundRect.boundingRect.height, backgroundRect.bgColor))
 	}
+
 	if (useArcade || useMatter) {
 		if (useArcade) {
 			pageInfo.domElementsImages.forEach((domElement, i) => {
-				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`)
-				domArcadeElementImages.push(img)
+				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`)
+				domArcadeImages.push(img)
+			})
+			domBackgroundRects.forEach((rect) => {
+				domArcadeBackgroundRects.push(scene.physics.add.existing(rect) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody)
 			})
 		}
 		if (useMatter) {
 			pageInfo.domElementsImages.forEach((domElement, i) => {
-				const img = scene.matter.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`, null, { ignoreGravity: true,collisionFilter: {
-					group: CollisonGroup.Dom,
-					mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default ,
-					category: CollisionCategory.dom
-				} })
-				domMatterElementImages.push(img)
+				const img = scene.matter.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, null, {
+					ignoreGravity: true, collisionFilter: {
+						group: CollisonGroup.Dom,
+						mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
+						category: CollisionCategory.dom
+					}
+				})
+				domMatterImages.push(img)
 			})
 
 		}
 	}
 	else {
 		pageInfo.domElementsImages.forEach((domElement, i) => {
-			domGameElementImages.push(scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.top), `dom${i}`))
+			domImages.push(scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`))
 		})
 	}
 
-	return { backgroundRectangles, domGameElementImages, domArcadeElementImages, domMatterElementImages }
+	return { domBackgroundRects, domArcadeBackgroundRects, domImages, domArcadeImages, domMatterImages }
 }

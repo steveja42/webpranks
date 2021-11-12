@@ -4,7 +4,7 @@ import { walkDom2, logDomTree, nodeTypes } from './dom'
 import { allowMouseToMoveWorldObjects } from './phaseri'
 import { CollisionCategory } from './modhelper'
 import * as Phaser from 'phaser';
-
+import html2canvas from 'html2canvas'
 
 type BackGroundRect = {
 	boundingRect: DOMRect,
@@ -37,15 +37,16 @@ export interface PageInfo {
 	debugImage: HTMLImageElement,
 	doc: HTMLDocument,
 	bgColor: number,
-	game: Phaser.Game
+	game: Phaser.Game,
+	baseScene: Phaser.Scene,
 }
 
 let fooWidth = 0
 let fooHeight = 0
 
+let divForBackgroundScreenshot
 
-
-export async function domToObjects(imageURL: string, html: string, debugPageImage: HTMLImageElement, debugImage: HTMLImageElement, width: number, height: number): Promise<PageInfo> {
+export async function domToObjects(imageURL: string, html: string, debugPageImage: HTMLImageElement, debugImage: HTMLImageElement, width: number, height: number, bgDiv: HTMLDivElement): Promise<PageInfo> {
 	//scratchCanvas = canvas
 	log(`start ${imageURL}`)
 	const pageImage = debugPageImage || new Image()
@@ -57,19 +58,23 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	fooHeight = height
 	await imageLoaded
 	//logDomTree(doc.body, true)
-
-	const modInfo: PageInfo = {
+	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : undefined
+	if (bgColor)
+		log(`page background color is ${bgColor} -${color}`)
+	const pageInfo: PageInfo = {
 		pageImage,
 		domElementsImages: [],
 		backgroundRects: [],
 		debugImage,
 		doc,
-		bgColor: undefined,
-		game: undefined
+		bgColor: color,
+		game: undefined,
+		baseScene: undefined
 	}
-	await walkDom2(doc.body, domNodeToObjects, 0, modInfo)
-	log(`done ${imageURL} ${modInfo.domElementsImages.length} dom elements and ${modInfo.backgroundRects.length} background objects added`)
-	return modInfo
+	divForBackgroundScreenshot = bgDiv
+	await walkDom2(doc.body, domNodeToObjects, 0, pageInfo)
+	log(`done ${imageURL} ${pageInfo.domElementsImages.length} dom elements and ${pageInfo.backgroundRects.length} background objects added`)
+	return pageInfo
 }
 
 function getAttributes(node) {
@@ -89,12 +94,12 @@ function getAttributes(node) {
  *  
  * @param node 
  * @param level - how many levels deep are we in the dom tree
- * @param modInfo -info used by prank modules
+ * @param pageInfo -info used by prank modules
  * @param parentAdded - true if a dom ancestor added a sprite, otherwise false
  */
-async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageInfo, parentAdded) {
+async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: PageInfo, parentAdded) {
 
-	const debugThis = false
+	const debugThis = true
 	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG', 'LI', 'TD', 'TH', 'BUTTON', 'INPUT', 'LABEL', 'LEGEND', 'SELECT', 'TEXTAREA', 'A'] //, 'IFRAME'
 	const isTextNode = node.nodeType === nodeTypes.text
 	//The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
@@ -111,64 +116,60 @@ async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageI
 			return parentAdded
 	}
 
-	type attrs = { boundingRect: DOMRect, bgColor: string }
-	const { boundingRect, bgColor }: attrs = getAttributes(attrNode) || { boundingRect: null, bgColor: null }
-
-	function findParentNodeWithAttributes(node): HTMLElement {
-		if (node && node.tagName === "DIV") {
-			const { boundingRect } = getAttributes(node) || { boundingRect: null }
-			if (isOnScreen(boundingRect))
-				if (boundingRect?.width && boundingRect?.height)
-					return node
-		}
-		/*
-		
-			while (node && node.tagName === "DIV") { //!== "BODY") {
-				const { boundingRect } = getAttributes(node)
-				if (!boundingRect || !boundingRect.width || !boundingRect.height)
-					node = node.parentNode
-				else
-					return node
-			} */
-		return null
-	}
-	function isOnScreen(boundingRect) {
-		return (boundingRect && boundingRect.width && boundingRect.height && boundingRect.x <= fooWidth && boundingRect.y <= fooHeight && boundingRect.x >= 0 && boundingRect.y >= 0)
-	}
+	type attrs = { boundingRect: DOMRect, bgColor: string, bgImage: string }
+	const { boundingRect, bgColor, bgImage }: attrs = getAttributes(attrNode) || { boundingRect: null, bgColor: null, bgImage: null }
 
 	if (!isOnScreen(boundingRect))
 		return parentAdded
 
-	if (!isTextNode && bgColor) {    //create a body to fill in the background, but not collide with dom objects
+	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : null
+
+	if (!isTextNode && bgColor && color !== pageInfo.bgColor) {    //create a rectangle to fill in the background, 
 		/*const ctx = stuff.canvas.getContext('2d')
 		ctx.fillStyle = bgColor
 		ctx.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height) */
-		const options = {
-			render: { fillStyle: bgColor },
-			collisionFilter: {
-				//group: -2,
-				mask: CollisionCategory.default | CollisionCategory.ground,
-				category: CollisionCategory.domBackground
-			}
-		}
+
 		if (debugThis)
-			log(`adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
-		const color = Phaser.Display.Color.RGBStringToColor(bgColor).color
-		if (node.nodeName === 'BODY')
-			modInfo.bgColor = color
-		else
-			modInfo.backgroundRects.push({ boundingRect, bgColor: color })
+			log(`adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+
+		pageInfo.backgroundRects.push({ boundingRect, bgColor: color })
 	}
 	if (parentAdded) {
 		//log(`ignoring ${node.id ? "#" +node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x},${boundingRect.y}`)
 		return true
 	}
+
+	if (bgImage) {
+	const canvas = await html2canvas(divForBackgroundScreenshot, {
+			width: boundingRect.width, height: boundingRect.height, onclone: function (clonedDoc) {
+				const xDiv = clonedDoc.getElementById(divForBackgroundScreenshot.id)
+				xDiv.style.display = 'block';
+				xDiv.style.width = `${boundingRect.width}px`
+				xDiv.style.height = `${boundingRect.height}px`
+				xDiv.style.backgroundImage = bgImage   
+				xDiv.style.background = bgImage   // background: linear-gradient(90deg, rgb(7, 106, 255) 0%, rgb(199, 225, 255) 100%);
+		
+			}
+		})
+		const imageURL = canvas.toDataURL()
+
+		if (pageInfo.debugImage) {
+			const imageLoaded = loadImage(pageInfo.debugImage, imageURL)
+			await imageLoaded
+		}
+		log(`---adding background image "${bgImage}"" ${pageInfo.domElementsImages.length}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+
+		pageInfo.domElementsImages.push({ boundingRect, imageURL })
+
+		//div.clientWidth = boundingRect.width
+	}
+
 	if (isTextNode || spriteAbleElements.includes(node.nodeName)) {
-		const imageURL = getImagePortion(modInfo.pageImage, boundingRect)
+		const imageURL = getImagePortion(pageInfo.pageImage, boundingRect)
 		if (debugThis) {
-			log(`adding ${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at ${boundingRect.x}, ${boundingRect.y}  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
-			if (modInfo.debugImage) {
-				const imageLoaded = loadImage(modInfo.debugImage, imageURL)
+			log(`adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+			if (pageInfo.debugImage) {
+				const imageLoaded = loadImage(pageInfo.debugImage, imageURL)
 				await imageLoaded
 			}
 		}
@@ -176,12 +177,34 @@ async function domNodeToObjects(node: HTMLElement, level: number, modInfo: PageI
 		//if (debugThis) 
 		//options.collisionFilter.group = -2
 		//const body = Bodies.rectangle(boundingRect.x + boundingRect.width / 2, boundingRect.y + boundingRect.height / 2, boundingRect.width, boundingRect.height, options)
-		modInfo.domElementsImages.push({ boundingRect, imageURL })
+		pageInfo.domElementsImages.push({ boundingRect, imageURL })
 		return true
 	}
 	else
 		return false
 
+}
+
+function findParentNodeWithAttributes(node): HTMLElement {
+	if (node && node.tagName === "DIV") {
+		const { boundingRect } = getAttributes(node) || { boundingRect: null }
+		if (isOnScreen(boundingRect))
+			if (boundingRect?.width && boundingRect?.height)
+				return node
+	}
+	/*
+	
+		while (node && node.tagName === "DIV") { //!== "BODY") {
+			const { boundingRect } = getAttributes(node)
+			if (!boundingRect || !boundingRect.width || !boundingRect.height)
+				node = node.parentNode
+			else
+				return node
+		} */
+	return null
+}
+function isOnScreen(boundingRect) {
+	return (boundingRect && boundingRect.width && boundingRect.height && boundingRect.x <= fooWidth && boundingRect.y <= fooHeight && boundingRect.x >= 0 && boundingRect.y >= 0)
 }
 
 export const scratchCanvas = document.createElement('canvas')

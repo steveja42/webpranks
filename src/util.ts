@@ -9,7 +9,8 @@ export function log(x: string | unknown): void {
 	if (!omitDate) {
 		prepend = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }).replace(",", "").replace("/20", "/").replace(/\s([AP])/, "$1")
 	}
-
+	if (x && typeof x === 'object')
+		x = JSON.stringify(x);
 	/*	if (x && typeof x === 'object') {
 			x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
 		} */
@@ -53,6 +54,7 @@ export function keyBoardHandler(setTogglePauseScene, setShowControls, setShowPop
 			return
 		if (key === "Escape") {   //esc key
 			setTogglePauseScene(prev => !prev)
+			setShowControls(prev => { return !prev })
 		}
 		else if (key === "Backspace" || key === "Cancel" || (key === " " && event.ctrlKey)) {
 			setShowControls(prev => { return !prev })
