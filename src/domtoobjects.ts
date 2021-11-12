@@ -38,7 +38,6 @@ export interface PageInfo {
 	doc: HTMLDocument,
 	bgColor: number,
 	game: Phaser.Game,
-	baseScene: Phaser.Scene,
 }
 
 let fooWidth = 0
@@ -69,7 +68,6 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 		doc,
 		bgColor: color,
 		game: undefined,
-		baseScene: undefined
 	}
 	divForBackgroundScreenshot = bgDiv
 	await walkDom2(doc.body, domNodeToObjects, 0, pageInfo)

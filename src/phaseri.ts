@@ -3,6 +3,8 @@ import { PageInfo } from "./domtoobjects"
 import { center, setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
 
+let gameLoadedPromise: Promise<Phaser.Game>
+let resolveGameLoadedCallback
 
 export function setupWorld(parentElement: HTMLElement, width, height, background = ''): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
@@ -21,9 +23,16 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 				gravity: { y: 0.5 }
 			}
 		},
-		scene: {key:"rootScene",visible: false},
-		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk'
+		callbacks: { postBoot: onPostBoot },
+		scene: null, // { key: "rootScene", visible: false },
+		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
+
 	};
+	gameLoadedPromise = new Promise<Phaser.Game>(resolve => {
+
+		resolveGameLoadedCallback = resolve
+	})
+
 	const game = new Phaser.Game(config);
 
 	return game
@@ -32,35 +41,43 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 let gs: PageScene
 let prevPage: PageInfo
 
+function onPostBoot(game: Phaser.Game) {
+	log(`-----------phaser game booting done`)
+	resolveGameLoadedCallback(game)
+}
 
-export async function resetAndLoadImagesForNewPageScene(page: PageInfo, currentScene: Phaser.Scene): Promise<PageInfo> {
+export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, currentScene: Phaser.Scene): Promise<PageInfo> {
+	if (!pageInfo.game) {
+		pageInfo.game = await gameLoadedPromise
+	}
 	if (prevPage) {
-		log(`textures: ${Object.keys(page.baseScene.textures.list).length - 3}`)
+		log(`textures: ${Object.keys(pageInfo.game.textures.list).length - 3}`)
 		if (currentScene)
 			currentScene.scene.remove()	  //page.game.scene.remove(currentScene.name)
 		for (let i = 0; i < prevPage.domElementsImages.length; i++) {
-			page.baseScene.textures.remove(`dom${i}`)
+			pageInfo.game.textures.remove(`dom${i}`)
 		}
 		//
 	}
-	let imagesYetToLoadCount = page.domElementsImages.length
+	let imagesYetToLoadCount = pageInfo.domElementsImages.length
 	const texturesLoaded = new Promise(resolve => {
-		page.baseScene.textures.on('addtexture', (key: string, texture) => {
-				if (--imagesYetToLoadCount === 0) {
-					page.baseScene.textures.off('addtexture')
-					resolve(key)
-				}
-			})
+		pageInfo.game.textures.on('addtexture', (key: string, texture) => {
+			if (--imagesYetToLoadCount === 0) {
+				pageInfo.game.textures.off('addtexture')
+				log(`-----------texture loading done`)
+				resolve(key)
+			}
+		})
 	})
-	prevPage = page
+	prevPage = pageInfo
 	let i = 0
-	for (const domElement of page.domElementsImages) {
-		page.baseScene.textures.addBase64(`dom${i++}`, domElement.imageURL)
+	for (const domElement of pageInfo.domElementsImages) {
+		pageInfo.game.textures.addBase64(`dom${i++}`, domElement.imageURL)
 	}
 	await texturesLoaded
 	//gs = new PageScene(page, nextSceneName)
 	//game.scene.add(nextSceneName, gs)
-	return page
+	return pageInfo
 }
 
 export async function resetScene(modInfo: PageInfo, currentScene: Phaser.Scene) {

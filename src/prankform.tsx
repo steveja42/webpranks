@@ -49,7 +49,7 @@ export function PrankForm(props: any) {
 
 	useEffect(() => {    /** effect run on component load */
 		log(`component load`)
-		game = setupWorld(phaserParent.current, windowWidth, windowHeight)
+		//game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 
 		setShowPopout(true)
 		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
@@ -84,10 +84,12 @@ export function PrankForm(props: any) {
 	useEffect(() => {
 		if (currentScene) {
 			if (currentScene.scene.isPaused()) {
+				log(`resuming scene`)
 				currentScene.scene.resume()
 				currentScene.matter?.world?.resume()
 			}
 			else {
+				log(`pausing scene`)
 				currentScene.scene.pause()
 				currentScene.matter?.world?.pause()
 			}
@@ -111,8 +113,6 @@ export function PrankForm(props: any) {
 			.then(newPageInfo => {
 				if (!game)
 					game = setupWorld(phaserParent.current, windowWidth, windowHeight)
-				newPageInfo.game = game
-				newPageInfo.baseScene = game.scene.getScene("rootScene")
 				
 				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
 			}).then(newPageInfo => {
