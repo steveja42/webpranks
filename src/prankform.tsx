@@ -51,7 +51,7 @@ export function PrankForm(props: any) {
 		log(`component load`)
 		//game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 
-		setShowPopout(true)
+		//setShowPopout(true)
 		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
 		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
 
