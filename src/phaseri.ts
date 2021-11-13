@@ -59,6 +59,7 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, curr
 		}
 		//
 	}
+	log (`loading textures`)
 	let imagesYetToLoadCount = pageInfo.domElementsImages.length
 	const texturesLoaded = new Promise(resolve => {
 		pageInfo.game.textures.on('addtexture', (key: string, texture) => {
