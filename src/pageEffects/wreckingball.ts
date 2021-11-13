@@ -52,6 +52,7 @@ export class PageScene extends Phaser.Scene {
 		const domRestitution = 0
 		log('creating scene')
 		const { width, height } = this.sys.game.canvas
+		const maxAreaForObjects = width * height / 3
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
 		cursors = this.input.keyboard.createCursorKeys();
@@ -59,13 +60,15 @@ export class PageScene extends Phaser.Scene {
 		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 
 		backgroundRectangles.forEach(rect => {
-			this.backgroundRects.push(this.matter.add.gameObject(rect, {
-				ignoreGravity: true, density: domDensity, restitution: domRestitution, collisionFilter: {
-					group: CollisonGroup.Dom,
-					mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
-					category: CollisionCategory.dom
-				}
-			}) as GameObjectwithMatterBody)
+			if ((rect.width * rect.height) < maxAreaForObjects) {
+				this.backgroundRects.push(this.matter.add.gameObject(rect, {
+					ignoreGravity: true, density: domDensity, restitution: domRestitution, collisionFilter: {
+						group: CollisonGroup.Dom,
+						mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
+						category: CollisionCategory.dom
+					}
+				}) as GameObjectwithMatterBody)
+			}
 		});
 		domElementImages.forEach(di => {
 			di.setDensity(domDensity)
@@ -95,7 +98,7 @@ export class PageScene extends Phaser.Scene {
 		const MetalDensity = 5
 		const fulcrumRadius = 10
 		const chainlinkRadius = 16
-		const numLinks = 8
+		const numLinks = (height / 2 - fulcrumRadius - wreckingballRadius) / (chainlinkRadius * 2)
 		const chainLength = fulcrumRadius + wreckingballRadius + ((chainlinkRadius * numLinks) * 2)
 
 		this.fulcrum = this.matter.add.gameObject(this.add.rectangle(x, y, fulcrumRadius * 2, fulcrumRadius * 2, 0x000000), {
