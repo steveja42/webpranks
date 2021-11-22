@@ -7,11 +7,14 @@ export function doPageEffect(pageInfo: PageInfo) {
 	pageInfo.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene
 }
+const speedChangeDelta = 2000
+const speedAdjustmentFactor = .6
 
 export class PageScene extends Phaser.Scene {
 	bodiesToDo: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
-	removeDelta = 500
-	deltaElapsed = 0
+	timeBetweenFalls = 500
+	timeSinceLastFall = 0
+	time2 = 0
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
@@ -30,13 +33,21 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public update(time: number, delta: number) {
-		this.deltaElapsed += delta
-
-		if (this.bodiesToDo.length && this.deltaElapsed > this.removeDelta) {
-			this.deltaElapsed = 0
+		if (!this.bodiesToDo.length)
+			return
+		this.timeSinceLastFall += delta
+		this.time2 += delta
+		if (this.time2 > speedChangeDelta) {
+			this.timeBetweenFalls*= speedAdjustmentFactor
+			this.time2 = 0
+		}
+		if (this.timeSinceLastFall > this.timeBetweenFalls) {
+			this.timeSinceLastFall = 0
 			const i = getRandomInt(this.bodiesToDo.length)
 			log(`moving body ${i}`)
-			this.bodiesToDo[i].body.setVelocity(0, 500).setDamping(false).setDragY(500).setAllowGravity(true)
+			const x =  getRandomInt(200) - 100
+			const y =  300 + getRandomInt(500) 
+			this.bodiesToDo[i].body.setVelocity(x, y).setDamping(false).setDragY(500).setAllowGravity(true)
 			this.bodiesToDo.splice(i, 1)
 		}
 	}
