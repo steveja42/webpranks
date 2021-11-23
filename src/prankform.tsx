@@ -34,6 +34,7 @@ export function PrankForm(props: any) {
 	const history = useHistory();
 	const params = useParams<PrankUIParams>();
 	const [inputURL, setInputURL] = useState("")
+	const [xURL, setXURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
 	const [showControls, setShowControls] = useState(true)
@@ -70,11 +71,11 @@ export function PrankForm(props: any) {
 			prevUrl = url
 			loadingPromise = loadPage(url)
 		}
-		let i 
+		let i
 		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
 			setWhichPrank(i)
 		}
-		const shouldRun = params.isRunning === '1' 
+		const shouldRun = params.isRunning === '1'
 		if (shouldRun && params.url && i !== undefined) {
 			runPrank(i, loadingPromise)
 		}
@@ -101,6 +102,14 @@ export function PrankForm(props: any) {
 		log(`path changed: ${location.pathname}`);
 		//ga.send(["pageview", location.pathname]);
 	}, [location]);
+
+	useEffect(() => {
+		log(`url changed: ${xURL}`);
+		if (!isLoading && xURL) {
+			loadPage(xURL)
+			history.replace(`/${whichPrank}/${encodeURIComponent(xURL)}/${isRunning ? 1 : 0}`, { whichPrank, xURL, isRunning })
+		}
+	}, [xURL]);
 
 	useEffect(() => {
 		if (currentScene) {
@@ -205,8 +214,7 @@ export function PrankForm(props: any) {
 		if (inputURL !== prevUrl) {
 			prevUrl = inputURL
 			document.getElementById("prank").focus()   //change focus to remove mobile onscreen keyboard before loading
-			loadPage(inputURL)
-			history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+			setXURL(inputURL)
 		}
 	}
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
