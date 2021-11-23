@@ -1,6 +1,6 @@
 import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
 
-const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`,physics :{arcade:{debug:true}}}
+const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`,physics :{arcade:{debug:false}}}
 
 export function doPageEffect(pageInfo: PageInfo) {
 	const pageScene = new PageScene(pageInfo)
