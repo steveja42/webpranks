@@ -204,6 +204,7 @@ export function PrankForm(props: any) {
 			return
 		if (inputURL !== prevUrl) {
 			prevUrl = inputURL
+			document.getElementById("prank").focus()   //change focus to remove mobile onscreen keyboard before loading
 			loadPage(inputURL)
 			history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
 		}
