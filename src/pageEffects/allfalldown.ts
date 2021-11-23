@@ -1,6 +1,6 @@
 import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
 
-const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {	active: true,	key: `PageScene`}
+const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene` }
 
 export function doPageEffect(pageInfo: PageInfo) {
 	const pageScene = new PageScene(pageInfo)
@@ -28,8 +28,16 @@ export class PageScene extends Phaser.Scene {
 		const { domArcadeBackgroundRects, domArcadeImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
 		this.bodiesToDo = [...domArcadeImages, ...domArcadeBackgroundRects]
 		this.bodiesToDo.forEach((object) => {
-			object.body.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8)).setCollideWorldBounds(true).setAllowGravity(false)
+			object.body.setBounceY(Phaser.Math.FloatBetween(0.4, .6)).setCollideWorldBounds(true).setAllowGravity(false)
+			object.setInteractive()
+			this.input.setDraggable(object)
 		})
+		this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+
+			gameObject.x = dragX;
+			gameObject.y = dragY;
+
+		});
 	}
 
 	public update(time: number, delta: number) {
@@ -38,16 +46,16 @@ export class PageScene extends Phaser.Scene {
 		this.timeSinceLastFall += delta
 		this.time2 += delta
 		if (this.time2 > speedChangeDelta) {
-			this.timeBetweenFalls*= speedAdjustmentFactor
+			this.timeBetweenFalls *= speedAdjustmentFactor
 			this.time2 = 0
 		}
 		if (this.timeSinceLastFall > this.timeBetweenFalls) {
 			this.timeSinceLastFall = 0
 			const i = getRandomInt(this.bodiesToDo.length)
 			log(`moving body ${i}`)
-			const x =  getRandomInt(200) - 100
-			const y =  300 + getRandomInt(500) 
-			this.bodiesToDo[i].body.setVelocity(x, y).setDamping(false).setDragY(500).setAllowGravity(true)
+			const x = getRandomInt(200) - 100
+			const y = 300 + getRandomInt(500)
+			this.bodiesToDo[i].body.setVelocity(x, y).setDamping(false).setAllowGravity(true).setGravityY(100)  //.setDragY(500)
 			this.bodiesToDo.splice(i, 1)
 		}
 	}
