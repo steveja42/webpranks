@@ -25,6 +25,7 @@ function App(): JSX.Element {
 
 const Routed = () =><Router>
   <Switch>
+  <Route path="/:prank/:url/:isRunning"> <PrankForm /> </Route>
   <Route path="/:prank/:url"> <PrankForm /> </Route>
   <Route path="/:prank"> <PrankForm /> </Route>
   <Route path="/"> <PrankForm /> </Route>

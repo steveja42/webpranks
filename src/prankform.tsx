@@ -17,7 +17,11 @@ network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the p
 let game: Phaser.Game
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 let prevUrl
-
+type PrankUIParams = {
+	prank: string
+	url: string
+	isRunning: string
+};
 /**
  * Calls server to get the page at URL,
  *  and then pranks the page by manipulating the display of the page
@@ -28,12 +32,13 @@ export function PrankForm(props: any) {
 
 	const location = useLocation();
 	const history = useHistory();
-	const params = useParams();
+	const params = useParams<PrankUIParams>();
 	const [inputURL, setInputURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
 	const [showControls, setShowControls] = useState(true)
-	const [isLoading, setLoading] = useState(null)
+	const [isLoading, setIsLoading] = useState(null)
+	const [isRunning, setIsRunning] = useState(false)
 	const [showPopout, setShowPopout] = useState(false)
 	const [toggleScenePause, setTogglePauseScene] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
@@ -58,24 +63,40 @@ export function PrankForm(props: any) {
 		window.addEventListener('beforeunload', handleUnload)
 		document.addEventListener("keydown", handleKeyDown, false)
 		let loadingPromise
+		let url = ""
 		if (params.url) {
-			const url = decodeURIComponent(params.url)
+			url = decodeURIComponent(params.url)
 			setInputURL(url)
 			prevUrl = url
 			loadingPromise = loadPage(url)
 		}
-		let i
+		let i 
 		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
 			setWhichPrank(i)
-			if (params.url)
-				runPrank(i, loadingPromise)
 		}
+		const shouldRun = params.isRunning === '1' 
+		if (shouldRun && params.url && i !== undefined) {
+			runPrank(i, loadingPromise)
+		}
+		else if (i !== undefined || url)
+			history.replace(`/${i}/${params.url || ""}/0`, { whichPrank: i, inputURL: url, isRunning: false })
+
+		const unlisten = history.listen((location, action) => {
+			// location is an object like window.location
+			console.log(action, location.pathname, location.state)
+			if (action === "POP") {
+				setTogglePauseScene(prev => !prev)
+				setShowControls(prev => { return !prev })
+			}
+		})
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown, false);
 			window.removeEventListener('beforeunload', handleUnload);
+			unlisten()
 		};
 	}, []);
+
 	useEffect(() => {
 		log(`path changed: ${location.pathname}`);
 		//ga.send(["pageview", location.pathname]);
@@ -85,11 +106,13 @@ export function PrankForm(props: any) {
 		if (currentScene) {
 			if (currentScene.scene.isPaused()) {
 				log(`resuming scene`)
+				setIsRunning(true)
 				currentScene.scene.resume()
 				currentScene.matter?.world?.resume()
 			}
 			else {
 				log(`pausing scene`)
+				setIsRunning(false)
 				currentScene.scene.pause()
 				currentScene.matter?.world?.pause()
 			}
@@ -106,18 +129,18 @@ export function PrankForm(props: any) {
 				reason => {
 					log(`oh! an error occurred ${reason}`)
 					setShowFailure(`Unable to get web page at ${url}`)
-					setLoading(false)
+					setIsLoading(false)
 					throw new Error(reason)
 				}
 			)
 			.then(newPageInfo => {
 				if (!game)
 					game = setupWorld(phaserParent.current, windowWidth, windowHeight)
-				
+
 				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
 			}).then(newPageInfo => {
 				setPageInfo(newPageInfo)
-				setLoading(null)
+				setIsLoading(null)
 				setCurrentScene(null)
 				return newPageInfo
 			})
@@ -125,7 +148,7 @@ export function PrankForm(props: any) {
 				log(error.message)
 				setPageInfo(null)
 			})
-		setLoading(loadingPromise)
+		setIsLoading(loadingPromise)
 		return loadingPromise
 	}
 
@@ -136,20 +159,23 @@ export function PrankForm(props: any) {
 
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
 		try {
-
-
-			let pi
+			let altPageInfo
 			if (loadingPromise)
-				pi = await loadingPromise
+				altPageInfo = await loadingPromise
 			else
-				pi = pageInfo
-			if (pi) {
+				altPageInfo = pageInfo
+			if (altPageInfo) {
 				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene)
 					currentScene.scene.remove()
 				//phaserParent.current.focus()
 				import('./pageEffects/' + effectModules[iPrank].fileName)
-					.then(module => { setShowControls(false); return setCurrentScene(module.doPageEffect(pi)) })
+					.then(module => {
+						setShowControls(false);
+						setIsRunning(true)
+						history.push(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, { whichPrank: iPrank, inputURL, isRunning: true })
+						return setCurrentScene(module.doPageEffect(altPageInfo))
+					})
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
@@ -173,13 +199,13 @@ export function PrankForm(props: any) {
 		setInputURL(e.target.value)
 	}
 
-	function onURLInput() {
+	function onURLWasInput() {
 		if ((inputURL.trim() === protocol) || (inputURL.trim() === ""))
 			return
 		if (inputURL !== prevUrl) {
 			prevUrl = inputURL
 			loadPage(inputURL)
-			history.push(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
+			history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
 		}
 	}
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -192,18 +218,18 @@ export function PrankForm(props: any) {
 		if (inputURL.trim() === protocol) {
 			setInputURL('')
 		} else {
-			onURLInput()
+			onURLWasInput()
 		}
 	}
 
 	const onAnimationStart = (animEvent: React.AnimationEvent<HTMLInputElement>) => {
 		log(`anim start ${animEvent.animationName}`)
 		if (animEvent.animationName === 'AutoFillStart')
-			onURLInput()
+			onURLWasInput()
 	}
 
 	return <div id="foo">
-				<div id="bgDiv" ref={bgDiv} style={{display:"none"}}></div>
+		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
 		{showPopout ? getPopout() : null}
 		{showControls ? <div id="togglediv">
 
@@ -224,8 +250,7 @@ export function PrankForm(props: any) {
 						onChange={e => {
 							const x = parseInt(e.target.value)
 							setWhichPrank(x)
-							history.push(`/${x}/${encodeURIComponent(inputURL)}`)
-
+							history.replace(`/${x}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank: x, inputURL, isRunning })
 						}}
 					>
 						{prankList}
