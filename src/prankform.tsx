@@ -104,9 +104,18 @@ export function PrankForm(props: any) {
 	}, [location]);
 
 	useEffect(() => {
-		log(`url changed: ${xURL}`);
+		log(`new url: ${xURL} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
+		
 		if (!isLoading && xURL) {
-			loadPage(xURL)
+			const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
+			let width
+			let height
+			if (isMobile) {
+				log(`is mobile`)
+				width = window.screen.width
+				height = window.screen.height
+			}
+			loadPage(xURL, width, height)
 			history.replace(`/${whichPrank}/${encodeURIComponent(xURL)}/${isRunning ? 1 : 0}`, { whichPrank, xURL, isRunning })
 		}
 	}, [xURL]);
@@ -129,8 +138,8 @@ export function PrankForm(props: any) {
 	}, [toggleScenePause])
 
 	//load webpage when url changes
-	function loadPage(url: string) {
-		const loadingPromise = network.getImageandHtml(url, windowWidth, windowHeight)
+	function loadPage(url: string, width = windowWidth, height = windowHeight) {
+		const loadingPromise = network.getImageandHtml(url, width, height)
 			.then(result => {
 				setShowFailure("")
 				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight, bgDiv.current)
@@ -144,7 +153,7 @@ export function PrankForm(props: any) {
 			)
 			.then(newPageInfo => {
 				if (!game)
-					game = setupWorld(phaserParent.current, windowWidth, windowHeight)
+					game = setupWorld(phaserParent.current, width, height)
 
 				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
 			}).then(newPageInfo => {
