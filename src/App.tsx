@@ -7,7 +7,7 @@ import {
   useParams, useLocation, useHistory
 } from "react-router-dom";
 import { log } from './util'
-import { PrankForm } from './prankform'
+import { PrankRunner } from './prankrunner'
 import './App.css'
 export const version = .01
 
@@ -25,10 +25,10 @@ function App(): JSX.Element {
 
 const Routed = () =><Router>
   <Switch>
-  <Route path="/:prank/:url/:isRunning"> <PrankForm /> </Route>
-  <Route path="/:prank/:url"> <PrankForm /> </Route>
-  <Route path="/:prank"> <PrankForm /> </Route>
-  <Route path="/"> <PrankForm /> </Route>
+  <Route path="/:prank/:url/:isRunning"> <PrankRunner /> </Route>
+  <Route path="/:prank/:url"> <PrankRunner /> </Route>
+  <Route path="/:prank"> <PrankRunner /> </Route>
+  <Route path="/"> <PrankRunner /> </Route>
 </Switch>
 </Router> 
 

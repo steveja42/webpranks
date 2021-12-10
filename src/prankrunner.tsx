@@ -1,0 +1,251 @@
+import React, { useState, useEffect, useRef} from 'react'
+import { log, keyBoardHandler } from './util'
+import Spinner from 'react-bootstrap/Spinner'
+import Button from 'react-bootstrap/Button'
+import { Form, Alert } from 'react-bootstrap'
+import * as network from './network'
+import { useWindowDimensions, useMousePosition } from './windowing'
+import Popout from './popout'
+import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
+import { logDomTree } from './dom'
+import { PrankForm } from './prankform'
+import { effectModules } from './pageEffects/modulelist'
+import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
+import { useParams, useHistory, useLocation } from "react-router-dom";
+
+network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
+let game: Phaser.Game
+type PrankUIParams = {
+	prank: string
+	url: string
+	isRunning: string
+};
+
+
+/**
+ * Calls server to get the page at URL,
+ *  and then pranks the page by manipulating the display of the page
+ * @param props 
+ */
+
+export function PrankRunner(props: any) {
+
+	const location = useLocation();
+	const history = useHistory();
+	const params = useParams<PrankUIParams>();
+	const [xURL, setXURL] = useState("")
+	const [inputURL, setInputURL] = useState("")
+	const [whichPrank, setWhichPrank] = useState(0)
+	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
+	const [showControls, setShowControls] = useState(true)
+	const [isRunning, setIsRunning] = useState(false)
+	const [shouldStart, setShouldStart] = useState(false)
+	const [isLoading, setIsLoading] = useState(null)
+	const [showPopout, setShowPopout] = useState(false)
+	const [toggleScenePause, setTogglePauseScene] = useState(false)
+	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
+	const [showFailure, setShowFailure] = useState("")
+	const phaserParent = useRef(null)
+	const debugPageImage = useRef(null)
+	const debugImage = useRef(null)
+	const bgDiv = useRef(null)
+	const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+	const { x: xMouse, y: yMouse } = useMousePosition(window);
+	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
+
+	useEffect(() => {    /** effect run on component load */
+		log(`component load`)
+		//game = setupWorld(phaserParent.current, windowWidth, windowHeight)
+
+		//setShowPopout(true)
+		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
+		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
+
+		window.addEventListener('beforeunload', handleUnload)
+		document.addEventListener("keydown", handleKeyDown, false)
+		let loadingPromise
+		let url = ""
+		if (params.url) {
+			url = decodeURIComponent(params.url)
+			setInputURL(url)
+			loadingPromise = loadPage(url)
+		}
+		let i
+		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
+			setWhichPrank(i)
+		}
+		if (i !== undefined || url)
+			history.replace(`/${i}/${params.url || ""}/0`, { whichPrank: i, inputURL: url, isRunning: false })
+		const shouldRun = params.isRunning === '1'
+		if (shouldRun && params.url && i !== undefined) {
+			setShouldStart(true)
+			//runPrank(i, loadingPromise)
+		}
+		
+
+		const unlisten = history.listen((location, action) => {
+			// location is an object like window.location
+			console.log(action, location.pathname, location.state)
+			if (action === "POP") {
+				setTogglePauseScene(prev => !prev)
+				setShowControls(prev => { return !prev })
+			}
+		})
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown, false);
+			window.removeEventListener('beforeunload', handleUnload);
+			unlisten()
+		};
+	}, []);
+
+	useEffect(() => {
+		if (shouldStart)
+			runPrank()
+	}, [shouldStart])
+
+	useEffect(() => {
+		log(`path changed: ${location.pathname}`);
+		//ga.send(["pageview", location.pathname]);
+	}, [location])
+
+	useEffect(() => {
+		log(`new url: ${xURL} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
+		document.title = `:) ${xURL}`;
+
+		if (!isLoading && xURL) {
+			const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
+			let width
+			let height
+			if (isMobile) {
+				log(`is mobile`)
+				width = window.screen.width
+				height = window.screen.height
+			}
+			loadPage(xURL, width, height)
+			history.replace(`/${whichPrank}/${encodeURIComponent(xURL)}/${isRunning ? 1 : 0}`, { whichPrank, xURL, isRunning })
+		}
+	}, [xURL]);
+
+	useEffect(() => {
+		if (currentScene) {
+			if (currentScene.scene.isPaused()) {
+				log(`resuming scene`)
+				setIsRunning(true)
+				currentScene.scene.resume()
+				currentScene.matter?.world?.resume()
+			}
+			else {
+				log(`pausing scene`)
+				setIsRunning(false)
+				currentScene.scene.pause()
+				currentScene.matter?.world?.pause()
+			}
+		}
+	}, [toggleScenePause])
+
+	//load webpage when url changes
+	function loadPage(url: string, width = windowWidth, height = windowHeight) {
+		const loadingPromise = network.getImageandHtml(url, width, height)
+			.then(result => {
+				setShowFailure("")
+				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight, bgDiv.current)
+			},
+				reason => {
+					log(`oh! an error occurred ${reason}`)
+					setShowFailure(`Unable to get web page at ${url}`)
+					setIsLoading(false)
+					throw new Error(reason)
+				}
+			)
+			.then(newPageInfo => {
+				if (!game)
+					game = setupWorld(phaserParent.current, width, height)
+
+				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
+			}).then(newPageInfo => {
+				setPageInfo(newPageInfo)
+				setIsLoading(null)
+				setCurrentScene(null)
+				return newPageInfo
+			})
+			.catch(error => {
+				log(error.message)
+				setPageInfo(null)
+			})
+		setIsLoading(loadingPromise)
+		return loadingPromise
+	}
+
+
+	useEffect(() => {
+		history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+	}, [whichPrank]);
+
+
+	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
+		try {
+			let altPageInfo
+			if (loadingPromise)
+				altPageInfo = await loadingPromise
+			else
+				altPageInfo = pageInfo
+			if (altPageInfo) {
+				log(`running prank ${effectModules[iPrank].title}`)
+				if (currentScene)
+					currentScene.scene.remove()
+				//phaserParent.current.focus()
+				import('./pageEffects/' + effectModules[iPrank].fileName)
+					.then(module => {
+						setShowControls(false);
+						setIsRunning(true)
+						setShouldStart(false)
+						history.push(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, { whichPrank: iPrank, inputURL, isRunning: true })
+						return setCurrentScene(module.doPageEffect(altPageInfo))
+					})
+					.catch(err => log(err.message))
+			}
+		} catch (error) {
+			log(error.message)
+			setCurrentScene(null)
+		}
+
+	}
+	const onSubmit = async (event: React.FormEvent) => {
+		event.preventDefault()
+		setShouldStart(true)
+
+		//runPrank()
+	}
+	const pageLoaded = (!!pageInfo)
+	const formProps = { isLoading, setXURL, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL,showPopout, setShowPopout }
+
+	return <div id="foo">
+		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
+		<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
+			<Alert.Heading>Error. {showFailure}</Alert.Heading>
+		</Alert>
+		{showPopout ? getPopout() : null}
+		{showControls ?
+		<PrankForm {...formProps} />
+		: null }
+			<div className="game" ref={phaserParent} />
+	</div>
+
+	/** This returns the HTML for the popout*/
+	function getPopout() {
+
+		return (
+			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
+				<div>
+					<p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
+					<Button onClick={e => logDomTree(pageInfo.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
+				</div>
+				<img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
+				<img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />
+			</Popout>
+		);
+	}
+}
+
+
