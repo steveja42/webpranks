@@ -15,6 +15,8 @@ import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './pha
 import { useParams, useHistory, useLocation } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
+const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
+
 let game: Phaser.Game
 type PrankUIParams = {
 	prank: string
@@ -33,12 +35,22 @@ export enum Phase {
 }
 export let xphase = Phase.targetUrlNotLoaded
 export const PhaseNext = "next"
-function phaseReducer(state, newPhase): Phase {
+export const PhaseTogglePause = "togglepause"
+
+function phaseReducer(oldPhase, newPhase): Phase {
 	if (newPhase in Phase)
 		xphase = newPhase
 	else switch (newPhase) {
 		case PhaseNext:
 			xphase = Phase.startingPrank;
+			break
+		case PhaseTogglePause:
+			if (oldPhase === Phase.prankRunning)
+				xphase = Phase.prankPaused
+			else if (oldPhase === Phase.prankPaused)
+				xphase = Phase.prankRunning
+			else
+				xphase = oldPhase
 			break
 		default:
 			throw new Error();
@@ -66,7 +78,6 @@ export function PrankRunner(props: any) {
 	const [showControls, setShowControls] = useState(true)
 	const [isLoading, setIsLoading] = useState(null)
 	const [showPopout, setShowPopout] = useState(false)
-	const [toggleScenePause, setTogglePauseScene] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
 	const [showFailure, setShowFailure] = useState("")
 	const phaserParent = useRef(null)
@@ -81,20 +92,19 @@ export function PrankRunner(props: any) {
 
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(`component load`)
-		//game = setupWorld(phaserParent.current, windowWidth, windowHeight)
-
 		//setShowPopout(true)
-		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout, dispatchPhase)
+		const handleKeyDown = keyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
 		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
 
 		window.addEventListener('beforeunload', handleUnload)
 		document.addEventListener("keydown", handleKeyDown, false)
-		let loadingPromise
+		//
 		let url = ""
 		if (params.url) {
 			url = decodeURIComponent(params.url)
 			setInputURL(url)
-			loadingPromise = loadPage(url)
+			setTargetUrl(url)
+			//loadingPromise = loadPage(url)
 		}
 		let i
 		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
@@ -112,8 +122,7 @@ export function PrankRunner(props: any) {
 			// location is an object like window.location
 			console.log(action, location.pathname, location.state)
 			if (action === "POP") {
-				setTogglePauseScene(prev => !prev)
-				setShowControls(prev => { return !prev })
+				dispatchPhase(PhaseTogglePause)
 			}
 		})
 
@@ -125,13 +134,31 @@ export function PrankRunner(props: any) {
 	}, []);
 
 	useEffect(() => {
-		log (`--------->phase changed to ${Phase[phase]}`)
+		log(`--------->phase changed to ${Phase[phase]}`)
 		switch (phase) {
 			case Phase.startingPrank:
 				runPrank()
 				break
 			case Phase.startPrankAfterMouseOrKeyPress:
 				setShowControls(false);
+				break
+			case Phase.prankRunning:
+				if (currentScene?.scene?.isPaused()) {
+					log(`resuming scene`)
+					setShowControls(false)
+					currentScene.scene.resume()
+					currentScene.matter?.world?.resume()
+					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+				}
+				break
+			case Phase.prankPaused:
+				if (currentScene && !currentScene.scene.isPaused()) {
+					log(`pausing scene`)
+					setShowControls(true)
+					currentScene.scene.pause()
+					currentScene.matter?.world?.pause()
+					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+				}
 				break
 		}
 	}, [phase])
@@ -144,9 +171,9 @@ export function PrankRunner(props: any) {
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
 		document.title = `:) ${targetUrl}`;
+		history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 
 		if (!isLoading && targetUrl) {
-			const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
 			let width
 			let height
 			if (isMobile) {
@@ -155,26 +182,10 @@ export function PrankRunner(props: any) {
 				height = window.screen.height
 			}
 			loadPage(targetUrl, width, height)
-			history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 		}
 	}, [targetUrl]);
 
-	useEffect(() => {
-		if (currentScene) {
-			if (currentScene.scene.isPaused()) {
-				log(`resuming scene`)
-				dispatchPhase(Phase.prankRunning)
-				currentScene.scene.resume()
-				currentScene.matter?.world?.resume()
-			}
-			else {
-				log(`pausing scene`)
-				dispatchPhase(Phase.prankPaused)
-				currentScene.scene.pause()
-				currentScene.matter?.world?.pause()
-			}
-		}
-	}, [toggleScenePause])
+
 
 	//load webpage when url changes
 	function loadPage(url: string, width = windowWidth, height = windowHeight) {
@@ -230,9 +241,10 @@ export function PrankRunner(props: any) {
 				altPageInfo = pageInfo
 			if (altPageInfo) {
 				log(`running prank ${effectModules[iPrank].title}`)
-				if (currentScene)
+				if (currentScene) {
 					currentScene.scene.remove()
-				//phaserParent.current.focus()
+					setCurrentScene(null)
+				}
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
 						setShowControls(false);

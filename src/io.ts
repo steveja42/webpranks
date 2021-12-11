@@ -1,7 +1,7 @@
 
-import { xphase, Phase } from './prankrunner'
+import { xphase, Phase, PhaseTogglePause } from './prankrunner'
 
-export function keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout, dispatchPhase) {
+export function keyBoardHandler(setShowControls, setShowPopout, dispatchPhase) {
 	/**
 	 * returns keydown handler that:
 	 *    opens popout debugging info window if Ctrl or Alt + "42" is pressed. 
@@ -21,8 +21,7 @@ export function keyBoardHandler(setTogglePauseScene, setShowControls, setShowPop
 		if (key === "Alt" || key === "Control")
 			return
 		if (key === "Escape") {   //esc key
-			setTogglePauseScene(prev => !prev)
-			setShowControls(prev => { return !prev })
+			dispatchPhase(PhaseTogglePause) 
 		}
 		else if (key === "Backspace" || key === "Cancel" || (key === " " && event.ctrlKey)) {
 			setShowControls(prev => { return !prev })
