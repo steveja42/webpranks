@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef} from 'react'
-import { log, keyBoardHandler } from './util'
+import React, { useState, useEffect, useRef, useReducer } from 'react'
+import { log } from './util'
+import { keyBoardHandler } from './io'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form, Alert } from 'react-bootstrap'
@@ -21,6 +22,29 @@ type PrankUIParams = {
 	isRunning: string
 };
 
+export enum Phase {
+	targetUrlNotLoaded,
+	targetUrlLoaded,
+	startPrankAfterMouseOrKeyPress,
+	startingPrank,
+	prankRunning,
+	prankPaused,
+	error
+}
+export let xphase = Phase.targetUrlNotLoaded
+export const PhaseNext = "next"
+function phaseReducer(state, newPhase): Phase {
+	if (newPhase in Phase)
+		xphase = newPhase
+	else switch (newPhase) {
+		case PhaseNext:
+			xphase = Phase.startingPrank;
+			break
+		default:
+			throw new Error();
+	}
+	return xphase
+}
 
 /**
  * Calls server to get the page at URL,
@@ -33,13 +57,13 @@ export function PrankRunner(props: any) {
 	const location = useLocation();
 	const history = useHistory();
 	const params = useParams<PrankUIParams>();
-	const [xURL, setXURL] = useState("")
+	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotLoaded)
+	const [targetUrl, setTargetUrl] = useState("")
 	const [inputURL, setInputURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
+	const [pageImage, setPageImage] = useState(null)
 	const [showControls, setShowControls] = useState(true)
-	const [isRunning, setIsRunning] = useState(false)
-	const [shouldStart, setShouldStart] = useState(false)
 	const [isLoading, setIsLoading] = useState(null)
 	const [showPopout, setShowPopout] = useState(false)
 	const [toggleScenePause, setTogglePauseScene] = useState(false)
@@ -53,12 +77,14 @@ export function PrankRunner(props: any) {
 	const { x: xMouse, y: yMouse } = useMousePosition(window);
 	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
 
-	useEffect(() => {    /** effect run on component load */
+	const isRunning = (phase === Phase.prankRunning)
+
+	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(`component load`)
 		//game = setupWorld(phaserParent.current, windowWidth, windowHeight)
 
 		//setShowPopout(true)
-		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout)
+		const handleKeyDown = keyBoardHandler(setTogglePauseScene, setShowControls, setShowPopout, dispatchPhase)
 		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
 
 		window.addEventListener('beforeunload', handleUnload)
@@ -78,10 +104,9 @@ export function PrankRunner(props: any) {
 			history.replace(`/${i}/${params.url || ""}/0`, { whichPrank: i, inputURL: url, isRunning: false })
 		const shouldRun = params.isRunning === '1'
 		if (shouldRun && params.url && i !== undefined) {
-			setShouldStart(true)
-			//runPrank(i, loadingPromise)
+			dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
 		}
-		
+
 
 		const unlisten = history.listen((location, action) => {
 			// location is an object like window.location
@@ -100,9 +125,16 @@ export function PrankRunner(props: any) {
 	}, []);
 
 	useEffect(() => {
-		if (shouldStart)
-			runPrank()
-	}, [shouldStart])
+		log (`--------->phase changed to ${Phase[phase]}`)
+		switch (phase) {
+			case Phase.startingPrank:
+				runPrank()
+				break
+			case Phase.startPrankAfterMouseOrKeyPress:
+				setShowControls(false);
+				break
+		}
+	}, [phase])
 
 	useEffect(() => {
 		log(`path changed: ${location.pathname}`);
@@ -110,10 +142,10 @@ export function PrankRunner(props: any) {
 	}, [location])
 
 	useEffect(() => {
-		log(`new url: ${xURL} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
-		document.title = `:) ${xURL}`;
+		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
+		document.title = `:) ${targetUrl}`;
 
-		if (!isLoading && xURL) {
+		if (!isLoading && targetUrl) {
 			const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
 			let width
 			let height
@@ -122,22 +154,22 @@ export function PrankRunner(props: any) {
 				width = window.screen.width
 				height = window.screen.height
 			}
-			loadPage(xURL, width, height)
-			history.replace(`/${whichPrank}/${encodeURIComponent(xURL)}/${isRunning ? 1 : 0}`, { whichPrank, xURL, isRunning })
+			loadPage(targetUrl, width, height)
+			history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 		}
-	}, [xURL]);
+	}, [targetUrl]);
 
 	useEffect(() => {
 		if (currentScene) {
 			if (currentScene.scene.isPaused()) {
 				log(`resuming scene`)
-				setIsRunning(true)
+				dispatchPhase(Phase.prankRunning)
 				currentScene.scene.resume()
 				currentScene.matter?.world?.resume()
 			}
 			else {
 				log(`pausing scene`)
-				setIsRunning(false)
+				dispatchPhase(Phase.prankPaused)
 				currentScene.scene.pause()
 				currentScene.matter?.world?.pause()
 			}
@@ -146,9 +178,13 @@ export function PrankRunner(props: any) {
 
 	//load webpage when url changes
 	function loadPage(url: string, width = windowWidth, height = windowHeight) {
+		setPageImage(null)
+		setPageInfo(null)
+
 		const loadingPromise = network.getImageandHtml(url, width, height)
 			.then(result => {
 				setShowFailure("")
+				setPageImage(result[0])
 				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight, bgDiv.current)
 			},
 				reason => {
@@ -184,6 +220,8 @@ export function PrankRunner(props: any) {
 
 
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
+		//xphase = Phase.startingPrank  //use global so keyboard handler sees it right away
+		//dispatchPhase("next")
 		try {
 			let altPageInfo
 			if (loadingPromise)
@@ -198,8 +236,7 @@ export function PrankRunner(props: any) {
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
 						setShowControls(false);
-						setIsRunning(true)
-						setShouldStart(false)
+						dispatchPhase(Phase.prankRunning)
 						history.push(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, { whichPrank: iPrank, inputURL, isRunning: true })
 						return setCurrentScene(module.doPageEffect(altPageInfo))
 					})
@@ -207,18 +244,18 @@ export function PrankRunner(props: any) {
 			}
 		} catch (error) {
 			log(error.message)
+			dispatchPhase(Phase.error)
 			setCurrentScene(null)
 		}
 
 	}
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault()
-		setShouldStart(true)
-
-		//runPrank()
+		dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
 	}
+
 	const pageLoaded = (!!pageInfo)
-	const formProps = { isLoading, setXURL, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL,showPopout, setShowPopout }
+	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout }
 
 	return <div id="foo">
 		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
@@ -226,13 +263,14 @@ export function PrankRunner(props: any) {
 			<Alert.Heading>Error. {showFailure}</Alert.Heading>
 		</Alert>
 		{showPopout ? getPopout() : null}
-		{showControls ?
-		<PrankForm {...formProps} />
-		: null }
-			<div className="game" ref={phaserParent} />
+		{showControls ? <PrankForm {...formProps} /> : null}
+
+		{(xphase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
+
+		<div className="game" ref={phaserParent} />
 	</div>
 
-	/** This returns the HTML for the popout*/
+	/** This returns the HTML for the popout debugging window*/
 	function getPopout() {
 
 		return (
