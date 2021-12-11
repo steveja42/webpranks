@@ -19,7 +19,7 @@ type PrankUIParams = {
 export function PrankForm(props: any) {
 	const protocol = 'http://'
 
-	const { isLoading, setXURL, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL, showPopout, setShowPopout } = props
+	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL, showPopout, setShowPopout } = props
 
 	const onFocus = () => {
 		if (inputURL.trim() === '') {
@@ -39,7 +39,7 @@ export function PrankForm(props: any) {
 			//document.getElementById("prank").focus()   //change focus to remove mobile onscreen keyboard before loading
 		} 
 		*/
-		setXURL(inputURL)
+		setTargetUrl(inputURL)
 
 	}
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
