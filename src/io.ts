@@ -1,7 +1,16 @@
 
 import { xphase, Phase, PhaseTogglePause } from './prankrunner'
 
-export function keyBoardHandler(setShowControls, setShowPopout, dispatchPhase) {
+export function getClickTouchHandler(dispatchPhase) {
+
+	return function handleClickTouch(event) {
+		if (xphase === Phase.startPrankAfterMouseOrKeyPress) {
+			dispatchPhase(Phase.startingPrank)
+			return
+		} 
+	}
+}
+export function getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase) {
 	/**
 	 * returns keydown handler that:
 	 *    opens popout debugging info window if Ctrl or Alt + "42" is pressed. 

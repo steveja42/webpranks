@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { log } from './util'
-import { keyBoardHandler } from './io'
+import {getKeyBoardHandler, getClickTouchHandler } from './io'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form, Alert } from 'react-bootstrap'
@@ -16,6 +16,7 @@ import { useParams, useHistory, useLocation } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
+
 
 let game: Phaser.Game
 type PrankUIParams = {
@@ -93,11 +94,14 @@ export function PrankRunner(props: any) {
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(`component load`)
 		//setShowPopout(true)
-		const handleKeyDown = keyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
+		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
+		const handleClickOrTouch = getClickTouchHandler(dispatchPhase)
 		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
 
 		window.addEventListener('beforeunload', handleUnload)
 		document.addEventListener("keydown", handleKeyDown, false)
+		window.addEventListener("click", handleClickOrTouch, false)
+		window.addEventListener("touchstart", handleClickOrTouch, false)
 		//
 		let url = ""
 		if (params.url) {
@@ -118,7 +122,7 @@ export function PrankRunner(props: any) {
 		}
 
 
-		const unlisten = history.listen((location, action) => {
+		const unlistenHistory = history.listen((location, action) => {
 			// location is an object like window.location
 			console.log(action, location.pathname, location.state)
 			if (action === "POP") {
@@ -129,7 +133,9 @@ export function PrankRunner(props: any) {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown, false);
 			window.removeEventListener('beforeunload', handleUnload);
-			unlisten()
+			window.removeEventListener("click", handleClickOrTouch, false)
+			window.removeEventListener("touchstart", handleClickOrTouch, false)
+			unlistenHistory()
 		};
 	}, []);
 
