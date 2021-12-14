@@ -1,10 +1,10 @@
 
-import { xphase, Phase, PhaseTogglePause } from './prankrunner'
+import { globalPhase, Phase, PhaseTogglePause } from './prankrunner'
 
 export function getClickTouchHandler(dispatchPhase) {
 
 	return function handleClickTouch(event) {
-		if (xphase === Phase.startPrankAfterMouseOrKeyPress) {
+		if (globalPhase === Phase.startPrankAfterMouseOrKeyPress) {
 			dispatchPhase(Phase.startingPrank)
 			return
 		} 
@@ -21,7 +21,7 @@ export function getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase
 	let prevKey = ""
 
 	return function handleKeyDown(event: KeyboardEvent) {
-		if (xphase === Phase.startPrankAfterMouseOrKeyPress) {
+		if (globalPhase === Phase.startPrankAfterMouseOrKeyPress) {
 			dispatchPhase(Phase.startingPrank)
 			return
 		} 

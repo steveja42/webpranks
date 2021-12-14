@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { log } from './util'
-import {getKeyBoardHandler, getClickTouchHandler } from './io'
+import { getKeyBoardHandler, getClickTouchHandler } from './io'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form, Alert } from 'react-bootstrap'
@@ -34,29 +34,29 @@ export enum Phase {
 	prankPaused,
 	error
 }
-export let xphase = Phase.targetUrlNotLoaded
+export let globalPhase = Phase.targetUrlNotLoaded
 export const PhaseNext = "next"
 export const PhaseTogglePause = "togglepause"
 
 function phaseReducer(oldPhase, newPhase): Phase {
 	if (newPhase in Phase)
-		xphase = newPhase
+		globalPhase = newPhase
 	else switch (newPhase) {
 		case PhaseNext:
-			xphase = Phase.startingPrank;
+			globalPhase = Phase.startingPrank;
 			break
 		case PhaseTogglePause:
 			if (oldPhase === Phase.prankRunning)
-				xphase = Phase.prankPaused
+				globalPhase = Phase.prankPaused
 			else if (oldPhase === Phase.prankPaused)
-				xphase = Phase.prankRunning
+				globalPhase = Phase.prankRunning
 			else
-				xphase = oldPhase
+				globalPhase = oldPhase
 			break
 		default:
 			throw new Error();
 	}
-	return xphase
+	return globalPhase
 }
 
 /**
@@ -142,11 +142,11 @@ export function PrankRunner(props: any) {
 	useEffect(() => {
 		log(`--------->phase changed to ${Phase[phase]}`)
 		switch (phase) {
-			case Phase.startingPrank:
-				runPrank()
-				break
 			case Phase.startPrankAfterMouseOrKeyPress:
 				setShowControls(false);
+				break
+			case Phase.startingPrank:
+				runPrank()
 				break
 			case Phase.prankRunning:
 				if (currentScene?.scene?.isPaused()) {
@@ -283,7 +283,7 @@ export function PrankRunner(props: any) {
 		{showPopout ? getPopout() : null}
 		{showControls ? <PrankForm {...formProps} /> : null}
 
-		{(xphase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
+		{(globalPhase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
 
 		<div className="game" ref={phaserParent} />
 	</div>
