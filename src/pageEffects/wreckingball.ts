@@ -43,7 +43,6 @@ export class PageScene extends Phaser.Scene {
 
 	public preload() {
 		log(`start`)
-		//this.load.image('block', 'assets/sprites/block.png');
 		this.load.image('chainlink', 'assets/chainlink32.png');
 	}
 
@@ -101,14 +100,16 @@ export class PageScene extends Phaser.Scene {
 		const numLinks = (height / 2 - fulcrumRadius - wreckingballRadius) / (chainlinkRadius * 2)
 		const chainLength = fulcrumRadius + wreckingballRadius + ((chainlinkRadius * numLinks) * 2)
 
+		// -------- create fulcrum --------
 		this.fulcrum = this.matter.add.gameObject(this.add.rectangle(x, y, fulcrumRadius * 2, fulcrumRadius * 2, 0x000000), {
-			isStatic: true, density: 0.04, frictionAir: 0.005, ignoreGravity: true, render: { fillColor: 0xfff },
+			/*isStatic: true,*/ density: 100000, frictionAir: 0.005, ignoreGravity: true, render: { fillColor: 0xfff },
 			collisionFilter: {
 				group: CollisonGroup.Dom,
-				mask: CollisionCategory.ground,
-				category: CollisionCategory.none
+				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom | CollisionCategory.domBackground,
+				category: CollisionCategory.default
 			}
 		}) as GameObjectwithMatterBody
+		// -------- create chain --------
 		this.chain.push(this.fulcrum)
 		let prevRadius = fulcrumRadius
 		let prev = this.fulcrum.body
@@ -126,7 +127,7 @@ export class PageScene extends Phaser.Scene {
 			prevRadius = chainlinkRadius
 		}
 		x -= prevRadius + wreckingballRadius
-
+		//----------- create ball --------
 		this.wreckingBall = this.matter.add.gameObject(this.add.circle(x, y, wreckingballRadius, 0x000000), {
 			density: MetalDensity, restitution: domRestitution, friction: 0, frictionAir: 0, render: { fillColor: 0x000000 },
 			collisionFilter: {
@@ -148,10 +149,11 @@ export class PageScene extends Phaser.Scene {
 				const forceAngle = Phaser.Math.DegToRad(0)
 			//	this.matter.applyForce(this.wreckingBall.body, {x: Math.cos(startAngle) * force, y: Math.sin(startAngle) * force }) // .setVelocity(this.wreckingBall.body, -5,10)
 			*/
-		this.matter.world.engine.timing.timeScale = .6
+		this.matter.world.engine.timing.timeScale = .6  //inital swing of ball is in slow motion
 	}
+
 	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
-		//log(`collided with ${data.bodyA.id}`) //${data.bodyA.body.id}
+//		log(`collided with ${data.bodyA.id}`) //${data.bodyA.body.id}
 	}
 
 	public update(time: number, delta: number) {
@@ -166,12 +168,12 @@ export class PageScene extends Phaser.Scene {
 
 	}
 
-	initialMovement(duration, totalDistance, player) {
+	initialMovement(duration, totalDistance, object) {
 		const timeIncrement = 200
 		if (this.distanceMoved < totalDistance && this.deltaElapsed - this.lastInitialMovement > timeIncrement) {
 			const distance = totalDistance / (duration / timeIncrement)
 			this.distanceMoved += distance
-			player.setPosition(player.x, player.y + distance)
+			object.setPosition(object.x, object.y + distance)
 			this.lastInitialMovement = this.deltaElapsed
 		}
 	}
@@ -197,25 +199,25 @@ export class PageScene extends Phaser.Scene {
 			}
 		}
 	}
-	allowCursorMovement(player) {
+	allowCursorMovement(object) {
 		const increment = 5
 		if (cursors.left.isDown) {
-			player.setPosition(player.x - increment, player.y);
+			object.setPosition(object.x - increment, object.y);
 		}
 		else if (cursors.right.isDown) {
-			player.setPosition(player.x + increment, player.y);
+			object.setPosition(object.x + increment, object.y);
 		}
 		else {
-			player.setVelocityX(0);
+			object.setVelocityX(0);
 		}
 		if (cursors.up.isDown) {
-			player.setPosition(player.x, player.y - increment);
+			object.setPosition(object.x, object.y - increment);
 		}
 		else if (cursors.down.isDown) {
-			player.setPosition(player.x, player.y + increment);
+			object.setPosition(object.x, object.y + increment);
 		}
 		else {
-			player.setVelocityY(0);
+			object.setVelocityY(0);
 		}
 
 	}
