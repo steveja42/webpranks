@@ -1,4 +1,5 @@
 import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects, ms, CollisionCategory, CollisonGroup } from '../modhelper'
+//import ShatterImage from 'phaser3-rex-plugins/plugins/shatterimage'
 
 export function doPageEffect(page: PageInfo) {
 	const pageScene = new PageScene(page)
@@ -36,6 +37,9 @@ export class PageScene extends Phaser.Scene {
 	chain: GameObjectwithMatterBody[] = []
 	initY = 0
 	distanceMoved = 0
+	firstImageId
+	shatterImages: any[] = []
+
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
 		log('constructing scene')
@@ -43,7 +47,8 @@ export class PageScene extends Phaser.Scene {
 
 	public preload() {
 		log(`start`)
-		this.load.image('chainlink', 'assets/chainlink32.png');
+		this.load.image('chainlink', 'assets/chainlink32.png')
+		this.load.plugin('rexshatterimageplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexshatterimageplugin.min.js', true);
 	}
 
 	public async create() {
@@ -55,25 +60,44 @@ export class PageScene extends Phaser.Scene {
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
 		cursors = this.input.keyboard.createCursorKeys();
-
-		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
-
-		backgroundRectangles.forEach(rect => {
-			if ((rect.width * rect.height) < maxAreaForObjects) {
-				this.backgroundRects.push(this.matter.add.gameObject(rect, {
-					ignoreGravity: true, density: domDensity, restitution: domRestitution, collisionFilter: {
-						group: CollisonGroup.Dom,
-						mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
-						category: CollisionCategory.dom
+		/*
+				const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
+		
+				backgroundRectangles.forEach(rect => {
+					if ((rect.width * rect.height) < maxAreaForObjects) {
+						this.backgroundRects.push(this.matter.add.gameObject(rect, {
+							ignoreGravity: true, density: domDensity, restitution: domRestitution, collisionFilter: {
+								group: CollisonGroup.Dom,
+								mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
+								category: CollisionCategory.dom
+							}
+						}) as GameObjectwithMatterBody)
 					}
-				}) as GameObjectwithMatterBody)
+				});
+				domElementImages.forEach(di => {
+					di.setDensity(domDensity)
+					di.setBounce(domRestitution)
+				})
+				this.domImages = domElementImages
+		*/
+		this.pageInfo.domElementsImages.forEach((domElement, i) => {
+			//const image = new ShatterImage(this, center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`)
+			const snafu = this as any
+			const image = snafu.add.rexShatterImage(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`)
+			
+			this.shatterImages.push(image)
+			const img: GameObjectwithMatterBody = this.matter.add.gameObject(this.add.existing(image), {
+				ignoreGravity: true, collisionFilter: {
+					group: CollisonGroup.Dom,
+					mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
+					category: CollisionCategory.dom
+				}
+			}) as GameObjectwithMatterBody
+
+			if (i === 0) {
+				this.firstImageId = img.body.id
 			}
-		});
-		domElementImages.forEach(di => {
-			di.setDensity(domDensity)
-			di.setBounce(domRestitution)
 		})
-		this.domImages = domElementImages
 
 		const groundHeight = 10
 		const wallWidth = 10
@@ -152,9 +176,38 @@ export class PageScene extends Phaser.Scene {
 		this.matter.world.engine.timing.timeScale = .6  //inital swing of ball is in slow motion
 	}
 
-	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
-//		log(`collided with ${data.bodyA.id}`) //${data.bodyA.body.id}
+	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionPair) {
+		log(`collided with ${data.bodyA.id}`) //${data.bodyA.body.id}
+		const snafu: any = data
+		data.bodyA.gameObject.scene.shatter(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, data.bodyA.gameObject) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
+		data.bodyA.ignoreGravity = false
+		//data.bodyA.gameObject.scene.matter.world.remove(data.bodyA) 
 	}
+
+	shatter(x, y, image) {
+		if (!image.faces || image.faces.length > 2)
+			return //already shattered
+		image.shatter(x, y)
+
+		image.startUpdate();
+		image.task = this.tweens.add({
+			targets: image.faces,
+			alpha: 0,
+			angle: function () { return -90 + Math.random() * 180; },
+			//y: '-=0.5',
+			ease: 'Linear',       // 'Cubic', 'Elastic', 'Bounce', 'Back'
+			duration: 1000,
+			//delay: this.tweens.stagger(20, {}),
+			repeat: 0,            // -1: infinity
+			yoyo: false,
+			onComplete: function () {
+				image
+					.stopUpdate()
+				//.resetImage()
+			}
+		});
+	}
+
 
 	public update(time: number, delta: number) {
 		this.deltaElapsed += delta
@@ -183,7 +236,7 @@ export class PageScene extends Phaser.Scene {
 		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
 		if (this.deltaElapsed - this.lastTime > 100) {
 			this.lastTime = this.deltaElapsed
-			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
+			//log(`at angle ${ ballAngle.toFixed(2) }(x ${ this.wreckingBall.body.velocity.x.toFixed(2) } y ${ this.wreckingBall.body.velocity.y.toFixed(2) }) - ${ ballSpeed.toFixed(2) } `)
 		}
 		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
 			this.matter.setVelocityX(this.wreckingBall.body, 10)  //applyForce(this.wreckingBall.body,{x:9, y:0})
@@ -225,6 +278,5 @@ export class PageScene extends Phaser.Scene {
 
 
 }
-
 
 

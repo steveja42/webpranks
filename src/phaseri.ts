@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { PageInfo } from "./domtoobjects"
 import { center, setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
+//import ShatterImagePlugin from 'phaser3-rex-plugins/plugins/shatterimage-plugin'
 
 let gameLoadedPromise: Promise<Phaser.Game>
 let resolveGameLoadedCallback
@@ -23,6 +24,14 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 				gravity: { y: 0.5 }
 			}
 		},
+		/*plugins: {
+			global: [{
+				key: 'rexShatterImage',
+				plugin: ShatterImagePlugin,
+				start: true
+			}]
+		},
+		*/
 		callbacks: { postBoot: onPostBoot },
 		scene: null, // { key: "rootScene", visible: false },
 		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
@@ -59,7 +68,7 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, curr
 		}
 		//
 	}
-	log (`loading textures`)
+	log(`loading textures`)
 	let imagesYetToLoadCount = pageInfo.domElementsImages.length
 	const texturesLoaded = new Promise(resolve => {
 		pageInfo.game.textures.on('addtexture', (key: string, texture) => {
