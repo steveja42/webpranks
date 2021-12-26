@@ -3,47 +3,6 @@ body {
   overflow: hidden;
 }
 
-.fubr:-webkit-autofill {
-  animation: gack 1s infinite;
-}
-
-.fubr {
-  background-color: greenyellow;
-  height: 90px;
-  width: 90px;
-  left: 0px;
-  top: 0px;
-  position: absolute;
-}
-
-@keyframes sampleanimation {
-  0% {
-    left: 0px;
-    top: 0px;
-  }
-  25% {
-    left: 300px;
-    top: 0px;
-  }
-  50% {
-    left: 300px;
-    top: 150px;
-  }
-  75% {
-    left: 0px;
-    top: 150px;
-  }
-}
-
-@keyframes gack {
-  from {
-    background-color: purple(0%);
-  }
-  to {
-    background-color: red(100%);
-  }
-}
-
 @keyframes AutoFillStart {
   from {
     background-color: purple(0%);
@@ -52,16 +11,6 @@ body {
     background-color: red(100%);
   }
 }
-@keyframes fooAutoFillStart {
-  from {
-    background-color: purple(0%);
-  }
-  to {
-    background-color: red(100%);
-  }
-}
-
-@keyframes AutoFillCancel {}
 
 input:-webkit-autofill {
   animation: AutoFillStart 1s;
