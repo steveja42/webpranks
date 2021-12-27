@@ -5,21 +5,21 @@ import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form, Alert } from 'react-bootstrap'
 import { effectModules } from './pageEffects/modulelist'
+import { Phase } from './prankrunner'
 
 const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
-
-
 type PrankUIParams = {
 	prank: string
 	url: string
 	isRunning: string
 };
 
+let prankChosen = false
 
 export function PrankForm(props: any) {
 	const protocol = 'http://'
 
-	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL, showPopout, setShowPopout } = props
+	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL, showPopout, setShowPopout,phase, dispatchPhase } = props
 
 	const onFocus = () => {
 		if (inputURL.trim() === '') {
@@ -57,7 +57,7 @@ export function PrankForm(props: any) {
 	}
 
 	const onAnimationStart = (animEvent: React.AnimationEvent<HTMLInputElement>) => {
-		log(`anim start ${animEvent.animationName}`)
+		log(`anim start ${animEvent.animationName}  - ${inputURL}`)
 		if (animEvent.animationName === 'AutoFillStart')
 			onURLWasInput()
 	}
@@ -68,11 +68,11 @@ export function PrankForm(props: any) {
 
 		
 			<Form.Group controlId="url">
-				<Form.Label>Choose a website</Form.Label>
+				<Form.Label className={(phase === Phase.targetUrlNotEntered)? "do_me": ""}>Choose a website to prank</Form.Label>
 				<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a URL" required />
 			</Form.Group>
 			<Form.Group controlId="prank">
-				<Form.Label>Choose a prank</Form.Label>
+				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered)? "do_me": ""}>Choose a prank</Form.Label>
 				<Form.Control
 					as="select"
 					value={whichPrank}
@@ -80,11 +80,14 @@ export function PrankForm(props: any) {
 						const x = parseInt(e.target.value)
 						setWhichPrank(x)
 					}}
+					onClick={e => {
+						prankChosen = true
+					}}
 				>
 					{prankList}
 				</Form.Control>
 			</Form.Group>
-			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} >
+			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered)? "push_me": ""} >
 				{isLoading ? 'Loading…' : 'Prank It'}
 				{isLoading && <Spinner animation="border" role="status " size="sm">
 					<span className="sr-only">Loading...</span>

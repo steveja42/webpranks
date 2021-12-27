@@ -26,22 +26,20 @@ type PrankUIParams = {
 };
 
 export enum Phase {
-	targetUrlNotLoaded,
-	targetUrlLoaded,
+	targetUrlNotEntered,
+	targetUrlEntered,
 	startPrankAfterMouseOrKeyPress,
 	startingPrank,
 	prankRunning,
 	prankPaused,
 	error
 }
-export let globalPhase = Phase.targetUrlNotLoaded
+export let globalPhase = Phase.targetUrlNotEntered   //keep phase in global for io handlers to access
 export const PhaseNext = "next"
 export const PhaseTogglePause = "togglepause"
 
 function phaseReducer(oldPhase, newPhase): Phase {
-	if (newPhase in Phase)
-		globalPhase = newPhase
-	else switch (newPhase) {
+	switch (newPhase) {
 		case PhaseNext:
 			globalPhase = Phase.startingPrank;
 			break
@@ -53,6 +51,21 @@ function phaseReducer(oldPhase, newPhase): Phase {
 			else
 				globalPhase = oldPhase
 			break
+
+		case Phase.targetUrlEntered:
+			if (oldPhase === Phase.startPrankAfterMouseOrKeyPress)
+			globalPhase = oldPhase
+		else
+			globalPhase = newPhase
+			break
+		case Phase.targetUrlNotEntered:
+		case Phase.startPrankAfterMouseOrKeyPress:
+		case Phase.startingPrank:
+		case Phase.prankRunning:
+		case Phase.prankPaused:
+			globalPhase = newPhase
+			break
+
 		default:
 			throw new Error();
 	}
@@ -70,7 +83,7 @@ export function PrankRunner(props: any) {
 	const location = useLocation();
 	const history = useHistory();
 	const params = useParams<PrankUIParams>();
-	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotLoaded)
+	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotEntered)
 	const [targetUrl, setTargetUrl] = useState("")
 	const [inputURL, setInputURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
@@ -180,6 +193,8 @@ export function PrankRunner(props: any) {
 		history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 
 		if (!isLoading && targetUrl) {
+			dispatchPhase(Phase.targetUrlEntered)
+
 			let width
 			let height
 			if (isMobile) {
@@ -273,7 +288,7 @@ export function PrankRunner(props: any) {
 	}
 
 	const pageLoaded = (!!pageInfo)
-	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout }
+	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, dispatchPhase }
 
 	return <div id="foo">
 		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
@@ -283,7 +298,7 @@ export function PrankRunner(props: any) {
 		{showPopout ? getPopout() : null}
 		{showControls ? <PrankForm {...formProps} /> : null}
 
-		{(globalPhase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
+		{(phase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
 
 		<div className="game" ref={phaserParent} />
 	</div>
