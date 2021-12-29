@@ -54,9 +54,9 @@ function phaseReducer(oldPhase, newPhase): Phase {
 
 		case Phase.targetUrlEntered:
 			if (oldPhase === Phase.startPrankAfterMouseOrKeyPress)
-			globalPhase = oldPhase
-		else
-			globalPhase = newPhase
+				globalPhase = oldPhase
+			else
+				globalPhase = newPhase
 			break
 		case Phase.targetUrlNotEntered:
 		case Phase.startPrankAfterMouseOrKeyPress:
@@ -298,7 +298,11 @@ export function PrankRunner(props: any) {
 		{showPopout ? getPopout() : null}
 		{showControls ? <PrankForm {...formProps} /> : null}
 
-		{(phase === Phase.startPrankAfterMouseOrKeyPress) ? <img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" /> : null}
+		{(phase === Phase.startPrankAfterMouseOrKeyPress) ?
+			<div>
+				<img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" />
+				<h2 id="prompt" className="prompt"> Tap, Type or Click</h2>
+			</div> : null}
 
 		<div className="game" ref={phaserParent} />
 	</div>
