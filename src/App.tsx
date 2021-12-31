@@ -14,6 +14,7 @@ import Popover from 'react-bootstrap/Popover'
 import PopoverBody from 'react-bootstrap/PopoverBody'
 
 import guy from './images/suit-g280f76b53_200.png'
+import surprisedGirl from './images/surprised-3355958_200x.png'
 import giraffe from './images/giraffe-400.png'
 import questionMark from './images/question-mark-1829459_100.png'
 
@@ -41,8 +42,8 @@ export function App(): JSX.Element {
           Web Hijinks
           </Navbar.Brand>
                 <OverlayTrigger
-                  placement="right"
-                  trigger="hover"
+                  placement="auto"
+                  trigger={['hover', 'click']}
                   
                   overlay={xpopover}
                 >
