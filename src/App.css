@@ -15,13 +15,40 @@ body, #navbar, .mynav {
   color: chocolate;
   font-size:1.5em;
 }
+
+#navbar {
+  border-bottom: 1px solid black;
+  background-color: rgb(20, 165, 201);
+margin-bottom: 1em;
+}
+
 .navbar-brand {
   font-size: 5vh;
+  margin-left: 100px;
 }
 .navbar-nav {
   font-size: 1.4rem;
 }
 
+#alternate img {
+  position: absolute;
+  top:0px;
+  left:0px;
+  width: 75px;
+  height: 100px;
+  animation: fade 1s infinite alternate;
+}
+
+#alternate img:nth-child(2) {
+  animation-delay: 1s;
+}
+
+@keyframes fade {
+  0% { opacity: 1; }
+  49% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
 #funny {
   width:20vw ;
   height:14.6vw;

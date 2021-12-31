@@ -34,25 +34,31 @@ export function App(): JSX.Element {
         <header>
           {showControls ?
             <div>
+
               < Navbar id="navbar" className="mynav" expand="sm" >
 
                 <Navbar.Brand as={NavLink} to="/">
-                  <img src={guy} width="75" height="100" className="d-inline-block align-top" alt="" />
-                  {'   '}
-          Web Hijinks
+
+
+                  Web Hijinks
           </Navbar.Brand>
+
                 <OverlayTrigger
                   placement="auto"
                   trigger={['hover', 'click']}
-                  
+
                   overlay={xpopover}
                 >
-                                    <img src={questionMark} width="15" height="15" className="d-inline-block align-bottom" alt="" />
+                  <img src={questionMark} width="15" height="15" className="d-inline-block align-bottom" alt="" />
 
                 </OverlayTrigger>
 
 
               </Navbar >
+              <div id="alternate">
+                <img src={guy} alt="wacky guy" />
+                <img src={surprisedGirl} alt="surprised girl" />
+              </div>
               <img id="funny" src={giraffe} alt="" />
 
             </div>
@@ -80,7 +86,7 @@ const xpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
-      In these perhaps too serious times a little fun, humour and levity might be needed.  
+      In these perhaps too serious times a little fun, humour and levity might be needed.
       Just enter the web address of your favorite (or least favorite) website, choose a prank, and see what happens to the website...
     </Popover.Body>
   </Popover>
