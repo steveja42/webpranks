@@ -79,6 +79,7 @@ function phaseReducer(oldPhase, newPhase): Phase {
  */
 
 export function PrankRunner(props: any) {
+	const {showControls, setShowControls} = props
 
 	const location = useLocation();
 	const history = useHistory();
@@ -89,7 +90,6 @@ export function PrankRunner(props: any) {
 	const [whichPrank, setWhichPrank] = useState(0)
 	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
 	const [pageImage, setPageImage] = useState(null)
-	const [showControls, setShowControls] = useState(true)
 	const [isLoading, setIsLoading] = useState(null)
 	const [showPopout, setShowPopout] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
@@ -291,6 +291,7 @@ export function PrankRunner(props: any) {
 	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, dispatchPhase }
 
 	return <div id="foo">
+
 		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
 		<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
 			<Alert.Heading>Error. {showFailure}</Alert.Heading>

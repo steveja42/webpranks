@@ -10,6 +10,37 @@ body {
     src:url(./fonts/Bangers-Regular.ttf) format('truetype');
 }
 
+body, #navbar, .mynav {
+  background-color: cornsilk;
+  color: chocolate;
+  font-size:1.5em;
+}
+.navbar-brand {
+  font-size: 5vh;
+}
+.navbar-nav {
+  font-size: 1.4rem;
+}
+
+#funny {
+  width:20vw ;
+  height:14.6vw;
+  position: fixed;
+  top:0em;
+  right:0%;
+  animation: in_out 3s infinite alternate;
+}
+
+@keyframes in_out {
+  0% {
+    transform: translate(0em, 0em);
+  }
+ 
+  100% {
+    transform: translate(10vw, -7.3vw);
+  }
+}
+
 .prompt {
   
   position: fixed;
@@ -140,10 +171,7 @@ input:-webkit-autofill {
   border-color: chocolate;
 }
 
-body {
-  background-color: cornsilk;
-  color: chocolate;
-}
+
 
 input[type="url"]::placeholder {
   color: chocolate;
