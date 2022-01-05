@@ -23,6 +23,15 @@ import { PrankRunner } from './prankrunner'
 import './App.css'
 export const version = .01
 
+
+
+/*
+
+    <img src={guy} alt="wacky guy" />
+                <img src={surprisedGirl} alt="surprised girl" />
+background-image: url("./images/surprised-3355958_200x.png");
+
+                */
 log(`version ${version} starting`)
 //className="App-header"
 export function App(): JSX.Element {
@@ -33,31 +42,32 @@ export function App(): JSX.Element {
       <div className="App">
         <header>
           {showControls ?
-            <div>
+            <div id="conditional">
+              <div id="fooalternate">
+            
+                < Navbar id="navbar" className="mynav" expand="sm" >
 
-              < Navbar id="navbar" className="mynav" expand="sm" >
-
-                <Navbar.Brand as={NavLink} to="/">
-
-
-                  Web Hijinks
-          </Navbar.Brand>
-
-                <OverlayTrigger
-                  placement="auto"
-                  trigger={['hover', 'click']}
-
-                  overlay={xpopover}
-                >
-                  <img src={questionMark} width="15" height="15" className="d-inline-block align-bottom" alt="" />
-
-                </OverlayTrigger>
+                  <Navbar.Brand as={NavLink} to="/">
 
 
-              </Navbar >
-              <div id="alternate">
-                <img src={guy} alt="wacky guy" />
-                <img src={surprisedGirl} alt="surprised girl" />
+                    Web Hijinks
+                </Navbar.Brand>
+
+                  <OverlayTrigger
+                    placement="auto"
+                    trigger={['hover', 'click']}
+
+                    overlay={xpopover}
+                  >
+                    <img src={questionMark} width="15" height="15" className="d-inline-block align-bottom" alt="" />
+
+                  </OverlayTrigger>
+
+
+
+                </Navbar >
+
+
               </div>
               <img id="funny" src={giraffe} alt="" />
 
