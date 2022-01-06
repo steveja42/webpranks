@@ -189,7 +189,7 @@ export function PrankRunner(props: any) {
 
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
-		document.title = `:) ${targetUrl}`;
+		document.title = `${targetUrl}` || "Web Hijinks";
 		history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 
 		if (!isLoading && targetUrl) {
@@ -221,7 +221,7 @@ export function PrankRunner(props: any) {
 			},
 				reason => {
 					log(`oh! an error occurred ${reason}`)
-					setShowFailure(`Unable to get web page at ${url}`)
+					setShowFailure(`Unable to find web page at ${url}`)
 					setIsLoading(false)
 					throw new Error(reason)
 				}

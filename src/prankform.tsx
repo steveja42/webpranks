@@ -44,8 +44,10 @@ export function PrankForm(props: any) {
 	}
 	//const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 	const onKeyDown = (e) => {
-		if (e.key === 'Enter')
+		if (e.key === 'Enter'){
+			onURLWasInput()
 			e.preventDefault();
+		}
 		if (e.key === "Backspace")
 			e.stopPropagation()
 	}
@@ -69,7 +71,7 @@ export function PrankForm(props: any) {
 
 			<Form.Group controlId="url">
 				<Form.Label className={(phase === Phase.targetUrlNotEntered)? "do_me": ""}>Choose a website to prank</Form.Label>
-				<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a URL" required />
+				<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
 			</Form.Group>
 			<Form.Group controlId="prank">
 				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered)? "do_me": ""}>Choose a prank</Form.Label>
