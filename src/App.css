@@ -206,7 +206,7 @@ body {
   background-color: black;
 }
 
-body .form-control:not(active) ,.form-control:focus {
+body, .form-control:not(active) ,.form-control:focus {
   color: chocolate;
 }
 
