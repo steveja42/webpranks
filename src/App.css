@@ -18,7 +18,7 @@ body {
 }
 #navbar {
   border-bottom: 1px solid black;
-  background-color: rgb(201 20 24 / 66%);
+  background-color: rgb(221 146 9 / 67%);
 margin-bottom: 1em;
 background-image: url("./images/suit-g280f76b53_200.png");
 background-repeat: no-repeat;
@@ -203,13 +203,16 @@ input:-webkit-autofill {
 }
 
 body {
-  background-color: cornsilk;
+  background-color: black;
 }
 
-body, input[type="url"]::placeholder,.form-control:not(active) ,.form-control:focus {
+body .form-control:not(active) ,.form-control:focus {
   color: chocolate;
 }
 
+.myform input::placeholder, .myform textarea::placeholder {
+  color:rgb(221, 137, 76);
+}
 .myform>* {
   display: inline-block;
   margin-bottom: 1rem;

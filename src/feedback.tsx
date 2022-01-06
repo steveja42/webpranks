@@ -80,7 +80,7 @@ export class FeedbackForm extends React.Component {
 	//onSubmit={this.handleSubmit}  action="http://localhost:8080/feedback" method="post"   action="http://localhost:8081/process_post" method="post"
 	render() {
 		return (
-			<Form onSubmit={this.handleSubmit}  >
+			<Form onSubmit={this.handleSubmit} className="myform" >
 
 				<Alert show={this.state.showSuccess} variant="success" onClose={() => this.setState({ showSuccess: false })} dismissible>
 					<Alert.Heading>Thank You! The {this.state.type} was submitted.</Alert.Heading>
