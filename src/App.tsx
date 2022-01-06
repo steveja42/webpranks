@@ -95,7 +95,7 @@ const xpopover = (
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
       <p>Get ready for a little fun, humour and levity!
-      Just enter the web address of your favorite (or least favorite) website, choose a prank, and see what happens ...</p>
+      Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens...</p>
       Whatever you do, don't go to your friends device and prank them!
     </Popover.Body>
   </Popover>
