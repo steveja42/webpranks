@@ -1,10 +1,12 @@
 body {
   margin: 0;
-  overflow: scroll;
   font-family: 'bangers' !important;
 
 }
+.game {
+  overflow: hidden;
 
+}
 @font-face {
   font-family: 'bangers';
     src:url(./fonts/Bangers-Regular.ttf) format('truetype');
@@ -210,12 +212,17 @@ body, .form-control:not(active) ,.form-control:focus {
   color: chocolate;
 }
 
+.myform {
+  overflow: auto;
+
+}
 .myform input::placeholder, .myform textarea::placeholder {
   color:rgb(221, 137, 76);
 }
 .myform>* {
   display: inline-block;
   margin-bottom: 1rem;
+
 }
 
 .myform>*:not(:first-child) {
