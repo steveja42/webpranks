@@ -10,15 +10,15 @@ body {
     src:url(./fonts/Bangers-Regular.ttf) format('truetype');
 }
 
-body, #navbar, .mynav {
-  background-color: cornsilk;
-  color: chocolate;
-  font-size:1.5em;
-}
 
+
+#info {
+  max-height: 2vh;
+  object-fit: contain;
+}
 #navbar {
   border-bottom: 1px solid black;
-  background-color: rgb(20, 165, 201);
+  background-color: rgb(201 20 24 / 66%);
 margin-bottom: 1em;
 background-image: url("./images/suit-g280f76b53_200.png");
 background-repeat: no-repeat;
@@ -202,17 +202,11 @@ input:-webkit-autofill {
   border-color: chocolate;
 }
 
-
-
-input[type="url"]::placeholder {
-  color: chocolate;
+body {
+  background-color: cornsilk;
 }
 
-.form-control:not(active) {
-  color: chocolate;
-}
-
-.form-control:focus {
+body, input[type="url"]::placeholder,.form-control:not(active) ,.form-control:focus {
   color: chocolate;
 }
 
@@ -277,3 +271,37 @@ input[type="url"]::placeholder {
     transform: rotate(360deg);
   }
 }
+
+
+/*   #refresh ,   */
+/*
+::::::::::::::::::::::::::::::::::::::::::::::::::::
+Bootstrap 4 breakpoints   
+
+/* 
+Extra small devices (portrait phones, less than 576px) 
+No media query since this is the default in Bootstrap because it is "mobile first"
+*/
+
+/* Small devices (landscape phones, 576px and up) */
+
+@media (min-width: 576px) {}
+
+
+/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
+
+@media (min-width: 768px) {
+ 
+  body, .form-control, .btn {
+     font-size:1.5rem
+   }
+}
+
+/* Large devices (desktops, 992px and up) */
+
+@media (min-width: 992px) {}
+
+/* Extra large devices (large desktops, 1200px and up) */
+
+@media (min-width: 1200px) {}
+
