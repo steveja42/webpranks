@@ -49,7 +49,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	//scratchCanvas = canvas
 	log(`start ${imageURL}`)
 	const pageImage = debugPageImage || new Image()
-	const imageLoaded = loadImage(pageImage, imageURL)
+	const imageLoaded = setImage(pageImage, imageURL)
 	const parser = new DOMParser();
 	const doc: HTMLDocument = parser.parseFromString(html, "text/html")
 	const bgColor = JSON.parse(doc.body?.getAttribute('__pos__'))?.bgColor
@@ -152,7 +152,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		const imageURL = canvas.toDataURL()
 
 		if (pageInfo.debugImage) {
-			const imageLoaded = loadImage(pageInfo.debugImage, imageURL)
+			const imageLoaded = setImage(pageInfo.debugImage, imageURL)
 			await imageLoaded
 		}
 		log(`---adding background image "${bgImage}"" ${pageInfo.domElementsImages.length}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
@@ -167,7 +167,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		if (debugThis) {
 			log(`adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 			if (pageInfo.debugImage) {
-				const imageLoaded = loadImage(pageInfo.debugImage, imageURL)
+				const imageLoaded = setImage(pageInfo.debugImage, imageURL)
 				await imageLoaded
 			}
 		}
@@ -215,15 +215,15 @@ function getImagePortion(image, rect) {
 
 /**
  * sets image.src to imageURL and returns promise that resolves when image has been loaded with imageURL 
- * @param image 
+ * @param imageElement 
  * @param imageURL 
  */
-function loadImage(image: HTMLImageElement, imageURL: string): Promise<unknown> {
+function setImage(imageElement: HTMLImageElement, imageURL: string): Promise<unknown> {
 	let resolveImageLoaded
-	image.onload = function () {
-		resolveImageLoaded(image.src)
+	imageElement.onload = function () {
+		resolveImageLoaded(imageElement.src)
 	}
 	const imageLoaded = new Promise((resolve) => resolveImageLoaded = resolve)
-	image.src = imageURL;
+	imageElement.src = imageURL;
 	return imageLoaded
 }

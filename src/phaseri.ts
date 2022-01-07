@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { useDebugValue } from 'react';
 import { PageInfo } from "./domtoobjects"
 import { center, setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
@@ -54,31 +55,38 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, curr
 		log(`textures: ${Object.keys(pageInfo.game.textures.list).length - 3}`)
 		if (currentScene)
 			currentScene.scene.remove()	  //page.game.scene.remove(currentScene.name)
-		for (let i = 0; i < prevPage.domElementsImages.length; i++) {
-			pageInfo.game.textures.remove(`dom${i}`)
-		}
-		//
+		pageInfo.game.textures.each((texture) => {
+			if (! /^__/.test(texture.key))
+				pageInfo.game.textures.remove(texture)  //remove all textures except the defaults, which start with __
+		}, this) 
 	}
-	log (`loading textures`)
-	let imagesYetToLoadCount = pageInfo.domElementsImages.length
-	const texturesLoaded = new Promise(resolve => {
-		pageInfo.game.textures.on('addtexture', (key: string, texture) => {
-			if (--imagesYetToLoadCount === 0) {
-				pageInfo.game.textures.off('addtexture')
-				log(`-----------texture loading done`)
-				resolve(key)
-			}
-		})
-	})
+
 	prevPage = pageInfo
-	let i = 0
-	for (const domElement of pageInfo.domElementsImages) {
-		pageInfo.game.textures.addBase64(`dom${i++}`, domElement.imageURL)
-	}
-	await texturesLoaded
+	log(`loading textures`)
+	await loadTextures(pageInfo.game, pageInfo.domElementsImages.map((value) => value.imageURL))
 	//gs = new PageScene(page, nextSceneName)
 	//game.scene.add(nextSceneName, gs)
 	return pageInfo
+}
+
+export async function loadTextures(game: Phaser.Game, imageURLs: string[], baseName = "dom") {
+	let imagesYetToLoadCount = imageURLs.length
+	const regex = new RegExp(`^${baseName}\\d+`)
+	const texturesLoaded = new Promise(resolve => {
+		game.textures.on('addtexture', (key: string, texture) => {
+			if (regex.test(key))  // ensure key is one we added
+				if (--imagesYetToLoadCount === 0) {
+					game.textures.off('addtexture')
+					log(`-----------texture loading done`)
+					resolve(key)
+				}
+		})
+	})
+	let i = 0
+	for (const imageURL of imageURLs) {
+		game.textures.addBase64(`${baseName}${i++}`, imageURL)
+	}
+	return texturesLoaded
 }
 
 export async function resetScene(modInfo: PageInfo, currentScene: Phaser.Scene) {
