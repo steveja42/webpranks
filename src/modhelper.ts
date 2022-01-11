@@ -1,10 +1,15 @@
 import { PageInfo } from "./domtoobjects";
+import { log } from './util'
 export type { PageInfo } from "./domtoobjects"
 export { log } from './util'
 
 export interface PrankSceneI {
 	name: string
 }
+
+export type GameObjectwithMatterBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
+	body: MatterJS.BodyType
+};
 
 type GameObjectwithArcadeBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
 	body: Phaser.Physics.Arcade.Body
@@ -90,7 +95,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 		}
 		if (useMatter) {
 			pageInfo.domElementsImages.forEach((domElement, i) => {
-				const img = scene.matter.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, null, {
+				const img = scene.matter.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, '__BASE', {
 					ignoreGravity: true, collisionFilter: {
 						group: CollisonGroup.Dom,
 						mask: CollisionCategory.ground | CollisionCategory.movingDom | CollisionCategory.default,
@@ -109,4 +114,83 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	}
 
 	return { domBackgroundRects, domArcadeBackgroundRects, domImages, domArcadeImages, domMatterImages }
+}
+
+type Rect = {
+	x: number,
+	y: number,
+	width: number,
+	height: number
+}
+/**
+ * returns coordinates for the pieces that an object should be broken up into
+ * @param width 
+ * @param height 
+ */
+function getSplits(width, height): Rect[] {
+	const halfWidth = width / 2
+	const halfHeight = height / 2
+	let splits: Rect[] = [
+		{ x: 0, y: 0, width: halfWidth, height: halfHeight },
+		{ x: halfWidth, y: 0, width: halfWidth, height: halfHeight },
+		{ x: 0, y: halfHeight, width: halfWidth, height: halfHeight },
+		{ x: halfWidth, y: halfHeight, width: halfWidth, height: halfHeight },
+	]
+	if (width / height > 4 / 3) {
+		splits = [
+			{ x: 0, y: 0, width: halfWidth, height: height },
+			{ x: halfWidth, y: 0, width: halfWidth, height: height }]
+	}
+	else if (height / width > 4 / 3) {
+		splits = [
+			{ x: 0, y: 0, width: width, height: halfHeight },
+			{ x: 0, y: halfHeight, width: width, height: halfHeight }]
+	}
+	return splits
+}
+
+/**
+ * Breaks up a gameObject into pieces and returns those pieces in an array of gameObjects. You should generally then destroy the original gameObject.
+ * Currently works for Rectangles and Images.
+ * @param xImpact 
+ * @param yImpact 
+ * @param gameObject 
+ */
+export function breakUp(xImpact, yImpact, gameObject: GameObjectwithMatterBody): Phaser.GameObjects.GameObject[] {
+
+	const MinArea = 50
+	if (gameObject.type !== 'Image' && gameObject.type !== 'Rectangle')
+		return null
+	const width = gameObject.displayWidth
+	const height = gameObject.displayHeight
+	if (width * height < MinArea)
+		return null
+	log(`breaking up ${gameObject.body.id} ${width} - ${height}`)
+	const scene = gameObject.scene
+	const x = gameObject.x
+	const y = gameObject.y
+	const newObjects: Phaser.GameObjects.GameObject[] = []
+	const splits = getSplits(width, height)
+	if (gameObject.type === 'Image') {
+		const texture = gameObject.texture
+		const baseName = texture.frameTotal
+		const frameX = gameObject.frame?.cutX || 0
+		const frameY = gameObject.frame?.cutY || 0
+		splits.forEach((split, i) => {
+			const frame = texture.add(baseName + i, 0, frameX + split.x, frameY + split.y, split.width, split.height)
+		
+				newObjects.push(scene.add.image(x + split.x, y + split.y, texture, frame.name))
+		})
+	} 
+	else  {
+		const fillColor = gameObject.fillColor
+		splits.forEach((split, i) => {
+		
+				newObjects.push(scene.add.rectangle(x + split.x, y + split.y, split.width, split.height,fillColor))
+			
+		})
+	} 
+	
+	return newObjects
+
 }

@@ -4,6 +4,8 @@ import { PageInfo } from "./domtoobjects"
 import { center, setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
 
+
+
 let gameLoadedPromise: Promise<Phaser.Game>
 let resolveGameLoadedCallback
 
