@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
-import { log} from './util'
+import { log } from './util'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -19,7 +19,7 @@ let prankChosen = false
 export function PrankForm(props: any) {
 	const protocol = 'http://'
 
-	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded,inputURL,setInputURL, showPopout, setShowPopout,phase, dispatchPhase } = props
+	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, dispatchPhase } = props
 
 	const onFocus = () => {
 		if (inputURL.trim() === '') {
@@ -34,17 +34,23 @@ export function PrankForm(props: any) {
 	function onURLWasInput() {
 		if ((inputURL.trim() === protocol) || (inputURL.trim() === ""))
 			return
-	/*	if (inputURL !== prevUrl) {
-			prevUrl = inputURL
-			//document.getElementById("prank").focus()   //change focus to remove mobile onscreen keyboard before loading
-		} 
-		*/
-		setTargetUrl(inputURL)
+		let url = inputURL
+		if (! /^https?:\/\//i.test(inputURL)) {
+			url = "http://" + inputURL
+		}
+		if (! /\./.test(inputURL)) {
+			url = url + ".com"
+		}
+
+		if (inputURL !== url) {
+			setInputURL(url)
+		}
+		setTargetUrl(url)
 
 	}
 	//const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 	const onKeyDown = (e) => {
-		if (e.key === 'Enter'){
+		if (e.key === 'Enter') {
 			onURLWasInput()
 			e.preventDefault();
 		}
@@ -65,16 +71,16 @@ export function PrankForm(props: any) {
 			onURLWasInput()
 	}
 
-	return  <div id="togglediv">
+	return <div id="togglediv">
 
 		<Form onSubmit={onSubmit} className="myform" >
 
 			<Form.Group controlId="url">
-				<Form.Label className={(phase === Phase.targetUrlNotEntered)? "do_me": ""}>Choose a website to prank</Form.Label>
+				<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
 				<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
 			</Form.Group>
 			<Form.Group controlId="prank">
-				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered)? "do_me": ""}>Choose a prank</Form.Label>
+				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Choose a prank</Form.Label>
 				<Form.Control
 					as="select"
 					value={whichPrank}
@@ -89,7 +95,7 @@ export function PrankForm(props: any) {
 					{prankList}
 				</Form.Control>
 			</Form.Group>
-			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered)? "push_me": ""} >
+			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered) ? "push_me" : ""} >
 				{isLoading ? 'Loading…' : 'Prank It'}
 				{isLoading && <Spinner animation="border" role="status " size="sm">
 					<span className="sr-only">Loading...</span>
@@ -98,7 +104,7 @@ export function PrankForm(props: any) {
 		</Form>
 		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
 
-	</div> 
+	</div>
 }
 
 
