@@ -9,8 +9,11 @@
 body {
   margin: 0;
   font-family: 'bangers' !important;
-  overflow: hidden;
+  overflow: auto;
 
+}
+canvas {
+  display:block;  /*needed for no scrollbars */
 }
 .game {
   overflow: hidden;
