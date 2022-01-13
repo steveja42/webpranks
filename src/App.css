@@ -1,9 +1,9 @@
 :root {
   --backgroundColor: black;
-  --foregroundColor: chocolate;
+  --foregroundColor: rgba(0, 81, 255, 0.993);
   --placeholderColor: var(--foregroundColor);  /*rgb(221, 137, 76) */
   --fieldbackgroundColor:cornsilk;
-  --navbarColor:rgb(221 146 9 / 67%);
+  --navbarColor:rgb(1, 60, 252);
 }
 
 body {
