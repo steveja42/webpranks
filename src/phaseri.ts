@@ -28,7 +28,7 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 		},
 		callbacks: { postBoot: onPostBoot },
 		scene: null, // { key: "rootScene", visible: false },
-		backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
+	//	backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
 
 	};
 	gameLoadedPromise = new Promise<Phaser.Game>(resolve => {

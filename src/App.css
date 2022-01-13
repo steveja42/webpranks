@@ -1,6 +1,15 @@
+:root {
+  --backgroundColor: black;
+  --foregroundColor: chocolate;
+  --placeholderColor: var(--foregroundColor);  /*rgb(221, 137, 76) */
+  --fieldbackgroundColor:cornsilk;
+  --navbarColor:rgb(221 146 9 / 67%);
+}
+
 body {
   margin: 0;
   font-family: 'bangers' !important;
+  overflow: hidden;
 
 }
 .game {
@@ -12,15 +21,13 @@ body {
     src:url(./fonts/Bangers-Regular.ttf) format('truetype');
 }
 
-
-
 #info {
   max-height: 2vh;
   object-fit: contain;
 }
 #navbar {
   border-bottom: 1px solid black;
-  background-color: rgb(221 146 9 / 67%);
+  background-color: var(--navbarColor);
 margin-bottom: 1em;
 background-image: url("./images/suit-g280f76b53_200.png");
 background-repeat: no-repeat;
@@ -99,7 +106,7 @@ background-size: contain;
   top: .2em;
   width: 0;
   height: 0;
-  border-top: .5em solid chocolate;
+  border-top: .5em solid var(--foregroundColor);
   border-left: .5em solid transparent;
   border-right: .5em solid transparent;
   animation: wiggle_updown 1s infinite;
@@ -199,17 +206,17 @@ input:-webkit-autofill {
 }
 
 .btn-primary, .btn-primary:focus, .btn-primary:active, .btn-primary:hover, .btn-primary.disabled, .btn-primary:disabled {
-  color: cornsilk;
-  background-color: chocolate;
-  border-color: chocolate;
+  color: var(--fieldbackgroundColor);
+  background-color: var(--foregroundColor);
+  border-color: var(--foregroundColor);
 }
 
 body {
-  background-color: black;
+  background-color: var(--backgroundColor);
 }
 
 body, .form-control:not(active) ,.form-control:focus {
-  color: chocolate;
+  color: var(--foregroundColor);
 }
 
 .myform {
@@ -217,7 +224,7 @@ body, .form-control:not(active) ,.form-control:focus {
 
 }
 .myform input::placeholder, .myform textarea::placeholder {
-  color:rgb(221, 137, 76);
+  color:var(--placeholderColor);
 }
 .myform>* {
   display: inline-block;
