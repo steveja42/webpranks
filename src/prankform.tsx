@@ -102,7 +102,7 @@ export function PrankForm(props: any) {
 				</Spinner>}
 			</Button>
 		</Form>
-		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show pop up</Button> : null}
+		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show debug window</Button> : null}
 
 	</div>
 }

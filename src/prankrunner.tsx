@@ -302,7 +302,7 @@ export function PrankRunner(props: any) {
 		{(phase === Phase.startPrankAfterMouseOrKeyPress) ?
 			<div>
 				<img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" />
-				<h2 id="prompt" className="prompt"> Tap, Click or Type any key to continue ...</h2>
+				<h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>
 			</div> : null}
 
 		<div className="game" ref={phaserParent} />
