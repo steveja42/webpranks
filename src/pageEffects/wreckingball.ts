@@ -71,10 +71,10 @@ export class PageScene extends Phaser.Scene {
 
 		this.addTheGround(width, height)
 
-		const wreckingballRadius = width / 18
+		const wreckingballRadius = (width + height) / 30
 		const x = width / 2
 		const y = - wreckingballRadius
-		const chainLength = height / 2
+		const chainLength = height / 2.5
 		this.addBallAndChain(x, y, wreckingballRadius, chainLength)
 		//this.matter.world.engine.timing.timeScale = .6  //inital swing of ball is in slow motion
 	}
@@ -96,9 +96,9 @@ export class PageScene extends Phaser.Scene {
 		const snafu: any = data
 		const newlyCreatedObjects = breakUp(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
 		if (newlyCreatedObjects) {
-			const x= collidee.x + collidee.width /2
-			const y= collidee.y + collidee.height/2
-			newlyCreatedObjects.forEach((newGameObject) => {
+			const x= collidee.x //+ collidee.width /2
+			const y= collidee.y// + collidee.height/2
+			for (const newGameObject of newlyCreatedObjects){
 				newGameObject.setData("collisionTime",time)
 				const foo:GameObjectwithMatterBody = scene.matter.add.gameObject(newGameObject, domMatterOptions)
 				let speed = scene.wreckingBall.body.speed
@@ -106,8 +106,8 @@ export class PageScene extends Phaser.Scene {
 					speed = -speed
 				foo.body.ignoreGravity = false
 				//scene.matter.applyForce(foo, scene.wreckingBall.body.velocity)
-				//scene.matter.applyForceFromPosition(foo, {x,y}, speed) //,Phaser.Math.Angle.Between(x,y,foo.x, foo.y))
-			})
+				scene.matter.applyForceFromPosition(foo, {x,y}, speed) //,Phaser.Math.Angle.Between(x,y,foo.x, foo.y))
+			}
 		}
 		collidee.destroy()
 	}
