@@ -14,8 +14,7 @@ import Popover from 'react-bootstrap/Popover'
 import PopoverBody from 'react-bootstrap/PopoverBody'
 import Container from "react-bootstrap/Container"
 
-import guy from './images/suit-g280f76b53_200.png'
-import surprisedGirl from './images/surprised-3355958_200x.png'
+import navlogo from './images/jesterhat-200.png'
 import giraffe from './images/giraffe-400.png'
 import info from './images/info.png'
 
@@ -30,7 +29,7 @@ export const version = .01
 
 /*
 
-    <img src={guy} alt="wacky guy" />
+    <img src={navlogo} alt="jesterhat" />
                 <img src={surprisedGirl} alt="surprised girl" />
 background-image: url("./images/surprised-3355958_200x.png");
 <img src={questionMark} width="15" height="15" className="d-inline-block align-bottom" alt="i with circle around it" />
@@ -52,14 +51,19 @@ export function App(): JSX.Element {
                 < Navbar id="navbar" className="mynav" expand="sm" >
 
                   <Navbar.Brand as={NavLink} to="/">
+                    <img id="navlogo" src={navlogo} alt="jesters hat" />
                     Web Hijinks
                 </Navbar.Brand>
                   <Nav >
-                  <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={xpopover}>
-                  <img id="info" src={info} className="d-inline-block align-bottom" alt="i with circle around it" />
+                    <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={aboutpopover}>
+                      <Navbar.Text>
+                        About
+                      </Navbar.Text>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={feedbackpopover}>
 
-                  </OverlayTrigger>
-                    <Nav.Link as={NavLink} to="/feedback" activeClassName="navselected">Feedback/Feature Request</Nav.Link>
+                    <Nav.Link as={NavLink} to="/feedback" activeClassName="navselected">Feedback</Nav.Link>
+                    </OverlayTrigger>
                   </Nav>
                 </Navbar >
               </div>
@@ -68,11 +72,11 @@ export function App(): JSX.Element {
             : null}
         </header >
         <Switch>
-        <Route path="/feedback">
-        <Container>
-          <FeedbackForm />
-        </Container>
-      </Route>
+          <Route path="/feedback">
+            <Container>
+              <FeedbackForm />
+            </Container>
+          </Route>
           <Route path="/about"> <About /> </Route>
           <Route path="/:prank/:url/:isRunning"> <PrankRunner {...prankRunnerProps} /> </Route>
           <Route path="/:prank/:url"> <PrankRunner {...prankRunnerProps} /> </Route>
@@ -90,13 +94,22 @@ const renderTooltip = (props) => (
   </Tooltip>
 );
 
-const xpopover = (
+const aboutpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
       <p>Get ready for a little fun, humour and levity!
       Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens...</p>
       Whatever you do, don't go to your friends device and prank them!
+    </Popover.Body>
+  </Popover>
+);
+
+const feedbackpopover = (
+  <Popover id="popover-basic">
+    <Popover.Header as="h3">Feedback</Popover.Header>
+    <Popover.Body>
+      <p>Report bugs, request a custom prank, make feature requests, give a testimonial ... </p>
     </Popover.Body>
   </Popover>
 );
