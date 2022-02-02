@@ -166,6 +166,7 @@ export function PrankRunner(props: any) {
 					log(`resuming scene`)
 					setShowControls(false)
 					currentScene.scene.resume()
+					currentScene.sound.resumeAll()
 					currentScene.matter?.world?.resume()
 					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
 				}
@@ -175,6 +176,7 @@ export function PrankRunner(props: any) {
 					log(`pausing scene`)
 					setShowControls(true)
 					currentScene.scene.pause()
+					currentScene.sound.pauseAll()
 					currentScene.matter?.world?.pause()
 					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
 				}

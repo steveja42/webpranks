@@ -4,10 +4,18 @@ import { log } from './util'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form, Alert } from 'react-bootstrap'
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip'
+import Popover from 'react-bootstrap/Popover'
 import { effectModules } from './pageEffects/modulelist'
 import { Phase } from './prankrunner'
 
-const prankList = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
+const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key={index} placement="auto" trigger={['hover', 'click', 'focus']} overlay={<Tooltip>Simple tooltip	</Tooltip>}>
+	<option key={index} value={index}>{effectModule.title}</option>
+</OverlayTrigger>)
+//const prankListx = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
+
+
 type PrankUIParams = {
 	prank: string
 	url: string

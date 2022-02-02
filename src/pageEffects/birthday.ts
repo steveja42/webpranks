@@ -22,9 +22,12 @@ export class PageScene extends Phaser.Scene {
 		this.load.atlas('flares', 'assets/particles/flares.png', 'assets/particles/flares.json')
 		this.load.image('fire', 'assets/particles/muzzleflash3.png')
 		this.load.image('candle', 'assets/candle.jpg')
+		this.load.audio("song", ["assets/audio/happy-birthday-rock.mp3", "assets/audio/happy-birthday-rock.ogg"])
 	}
 
 	public create() {
+		this.sound.play("song",{loop:true})
+
 		const { width, height } = this.sys.game.canvas
 		const { domBackgroundRects, domImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false)
 		let x = width/4

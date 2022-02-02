@@ -40,6 +40,7 @@ export class PageScene extends Phaser.Scene {
 	wreckingBall: GameObjectwithMatterBody
 	chain: GameObjectwithMatterBody[] = []
 	distanceMoved = 0
+	explosion
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
 		log('constructing scene')
@@ -48,16 +49,19 @@ export class PageScene extends Phaser.Scene {
 	public preload() {
 		log(`start`)
 		this.load.image('chainlink', 'assets/chainlink32.png');
+		this.load.audio("smash", ["assets/audio/glass-smash-6266.mp3", "assets/audio/glass-smash-6266.ogg"])
+		this.load.audio("oog", ["assets/audio/oooggg.mp3", "assets/audio/oooggg.ogg"])
 	}
 
 	public async create() {
 		log('creating scene')
+		this.sound.play("oog")
 		const { width, height } = this.sys.game.canvas
 		const maxAreaForObjects = width * height / 3
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
 		cursors = this.input.keyboard.createCursorKeys();
-
+		//this.explosion = this.sound.add("death", { loop: false });
 		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 		backgroundRectangles.forEach(rect => {
 			if ((rect.width * rect.height) < maxAreaForObjects) {
@@ -93,6 +97,8 @@ export class PageScene extends Phaser.Scene {
 		const collidee:GameObjectwithMatterBody = (data.bodyA.id === ballId)?data.bodyB.gameObject : data.bodyA.gameObject
 		if (collidee?.data?.values?.collisionTime && time - collidee.data.values.collisionTime < TimeBetweenCollisions)
 			return
+		//scene.explosion.play()
+		scene.sound.play("smash")
 		const snafu: any = data
 		const newlyCreatedObjects = breakUp(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
 		if (newlyCreatedObjects) {
