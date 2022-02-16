@@ -191,7 +191,7 @@ export function PrankRunner(props: any) {
 
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
-		document.title = `${targetUrl}` || "Web Hijinks";
+		document.title = `${targetUrl}` || "Web Pranks";
 		history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
 
 		if (!isLoading && targetUrl) {

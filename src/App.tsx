@@ -52,7 +52,7 @@ export function App(): JSX.Element {
 
                   <Navbar.Brand as={NavLink} to="/">
                     <img id="navlogo" src={navlogo} alt="jesters hat" />
-                    Web Hijinks
+                    Web Pranks
                 </Navbar.Brand>
                   <Nav >
                     <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={aboutpopover}>

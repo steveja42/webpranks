@@ -55,7 +55,7 @@ export class FeedbackForm extends React.Component {
 
 		this.setState({ isLoading: true })
 		const data = {
-			source: 'webhijinks',
+			source: 'webpranks',
 			type: this.state.type,
 			name: this.state.name,
 			email: this.state.email,
