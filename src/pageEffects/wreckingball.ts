@@ -173,7 +173,7 @@ export class PageScene extends Phaser.Scene {
 	addTheGround(width, height): GameObjectwithMatterBody {
 		const groundHeight = 10
 		const wallWidth = 10
-		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0x00ff00)
+		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0xc5227)
 		return this.matter.add.gameObject(ground, {
 			isStatic: true,
 			render: { fillColor: 0x00ff00 },
