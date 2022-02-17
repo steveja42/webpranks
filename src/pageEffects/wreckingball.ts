@@ -36,11 +36,13 @@ export class PageScene extends Phaser.Scene {
 	deltaElapsed = 0
 	lastTime = 0
 	lastInitialMovement = 0
+	ground: GameObjectwithMatterBody
 	fulcrum: GameObjectwithMatterBody
 	wreckingBall: GameObjectwithMatterBody
 	chain: GameObjectwithMatterBody[] = []
 	distanceMoved = 0
 	explosion
+
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
 		log('constructing scene')
@@ -73,14 +75,14 @@ export class PageScene extends Phaser.Scene {
 			di.setBounce(domRestitution)
 		})
 
-		this.addTheGround(width, height)
+		this.ground = this.addTheGround(width, height)
 
 		const wreckingballRadius = (width + height) / 30
 		const x = width / 2
 		const y = - wreckingballRadius
 		const chainLength = height / 2.5
 		this.addBallAndChain(x, y, wreckingballRadius, chainLength)
-		//this.matter.world.engine.timing.timeScale = .6  //inital swing of ball is in slow motion
+		this.matter.world.engine.timing.timeScale = .2  //inital swing of ball is in slow motion
 	}
 
 /**
@@ -95,9 +97,9 @@ export class PageScene extends Phaser.Scene {
 		const scene = data.bodyA.gameObject.scene
 		const time = Date.now()
 		const collidee:GameObjectwithMatterBody = (data.bodyA.id === ballId)?data.bodyB.gameObject : data.bodyA.gameObject
-		if (collidee?.data?.values?.collisionTime && time - collidee.data.values.collisionTime < TimeBetweenCollisions)
-			return
-		//scene.explosion.play()
+		if (collidee === scene.fulcrum || collidee === scene.ground || (collidee?.data?.values?.collisionTime && time - collidee.data.values.collisionTime < TimeBetweenCollisions))
+			return 
+		//scene.explosion.play()sdf
 		scene.sound.play("smash")
 		const snafu: any = data
 		const newlyCreatedObjects = breakUp(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
@@ -123,19 +125,96 @@ export class PageScene extends Phaser.Scene {
 		this.adjustChainLinksAngle()
 		this.allowCursorMovement(this.fulcrum)
 		if (this.deltaElapsed < 2000)
-			this.initialMovement(1000, this.wreckingBall.width / 2 + 10, this.fulcrum)
-		if (this.deltaElapsed > 5000)
+			this.initialMovement(2000, this.wreckingBall.width / 2 + 10, this.fulcrum)
+		if (this.deltaElapsed > 3000)
 			this.matter.world.engine.timing.timeScale = 1
 
 	}
 
+	
+/**
+ * Move the fulcrum initially
+ * @param duration 
+ * @param totalDistance 
+ * @param object 
+ */
+	initialMovement(duration, totalDistance, object) {
+		const timeIncrement = 200
+		if (this.distanceMoved < totalDistance && this.deltaElapsed - this.lastInitialMovement > timeIncrement) {
+			const distance = totalDistance / (duration / timeIncrement)
+			this.distanceMoved += distance
+			object.setPosition(object.x, object.y + distance)
+			this.lastInitialMovement = this.deltaElapsed
+		}
+	}
+
+	keepBallMovingFast() {
+		const ballAngle = Phaser.Math.RadToDeg(this.wreckingBall.body.angle)
+		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
+		if (this.deltaElapsed - this.lastTime > 100) {
+			this.lastTime = this.deltaElapsed
+			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
+		}
+		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
+			this.matter.setVelocityX(this.wreckingBall.body, 10)  //applyForce(this.wreckingBall.body,{x:9, y:0})
+			log("woosh")
+		}
+	}
+	adjustChainLinksAngle() {
+		if (this.chain.length) {
+			for (let i = 1; i < this.chain.length; i++) {
+				let angle = Phaser.Math.Angle.BetweenPoints(this.chain[i - 1].body.position, this.chain[i].body.position)
+				angle = Phaser.Math.RadToDeg(angle) - 90
+				this.chain[i].setAngle(angle)
+			}
+		}
+	}
+
+	addTheGround(width, height): GameObjectwithMatterBody {
+		const groundHeight = 10
+		const wallWidth = 10
+		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0x00ff00)
+		return this.matter.add.gameObject(ground, {
+			isStatic: true,
+			render: { fillColor: 0x00ff00 },
+			collisionFilter: {
+				group: 1,
+				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom | CollisionCategory.domBackground | CollisionCategory.movingDom,
+				category: CollisionCategory.ground
+			}
+		}) as GameObjectwithMatterBody
+	}
+
+	allowCursorMovement(object) {
+		const increment = 5
+		if (cursors.left.isDown) {
+			object.setPosition(object.x - increment, object.y);
+		}
+		else if (cursors.right.isDown) {
+			object.setPosition(object.x + increment, object.y);
+		}
+		else {
+			object.setVelocityX(0);
+		}
+		if (cursors.up.isDown) {
+			object.setPosition(object.x, object.y - increment);
+		}
+		else if (cursors.down.isDown) {
+			object.setPosition(object.x, object.y + increment);
+		}
+		else {
+			object.setVelocityY(0);
+		}
+
+	}
+
 	/**
-	 * 
-	 * @param x 
-	 * @param y 
-	 * @param wreckingballRadius 
-	 * @param chainLength 
-	 */
+		 *  Adds fulcrum attached to wrecking ball with a chain
+		 * @param x 
+		 * @param y 
+		 * @param wreckingballRadius 
+		 * @param chainLength 
+		 */
 	addBallAndChain(x, y, wreckingballRadius, chainLength) {
 		const MetalDensity = 5
 		const fulcrumRadius = 10
@@ -183,82 +262,6 @@ export class PageScene extends Phaser.Scene {
 		this.chain.push(this.wreckingBall)
 		this.wreckingBall.body.onCollideCallback = this.onCollide
 	}
-/**
- * Move the fulcrum initially
- * @param duration 
- * @param totalDistance 
- * @param object 
- */
-	initialMovement(duration, totalDistance, object) {
-		const timeIncrement = 200
-		if (this.distanceMoved < totalDistance && this.deltaElapsed - this.lastInitialMovement > timeIncrement) {
-			const distance = totalDistance / (duration / timeIncrement)
-			this.distanceMoved += distance
-			object.setPosition(object.x, object.y + distance)
-			this.lastInitialMovement = this.deltaElapsed
-		}
-	}
-
-	keepBallMovingFast() {
-		const ballAngle = Phaser.Math.RadToDeg(this.wreckingBall.body.angle)
-		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
-		if (this.deltaElapsed - this.lastTime > 100) {
-			this.lastTime = this.deltaElapsed
-			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
-		}
-		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
-			this.matter.setVelocityX(this.wreckingBall.body, 10)  //applyForce(this.wreckingBall.body,{x:9, y:0})
-			log("woosh")
-		}
-	}
-	adjustChainLinksAngle() {
-		if (this.chain.length) {
-			for (let i = 1; i < this.chain.length; i++) {
-				let angle = Phaser.Math.Angle.BetweenPoints(this.chain[i - 1].body.position, this.chain[i].body.position)
-				angle = Phaser.Math.RadToDeg(angle) - 90
-				this.chain[i].setAngle(angle)
-			}
-		}
-	}
-
-	addTheGround(width, height) {
-		const groundHeight = 10
-		const wallWidth = 10
-		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0x0000ff)
-		this.matter.add.gameObject(ground, {
-			isStatic: true,
-			render: { fillColor: 0x0000ff },
-			collisionFilter: {
-				group: 1,
-				mask: CollisionCategory.default | CollisionCategory.ground | CollisionCategory.dom | CollisionCategory.domBackground | CollisionCategory.movingDom,
-				category: CollisionCategory.ground
-			}
-		});
-	}
-	allowCursorMovement(object) {
-		const increment = 5
-		if (cursors.left.isDown) {
-			object.setPosition(object.x - increment, object.y);
-		}
-		else if (cursors.right.isDown) {
-			object.setPosition(object.x + increment, object.y);
-		}
-		else {
-			object.setVelocityX(0);
-		}
-		if (cursors.up.isDown) {
-			object.setPosition(object.x, object.y - increment);
-		}
-		else if (cursors.down.isDown) {
-			object.setPosition(object.x, object.y + increment);
-		}
-		else {
-			object.setVelocityY(0);
-		}
-
-	}
-
-
 
 }
 
