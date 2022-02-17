@@ -5,7 +5,7 @@ export function doPageEffect(page: PageInfo) {
 	page.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene
 }
-//mdn Object.keys;
+
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	active: true,
 	visible: true,
@@ -30,10 +30,11 @@ const domMatterOptions = {
 	}
 }
 
+const initalMovementTime = 3000
 let	ballId = 0
 
 export class PageScene extends Phaser.Scene {
-	deltaElapsed = 0
+	timeElapsed = 0
 	lastTime = 0
 	lastInitialMovement = 0
 	ground: GameObjectwithMatterBody
@@ -79,10 +80,21 @@ export class PageScene extends Phaser.Scene {
 
 		const wreckingballRadius = (width + height) / 30
 		const x = width / 2
-		const y = - wreckingballRadius
+		const y = -200 
 		const chainLength = height / 2.5
 		this.addBallAndChain(x, y, wreckingballRadius, chainLength)
 		this.matter.world.engine.timing.timeScale = .2  //inital swing of ball is in slow motion
+	}
+
+	public update(time: number, delta: number) {
+		this.timeElapsed += delta
+		this.adjustChainLinksAngle()
+		this.allowCursorMovement(this.fulcrum)
+		if (this.timeElapsed < initalMovementTime)
+			this.initialMovement(initalMovementTime, 240, this.fulcrum)
+		if (this.timeElapsed > 3000)
+			this.matter.world.engine.timing.timeScale = 1
+
 	}
 
 /**
@@ -119,18 +131,6 @@ export class PageScene extends Phaser.Scene {
 		}
 		collidee.destroy()
 	}
-	public update(time: number, delta: number) {
-		this.deltaElapsed += delta
-
-		this.adjustChainLinksAngle()
-		this.allowCursorMovement(this.fulcrum)
-		if (this.deltaElapsed < 2000)
-			this.initialMovement(2000, this.wreckingBall.width / 2 + 10, this.fulcrum)
-		if (this.deltaElapsed > 3000)
-			this.matter.world.engine.timing.timeScale = 1
-
-	}
-
 	
 /**
  * Move the fulcrum initially
@@ -140,19 +140,19 @@ export class PageScene extends Phaser.Scene {
  */
 	initialMovement(duration, totalDistance, object) {
 		const timeIncrement = 200
-		if (this.distanceMoved < totalDistance && this.deltaElapsed - this.lastInitialMovement > timeIncrement) {
-			const distance = totalDistance / (duration / timeIncrement)
-			this.distanceMoved += distance
-			object.setPosition(object.x, object.y + distance)
-			this.lastInitialMovement = this.deltaElapsed
+		if (this.distanceMoved < totalDistance && this.timeElapsed - this.lastInitialMovement > timeIncrement) {
+			const distanceToMove = totalDistance / (duration / timeIncrement)
+			this.distanceMoved += distanceToMove
+			object.setPosition(object.x, object.y + distanceToMove)
+			this.lastInitialMovement = this.timeElapsed
 		}
 	}
 
 	keepBallMovingFast() {
 		const ballAngle = Phaser.Math.RadToDeg(this.wreckingBall.body.angle)
 		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
-		if (this.deltaElapsed - this.lastTime > 100) {
-			this.lastTime = this.deltaElapsed
+		if (this.timeElapsed - this.lastTime > 100) {
+			this.lastTime = this.timeElapsed
 			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
 		}
 		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
