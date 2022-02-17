@@ -14,8 +14,7 @@ import Popover from 'react-bootstrap/Popover'
 import PopoverBody from 'react-bootstrap/PopoverBody'
 import Container from "react-bootstrap/Container"
 
-import navlogo from './images/jesterhat-200.png'
-import giraffe from './images/giraffe-400.png'
+import navlogo from './images/jesterhead-200.png'
 import info from './images/info.png'
 
 import { log } from './util'
@@ -67,7 +66,6 @@ export function App(): JSX.Element {
                   </Nav>
                 </Navbar >
               </div>
-              <img id="funny" src={giraffe} alt="" />
             </div>
             : null}
         </header >
@@ -98,8 +96,8 @@ const aboutpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
-      <p>Get ready for a little fun, humour and levity!
-      Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens...</p>
+      <p>Ready for a little fun, humour and levity?
+      Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens ...</p>
       Whatever you do, don't go to your friends device and prank them!
     </Popover.Body>
   </Popover>
@@ -109,7 +107,7 @@ const feedbackpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">Feedback</Popover.Header>
     <Popover.Body>
-      <p>Report bugs, request a custom prank, make feature requests, give a testimonial ... </p>
+      <p>Her you can report bugs, request a custom prank, make feature requests or give a testimonial.</p>
     </Popover.Body>
   </Popover>
 );

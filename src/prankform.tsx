@@ -9,6 +9,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 import Popover from 'react-bootstrap/Popover'
 import { effectModules } from './pageEffects/modulelist'
 import { Phase } from './prankrunner'
+import popinImage from './images/jester-320.png'
 
 const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key={index} placement="auto" trigger={['hover', 'click', 'focus']} overlay={<Tooltip>Simple tooltip	</Tooltip>}>
 	<option key={index} value={index}>{effectModule.title}</option>
@@ -111,6 +112,7 @@ export function PrankForm(props: any) {
 			</Button>
 		</Form>
 		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show debug window</Button> : null}
+		<img id="popinimage" src={popinImage} alt="" />
 
 	</div>
 }
