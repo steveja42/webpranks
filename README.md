@@ -1,5 +1,13 @@
-# Getting Started with Create React App
+# Web Pranks
+[Web Pranks](https://www.iprank.us/) is a website that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on your local device.
 
+## Add your own prank to Web Pranks!
+
+Web Pranks was designed so other developers can easily add their own pranks to it. To add your own prank, basically you will be making a [Phaser3](https://phaser.io/phaser3) scene in Typescript or JavaScript.
+For the website being pranked you will be passed an array of images for all the elements on that page, and an array of rectangles for all the background rectangles on the page.  Phaser3 textures will already be loaded for the images with the key names of *dom0* through *domx* when there are *x* number of images. 
+Pranks are in the *pageEffects* folder and you can look there for examples. To run your prank put your file in the *pageEffects* folder and add the title and filename of your prank to a new line of the object in *modulelist.ts*. Then build the app and you can run your prank!  After testing it do a pull request to add your prank to the main Web Pranks website.
+
+## Building the app
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
@@ -28,16 +36,6 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
 ## Learn More
 
