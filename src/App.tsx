@@ -96,9 +96,10 @@ const aboutpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
-      <p>Ready for a little fun, humour and levity?
+      <p>Ready for a little fun, humour or levity?
       Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens ...</p>
       Whatever you do, don't go to your friends device and prank them!
+      <br /><br />* Any apparent changes to other websites only happen on your local device and don't effect the actual websites. No animals were harmed in the production of this website.
     </Popover.Body>
   </Popover>
 );
