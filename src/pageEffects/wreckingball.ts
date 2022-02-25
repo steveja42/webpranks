@@ -1,6 +1,6 @@
 import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects, ms, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
 
-export function doPageEffect(page: PageInfo) {
+export function doPageEffect(page: PageInfo): Phaser.Scene {
 	const pageScene = new PageScene(page)
 	page.game.scene.add(mySceneConfig.key, pageScene)
 	return pageScene

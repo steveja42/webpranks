@@ -45,7 +45,7 @@ export function PrankForm(props: any) {
 			return
 		let url = inputURL
 		if (! /^https?:\/\//i.test(inputURL)) {
-			url = "http://" + inputURL
+			url = "https://" + inputURL
 		}
 		if (! /\./.test(inputURL)) {
 			url = url + ".com"
