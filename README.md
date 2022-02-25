@@ -13,7 +13,7 @@ Web Pranks was designed so other developers can easily add their own pranks to i
     export  function  doPageEffect(page:  PageInfo):  Phaser.Scene
 
 *doPageEffect* should add a scene to the game and then return the scene.
-You will be passed a pageInfo object which contains a phaser game object and an array of images of elements from the webpage being pranked, and an array of rectangles for all the background rectangles on the page. Phaser3 textures will already be pre loaded for the images with the key names of *dom0* through *domx* when there are *x* number of images.
+You will be passed a pageInfo object which contains a phaser game object and an array of images of elements from the webpage being pranked, and an array of rectangles for all the background rectangles on the page. Phaser3 textures will already be pre-loaded for the images with the key names of *dom0* through *domx* when there are *x* number of images.
 
 Pranks are in the *src/pageEffects* folder and you can look there for examples. To run your prank put your typescript or javascript file in the *src/pageEffects* folder and add the title and filename of your prank to a new line in *modulelist.ts*. Then build the app and you can run your prank! After testing it do a pull request to add your prank to the main Web Pranks website.
 
