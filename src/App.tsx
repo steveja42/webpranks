@@ -108,7 +108,7 @@ const feedbackpopover = (
   <Popover id="popover-basic">
     <Popover.Header as="h3">Feedback</Popover.Header>
     <Popover.Body>
-      <p>Her you can report bugs, request a custom prank, make feature requests or give a testimonial.</p>
+      <p>Here you can report bugs, request a custom prank, make feature requests or give a testimonial.</p>
     </Popover.Body>
   </Popover>
 );
