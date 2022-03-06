@@ -97,9 +97,10 @@ const aboutpopover = (
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
       <p>Ready for a little fun, humour or levity?
-      Just enter the web address of your favorite (or least favorite) website, choose a prank, and then see what happens ...</p>
-      Whatever you do, don't go to your friends device and prank them!
-      <br /><br />* Any apparent changes to other websites only happen on your local device and don't effect the actual websites. No animals were harmed in the production of this website.
+      Just enter the web address of your favorite (or least favorite) website, choose a prank<sup>*</sup>, and see what happens...<br />
+      Then you can press <em>Back</em> or <em>Esc</em> to pause.</p>
+      Whatever you do, don't go to your friends device and prank them!<br /><br />
+      * Any apparent changes to websites only happen on your own device and don't effect the actual websites for other people. No animals were harmed in the making of this website.
     </Popover.Body>
   </Popover>
 );
