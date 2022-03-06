@@ -112,7 +112,7 @@ export function PrankForm(props: any) {
 			</Button>
 		</Form>
 		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show debug window</Button> : null}
-		<img id="popinimage" src={popinImage} alt="" />
+		{phase !== Phase.prankPaused ?<img id="popinimage" src={popinImage} alt="" /> :null}
 
 	</div>
 }

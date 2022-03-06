@@ -12,7 +12,7 @@ let resolveGameLoadedCallback
 export function setupWorld(parentElement: HTMLElement, width, height, background = ''): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
 		type: Phaser.AUTO,
-		//parent: parentElement,
+		parent: parentElement,
 		width: width,
 		height: height,
 		physics: {
