@@ -86,7 +86,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	if (useArcade || useMatter) {
 		if (useArcade) {
 			pageInfo.domElementsImages.forEach((domElement, i) => {
-				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`)
+				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, '__BASE')
 				domArcadeImages.push(img)
 			})
 			domBackgroundRects.forEach((rect) => {
@@ -109,7 +109,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	}
 	else {
 		pageInfo.domElementsImages.forEach((domElement, i) => {
-			domImages.push(scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`))
+			domImages.push(scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, '__BASE'))
 		})
 	}
 
