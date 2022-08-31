@@ -110,7 +110,6 @@ export class FeedbackForm extends React.Component {
 					<label htmlFor="exampleInputEmail1">Email address
 		<input name="email" type="email" value={this.state.email} onChange={this.handleChange} className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" required />
 					</label>
-					<small id="emailHelp" className="form-text text-muted">We will never share your email with anyone else.</small>
 				</div>
 
 				<div className="form-group">
@@ -124,7 +123,7 @@ export class FeedbackForm extends React.Component {
 				<Button type="submit" value="Submit" disabled={this.state.isLoading} >
 					Submit
 				{this.state.isLoading && <Spinner animation="border" role="status " size="sm">
-						<span className="sr-only">Loading...</span>
+						<span className="visually-hidden">Loading...</span>
 					</Spinner>}
 				</Button>
 				<p />

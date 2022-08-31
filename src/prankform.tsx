@@ -107,7 +107,7 @@ export function PrankForm(props: any) {
 			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered) ? "push_me" : ""} >
 				{isLoading ? 'Loading…' : 'Prank It'}
 				{isLoading && <Spinner animation="border" role="status " size="sm">
-					<span className="sr-only">Loading...</span>
+					<span className="visually-hidden">Loading...</span>
 				</Spinner>}
 			</Button>
 		</Form>
