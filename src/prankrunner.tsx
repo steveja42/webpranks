@@ -12,7 +12,7 @@ import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
 import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
-import { useParams, useHistory, useLocation } from "react-router-dom";
+import { useParams, useNavigate ,useNavigationType, useLocation } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
@@ -82,7 +82,8 @@ export function PrankRunner(props: any) {
 	const {showControls, setShowControls} = props
 
 	const location = useLocation();
-	const history = useHistory();
+	const navigate = useNavigate ();
+	const navType = useNavigationType()
 	const params = useParams<PrankUIParams>();
 	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotEntered)
 	const [targetUrl, setTargetUrl] = useState("")
@@ -128,27 +129,20 @@ export function PrankRunner(props: any) {
 			setWhichPrank(i)
 		}
 		if (i !== undefined || url)
-			history.replace(`/${i}/${params.url || ""}/0`, { whichPrank: i, inputURL: url, isRunning: false })
+			navigate(`/${i}/${params.url || ""}/0`,{ replace: true, state: { whichPrank: i, inputURL: url, isRunning: false }})
 		const shouldRun = params.isRunning === '1'
 		if (shouldRun && params.url && i !== undefined) {
 			dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
 		}
 
 
-		const unlistenHistory = history.listen((location, action) => {
-			// location is an object like window.location
-			console.log(action, location.pathname, location.state)
-			if (action === "POP") {
-				dispatchPhase(PhaseTogglePause)
-			}
-		})
+	
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown, false);
 			window.removeEventListener('beforeunload', handleUnload);
 			window.removeEventListener("click", handleClickOrTouch, false)
 			window.removeEventListener("touchstart", handleClickOrTouch, false)
-			unlistenHistory()
 		};
 	}, []);
 
@@ -168,7 +162,7 @@ export function PrankRunner(props: any) {
 					currentScene.scene.resume()
 					currentScene.sound.resumeAll()
 					currentScene.matter?.world?.resume()
-					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state: { whichPrank, inputURL, isRunning }})
 				}
 				break
 			case Phase.prankPaused:
@@ -178,7 +172,7 @@ export function PrankRunner(props: any) {
 					currentScene.scene.pause()
 					currentScene.sound.pauseAll()
 					currentScene.matter?.world?.pause()
-					history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, inputURL, isRunning }})
 				}
 				break
 		}
@@ -186,13 +180,16 @@ export function PrankRunner(props: any) {
 
 	useEffect(() => {
 		log(`path changed: ${location.pathname}`);
+		if ( navType === "POP") {
+			dispatchPhase(PhaseTogglePause)
+		}
 		//ga.send(["pageview", location.pathname]);
 	}, [location])
 
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
 		document.title = `${targetUrl}` || "Web Pranks";
-		history.replace(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { whichPrank, targetUrl, isRunning })
+		navigate(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, targetUrl, isRunning} })
 
 		if (!isLoading && targetUrl) {
 			dispatchPhase(Phase.targetUrlEntered)
@@ -249,7 +246,7 @@ export function PrankRunner(props: any) {
 
 
 	useEffect(() => {
-		history.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { whichPrank, inputURL, isRunning })
+		navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, inputURL, isRunning} })
 	}, [whichPrank]);
 
 
@@ -272,7 +269,7 @@ export function PrankRunner(props: any) {
 					.then(module => {
 						setShowControls(false);
 						dispatchPhase(Phase.prankRunning)
-						history.push(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, { whichPrank: iPrank, inputURL, isRunning: true })
+						navigate(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, {state:{whichPrank: iPrank, inputURL, isRunning: true }})
 						return setCurrentScene(module.doPageEffect(altPageInfo))
 					})
 					.catch(err => log(err.message))

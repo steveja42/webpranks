@@ -1,17 +1,17 @@
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect, useRef } from 'react'
 import {
   BrowserRouter as Router,
-  Switch,
+  Routes,
   Route,
   Link, NavLink,
-  useParams, useLocation, useHistory
+  useParams, useLocation
 } from "react-router-dom";
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import Popover from 'react-bootstrap/Popover'
-import PopoverBody from 'react-bootstrap/PopoverBody'
 import Container from "react-bootstrap/Container"
 
 import navlogo from './images/jesterhead-200.png'
@@ -52,7 +52,7 @@ export function App(): JSX.Element {
                   <Navbar.Brand as={NavLink} to="/">
                     <img id="navlogo" src={navlogo} alt="jesters hat" />
                     Web Pranks
-                </Navbar.Brand>
+                  </Navbar.Brand>
                   <Nav >
                     <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={aboutpopover}>
                       <Navbar.Text>
@@ -61,7 +61,7 @@ export function App(): JSX.Element {
                     </OverlayTrigger>
                     <OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={feedbackpopover}>
 
-                    <Nav.Link as={NavLink} to="/feedback" activeClassName="navselected">Feedback</Nav.Link>
+                      <Nav.Link as={NavLink} to="/feedback"  >Feedback</Nav.Link>
                     </OverlayTrigger>
                   </Nav>
                 </Navbar >
@@ -69,18 +69,18 @@ export function App(): JSX.Element {
             </div>
             : null}
         </header >
-        <Switch>
-          <Route path="/feedback">
-            <Container>
-              <FeedbackForm />
-            </Container>
-          </Route>
-          <Route path="/about"> <About /> </Route>
-          <Route path="/:prank/:url/:isRunning"> <PrankRunner {...prankRunnerProps} /> </Route>
-          <Route path="/:prank/:url"> <PrankRunner {...prankRunnerProps} /> </Route>
-          <Route path="/:prank"> <PrankRunner {...prankRunnerProps} /> </Route>
-          <Route path="/"> <PrankRunner {...prankRunnerProps} /> </Route>
-        </Switch>
+
+        <Routes>
+          <Route path="/feedback" element= {<Container>
+            <FeedbackForm />
+          </Container>}  />
+          <Route path="/about" element={<About />} />
+          <Route path="/:prank/:url/:isRunning" element={<PrankRunner {...prankRunnerProps} />}/>
+          <Route path="/:prank//:isRunning" element={<PrankRunner {...prankRunnerProps} />}/>
+          <Route path="/:prank/:url" element={<PrankRunner {...prankRunnerProps} />}/>
+          <Route path="/:prank" element={<PrankRunner {...prankRunnerProps} />} />
+          <Route path="/" element={<PrankRunner {...prankRunnerProps} />} />
+        </Routes>
       </div>
     </Router>
   );
@@ -97,8 +97,8 @@ const aboutpopover = (
     <Popover.Header as="h3">About</Popover.Header>
     <Popover.Body>
       <p>Ready for a little fun, humour or levity?
-      Just enter the web address of your favorite (or least favorite) website, choose a prank<sup>*</sup>, and see what happens...<br />
-      Then you can press <em>Back</em> or <em>Esc</em> to pause.</p>
+        Just enter the web address of your favorite (or least favorite) website, choose a prank<sup>*</sup>, and see what happens...<br />
+        Then you can press <em>Back</em> or <em>Esc</em> to pause.</p>
       Whatever you do, don't go to your friends device and prank them!<br /><br />
       * Any apparent changes to websites only happen on your own device and don't effect the actual websites for other people. No animals were harmed in the making of this website.
     </Popover.Body>

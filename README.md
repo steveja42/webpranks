@@ -1,6 +1,6 @@
 #  Web Pranks
 
-[Web Pranks](https://www.iprank.us/) is a website that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on your local device.
+[Web Pranks](https://www.webfun.fun/) is a website that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
 
   
 

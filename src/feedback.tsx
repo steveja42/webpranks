@@ -110,7 +110,7 @@ export class FeedbackForm extends React.Component {
 					<label htmlFor="exampleInputEmail1">Email address
 		<input name="email" type="email" value={this.state.email} onChange={this.handleChange} className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" required />
 					</label>
-					<small id="emailHelp" className="form-text text-muted">We'll never share your email with anyone else.</small>
+					<small id="emailHelp" className="form-text text-muted">We will never share your email with anyone else.</small>
 				</div>
 
 				<div className="form-group">

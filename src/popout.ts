@@ -7,6 +7,7 @@ interface Props {
     width?: number
     height?: number
     closeWindow: () => void;                // Callback to close the popout
+    children:any
 }
 
 interface State {
