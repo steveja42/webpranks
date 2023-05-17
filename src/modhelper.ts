@@ -11,7 +11,9 @@ export type GameObjectwithMatterBody = Phaser.GameObjects.Image & Phaser.GameObj
 	body: MatterJS.BodyType
 };
 
-
+type RectangeWithDynamicBody = Phaser.GameObjects.Rectangle & {
+	body: Phaser.Physics.Arcade.Body;
+};
 
 export enum CollisonGroup {
 	Dom = -2
@@ -51,7 +53,7 @@ export function getRandomInt(max) {
 
 type DomObjects = {
 	domBackgroundRects: Phaser.GameObjects.Rectangle[]
-	domArcadeBackgroundRects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[]
+	domArcadeBackgroundRects: RectangeWithDynamicBody[]
 	domImages: Phaser.GameObjects.Image[]
 	domArcadeImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[]
 	domMatterImages: Phaser.Physics.Matter.Image[]
@@ -69,7 +71,7 @@ type DomObjects = {
  */
 export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: PageInfo, useArcade = true, useMatter = false): DomObjects {
 	const domBackgroundRects: Phaser.GameObjects.Rectangle[] = []
-	const domArcadeBackgroundRects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
+	const domArcadeBackgroundRects: RectangeWithDynamicBody[] = []
 	const domImages: Phaser.GameObjects.Image[] = []
 	const domArcadeImages: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = []
 	const domMatterImages: Phaser.Physics.Matter.Image[] = []
@@ -88,7 +90,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 				domArcadeImages.push(img)
 			})
 			domBackgroundRects.forEach((rect) => {
-				domArcadeBackgroundRects.push(scene.physics.add.existing(rect) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody)
+				domArcadeBackgroundRects.push(scene.physics.add.existing(rect) as RectangeWithDynamicBody)
 			})
 		}
 		if (useMatter) {
@@ -125,24 +127,33 @@ type Rect = {
  * @param width 
  * @param height 
  */
-export function getSplits(width, height): Rect[] {
+export function getSplits(width, height,xImpact=undefined, yImpact=undefined): Rect[] {
 	const halfWidth = width / 2
 	const halfHeight = height / 2
-	let splits: Rect[] = [
-		{ x: 0, y: 0, width: halfWidth, height: halfHeight },
-		{ x: halfWidth, y: 0, width: halfWidth, height: halfHeight },
-		{ x: 0, y: halfHeight, width: halfWidth, height: halfHeight },
-		{ x: halfWidth, y: halfHeight, width: halfWidth, height: halfHeight },
-	]
-	if (width / height > 4 / 3) {
-		splits = [
-			{ x: 0, y: 0, width: halfWidth, height: height },
-			{ x: halfWidth, y: 0, width: halfWidth, height: height }]
+	let xSplit = halfWidth
+	let ySplit = halfHeight
+
+	if (xImpact != undefined && yImpact != undefined) {
+		xSplit = xImpact
+		ySplit = halfWidth
 	}
-	else if (height / width > 4 / 3) {
+
+
+	let splits: Rect[] = [
+		{ x: 0, y: 0, width: xSplit, height: ySplit },
+		{ x: xSplit, y: 0, width: xSplit, height: ySplit },
+		{ x: 0, y: ySplit, width: xSplit, height: ySplit },
+		{ x: xSplit, y: ySplit, width: xSplit, height: ySplit },
+	]
+	if (width / height > 4 / 3) {   // split horizontally
 		splits = [
-			{ x: 0, y: 0, width: width, height: halfHeight },
-			{ x: 0, y: halfHeight, width: width, height: halfHeight }]
+			{ x: 0, y: 0, width: xSplit, height: height },
+			{ x: xSplit, y: 0, width: width - xSplit, height: height }]
+	}
+	else if (height / width > 4 / 3) { // split vertically
+		splits = [
+			{ x: 0, y: 0, width: width, height: ySplit },
+			{ x: 0, y: ySplit, width: width, height: ySplit }]
 	}
 	return splits
 }

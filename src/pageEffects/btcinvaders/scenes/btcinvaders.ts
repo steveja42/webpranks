@@ -12,7 +12,6 @@ import {
     AnimationType,
 } from "../interface/factory/animation-factory";
 import { Kaboom } from "../interface/kaboom";
-import { EnemyBullet } from "../interface/enemy-bullet";
 import { ScoreManager } from "../interface/manager/score-manager";
 import { GameState } from "../interface/game-state";
 
@@ -41,8 +40,7 @@ export class MainScene extends Phaser.Scene {
 
     preload() {
         this.load.setBaseURL("assets/spaceinvaders");
-        this.load.image(AssetType.Bullet, "/images/bullet.png");
-        this.load.image(AssetType.EnemyBullet, "/images/enemy-bullet.png");
+        this.load.image(AssetType.Bullet, "/images/bitcoin36.png");
         this.load.image(AssetType.Ship, "/images/player.png");
         this.load.spritesheet(AssetType.Kaboom, "/images/explode.png", {
             frameWidth: 128,
@@ -76,6 +74,7 @@ export class MainScene extends Phaser.Scene {
             }
         })
         const { domArcadeBackgroundRects, domArcadeImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
+       
         this.pageObjects = this.physics.add.group().addMultiple(domArcadeBackgroundRects).addMultiple(domArcadeImages)
         this.player.setDepth(1)
     }
@@ -89,13 +88,7 @@ export class MainScene extends Phaser.Scene {
             null,
             this
         );
-        this.physics.overlap(
-            this.assetManager.enemyBullets,
-            this.player,
-            this._enemyBulletHitPlayer,
-            null,
-            this
-        );
+
     }
 
     private _shipKeyboardHandler() {
@@ -125,7 +118,7 @@ export class MainScene extends Phaser.Scene {
         explosion.setY(bullet.y);
         explosion.play(AnimationType.Kaboom)
         this.sound.play(SoundType.InvaderKilled)
-        explode(bullet.x, bullet.y, pageObject,this.pageObjects) 
+        explode(bullet.x, bullet.y - bullet.height/2, pageObject, this.pageObjects)
         this.scoreManager.increaseScore();
         /* if (!this.alienManager.hasAliveAliens) {
              this.scoreManager.increaseScore(1000);
@@ -133,26 +126,6 @@ export class MainScene extends Phaser.Scene {
              this.state = GameState.Win;
          } */
     }
-
-    private _enemyBulletHitPlayer(ship, enemyBullet: EnemyBullet) {
-        const explosion: Kaboom = this.assetManager.explosions.get();
-        enemyBullet.kill();
-        const live: Phaser.GameObjects.Sprite = this.scoreManager.lives.getFirstAlive();
-        if (live) {
-            live.setActive(false).setVisible(false);
-        }
-
-        explosion.setPosition(this.player.x, this.player.y);
-        explosion.play(AnimationType.Kaboom);
-        this.sound.play(SoundType.Kaboom)
-        if (this.scoreManager.noMoreLives) {
-            this.scoreManager.setGameOverText();
-            this.assetManager.gameOver();
-            this.state = GameState.GameOver;
-            this.player.disableBody(true, true);
-        }
-    }
-
 
     private _fireBullet() {
         if (!this.player.active) {

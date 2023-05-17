@@ -1,5 +1,5 @@
+/* adapted from github.com/trungk18/space-invaders-phaser-3*/
 import { PageInfo } from '../../../modhelper'
-
 
 import { AssetType, SoundType } from "../interface/assets";
 import { Bullet } from "../interface/bullet";

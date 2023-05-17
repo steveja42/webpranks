@@ -11,15 +11,16 @@ export class AnimationFactory {
     }
 
     private _init() {
-        this._scene.anims.create({
-            key: AnimationType.Fly,
-            frames: this._scene.anims.generateFrameNumbers(AssetType.Alien, {
-                start: 0,
-                end: 3
-            }),
-            frameRate: 20,
-            repeat: -1
-        });
+        if (this._scene.textures.exists(AssetType.Alien))
+            this._scene.anims.create({
+                key: AnimationType.Fly,
+                frames: this._scene.anims.generateFrameNumbers(AssetType.Alien, {
+                    start: 0,
+                    end: 3
+                }),
+                frameRate: 20,
+                repeat: -1
+            });
 
         this._scene.anims.create({
             key: AnimationType.Kaboom,

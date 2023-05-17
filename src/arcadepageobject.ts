@@ -13,7 +13,7 @@ export type PageObject = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle
  * @param yImpact 
  * @param gameObject 
  */
-export function explode(xImpact, yImpact, gameObject: PageObject, gameGroup:Phaser.GameObjects.Group): PageObject[] {
+export function explode(xImpact, yImpact, gameObject: PageObject, gameGroup: Phaser.GameObjects.Group): PageObject[] {
 
     const pieces = breakUp(xImpact, yImpact, gameObject)
     const scene = gameObject.scene
@@ -27,14 +27,14 @@ export function explode(xImpact, yImpact, gameObject: PageObject, gameGroup:Phas
     const xSpeedMax = 200
     const ySpeedMax = 200
     if (pieces.length == 2) {
-        scene.physics.accelerateTo(pieces[0], 0, height / 2,speed, xSpeedMax, ySpeedMax)
-        scene.physics.accelerateTo(pieces[1], width, height / 2,speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[0], 0, height / 2, speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[1], width, height / 2, speed, xSpeedMax, ySpeedMax)
     }
     if (pieces.length == 4) {
-        scene.physics.accelerateTo(pieces[0], 0, 0,speed, xSpeedMax, ySpeedMax)
-        scene.physics.accelerateTo(pieces[1], width, 0,speed, xSpeedMax, ySpeedMax)
-        scene.physics.accelerateTo(pieces[2], 0, height,speed, xSpeedMax, ySpeedMax)
-        scene.physics.accelerateTo(pieces[3], width, height,speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[0], 0, 0, speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[1], width, 0, speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[2], 0, height, speed, xSpeedMax, ySpeedMax)
+        scene.physics.accelerateTo(pieces[3], width, height, speed, xSpeedMax, ySpeedMax)
     }
 
     return pieces
@@ -58,12 +58,14 @@ export function breakUp(xImpact, yImpact, gameObject: PageObject): PageObject[] 
     const height = gameObject.displayHeight
     if (width * height < MinArea)
         return null
-    log(`breaking up  ${width} - ${height}`)  //${gameObject.body.id}
+    const xTrue = gameObject.x - width/2
+    const yTrue = gameObject.y - height/2
+    log(`breaking up  (${xTrue},${yTrue} - ${xTrue + width},${yTrue + height}) ${width} x ${height} at ${xImpact},${yImpact}`)  //${gameObject.body.id}
     const scene = gameObject.scene
     const x = gameObject.x
     const y = gameObject.y
     const newObjects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
-    const splits = getSplits(width, height)
+    const splits = getSplits(width, height, xImpact-xTrue, yImpact-yTrue)
     if (gameObject.type === 'Image') {
         const texture = gameObject.texture
         const baseName = texture.frameTotal
