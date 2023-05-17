@@ -1,4 +1,4 @@
-import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
+import { PageInfo, log, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene` }
 

@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useReducer } from 'react'
+import React from 'react'
 import { log } from './util'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
-import { Form, Alert } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
-import Popover from 'react-bootstrap/Popover'
 import { effectModules } from './pageEffects/modulelist'
 import { Phase } from './prankrunner'
 import popinImage from './images/jester-320.png'
@@ -16,19 +15,12 @@ const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key
 </OverlayTrigger>)
 //const prankListx = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
-
-type PrankUIParams = {
-	prank: string
-	url: string
-	isRunning: string
-};
-
 let prankChosen = false
 
 export function PrankForm(props: any) {
 	const protocol = 'http://'
 
-	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, dispatchPhase } = props
+	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase} = props
 
 	const onFocus = () => {
 		if (inputURL.trim() === '') {
@@ -97,7 +89,7 @@ export function PrankForm(props: any) {
 						const x = parseInt(e.target.value)
 						setWhichPrank(x)
 					}}
-					onClick={e => {
+					onClick={() => {
 						prankChosen = true
 					}}
 				>
@@ -111,7 +103,7 @@ export function PrankForm(props: any) {
 				</Spinner>}
 			</Button>
 		</Form>
-		{process.env.NODE_ENV === 'development' ? <Button onClick={e => setShowPopout(!showPopout)}>show debug window</Button> : null}
+		{process.env.NODE_ENV === 'development' ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
 		{phase !== Phase.prankPaused ?<img id="popinimage" src={popinImage} alt="" /> :null}
 
 	</div>

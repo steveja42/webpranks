@@ -1,7 +1,6 @@
 import * as Phaser from 'phaser';
-import { useDebugValue } from 'react';
 import { PageInfo } from "./domtoobjects"
-import { center, setBackgroundAndCreateDomObjects } from './modhelper'
+import { setBackgroundAndCreateDomObjects } from './modhelper'
 import { log } from './util'
 
 
@@ -9,7 +8,7 @@ import { log } from './util'
 let gameLoadedPromise: Promise<Phaser.Game>
 let resolveGameLoadedCallback
 
-export function setupWorld(parentElement: HTMLElement, width, height, background = ''): Phaser.Game {
+export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
 		type: Phaser.AUTO,
 		parent: parentElement,
@@ -28,7 +27,7 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 		},
 		callbacks: { postBoot: onPostBoot },
 		scene: null, // { key: "rootScene", visible: false },
-	//	backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
+		//	backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
 
 	};
 	gameLoadedPromise = new Promise<Phaser.Game>(resolve => {
@@ -41,7 +40,6 @@ export function setupWorld(parentElement: HTMLElement, width, height, background
 	return game
 
 }
-let gs: PageScene
 let prevPage: PageInfo
 
 function onPostBoot(game: Phaser.Game) {
@@ -60,12 +58,15 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, curr
 		pageInfo.game.textures.each((texture) => {
 			if (! /^__/.test(texture.key))
 				pageInfo.game.textures.remove(texture)  //remove all textures except the defaults, which start with __
-		}, this) 
+		}, this)
 	}
 
 	prevPage = pageInfo
 	log(`loading textures`)
-	await loadTextures(pageInfo.game, pageInfo.domElementsImages.map((value) => value.imageURL))
+	if (pageInfo.domElementsImages.length)
+		await loadTextures(pageInfo.game, pageInfo.domElementsImages.map((value) => value.imageURL))
+	else
+		log(`wierd, no domElementsImages, not loading textures`)
 	//gs = new PageScene(page, nextSceneName)
 	//game.scene.add(nextSceneName, gs)
 	return pageInfo
@@ -75,7 +76,7 @@ export async function loadTextures(game: Phaser.Game, imageURLs: string[], baseN
 	let imagesYetToLoadCount = imageURLs.length
 	const regex = new RegExp(`^${baseName}\\d+`)
 	const texturesLoaded = new Promise(resolve => {
-		game.textures.on('addtexture', (key: string, texture) => {
+		game.textures.on('addtexture', (key: string) => {
 			if (regex.test(key))  // ensure key is one we added
 				if (--imagesYetToLoadCount === 0) {
 					game.textures.off('addtexture')
@@ -96,7 +97,7 @@ export async function resetScene(modInfo: PageInfo, currentScene: Phaser.Scene) 
 	currentScene.scene.restart()
 }
 
-export function allowMouseToMoveWorldObjects(modInfo: PageInfo) {
+export function allowMouseToMoveWorldObjects() {
 
 	return 1
 }
@@ -122,7 +123,7 @@ export class PageScene extends Phaser.Scene {
 		log('creating scene')
 		setBackgroundAndCreateDomObjects(this, this.page)
 
-		this.square = this.add.rectangle(400, 400, 100, 100, 0xFFFFFF) as any;
+		this.square = this.add.rectangle(400, 400, 100, 100, 0xFFFFFF) as Phaser.GameObjects.Rectangle  & { body: Phaser.Physics.Arcade.Body };
 		this.physics.add.existing(this.square);
 	}
 

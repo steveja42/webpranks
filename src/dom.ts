@@ -134,7 +134,6 @@ export function logDomTree(startNode: HTMLElement, usePosAttr = true): void {
 	const ownerWindow = startNode.ownerDocument.defaultView
 	const doc = startNode.ownerDocument
 	const body = doc.body;
-	const box = startNode.getBoundingClientRect();
 	const docEl = document.documentElement;
 
 	const scrollTop = ownerWindow?.pageYOffset || docEl.scrollTop || body.scrollTop;
@@ -143,8 +142,6 @@ export function logDomTree(startNode: HTMLElement, usePosAttr = true): void {
 	const clientTop = docEl.clientTop || body.clientTop || 0;
 	const clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-	const top = box.top + scrollTop - clientTop;
-	const left = box.left + scrollLeft - clientLeft;
 	log(`logDomTree in document ${doc} window ${ownerWindow} clientTop ${clientTop} clientLeft ${clientLeft} scrollLeft ${scrollLeft} scrollTop ${scrollTop}`)
 	walkDom(startNode, logNode, 0, usePosAttr);
 }

@@ -1,8 +1,6 @@
 import { log } from './util'
-import { Engine, Render, Bodies, World, Body, Runner } from "matter-js"
-import { walkDom2, logDomTree, nodeTypes } from './dom'
-import { allowMouseToMoveWorldObjects } from './phaseri'
-import { CollisionCategory } from './modhelper'
+//import { Engine, Render, Bodies, World, Body, Runner } from "matter-js"
+import { walkDom2, nodeTypes } from './dom'
 import * as Phaser from 'phaser';
 import html2canvas from 'html2canvas'
 

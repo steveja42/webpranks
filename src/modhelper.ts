@@ -11,9 +11,7 @@ export type GameObjectwithMatterBody = Phaser.GameObjects.Image & Phaser.GameObj
 	body: MatterJS.BodyType
 };
 
-type GameObjectwithArcadeBody = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
-	body: Phaser.Physics.Arcade.Body
-};
+
 
 export enum CollisonGroup {
 	Dom = -2
@@ -127,7 +125,7 @@ type Rect = {
  * @param width 
  * @param height 
  */
-function getSplits(width, height): Rect[] {
+export function getSplits(width, height): Rect[] {
 	const halfWidth = width / 2
 	const halfHeight = height / 2
 	let splits: Rect[] = [

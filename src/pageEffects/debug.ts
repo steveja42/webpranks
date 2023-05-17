@@ -1,4 +1,4 @@
-import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects, ms, CollisionCategory, CollisonGroup } from '../modhelper'
+import { PageInfo, log, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup } from '../modhelper'
 
 export function doPageEffect(page: PageInfo) {
 	const pageScene = new PageScene(page)
@@ -41,11 +41,10 @@ export class PageScene extends Phaser.Scene {
 		log('creating scene')
 		const domDensity = .1
 		const domRestitution = 0
-		const { width, height } = this.sys.game.canvas
 //		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
 
-	const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
+	const { domBackgroundRects: backgroundRectangles } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 	
 		backgroundRectangles.forEach(rect => {
 			this.backgroundRects.push(this.matter.add.gameObject(rect, {

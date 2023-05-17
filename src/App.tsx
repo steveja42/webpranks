@@ -1,26 +1,18 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { useState, useEffect, useRef } from 'react'
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link, NavLink,
-  useParams, useLocation
-} from "react-router-dom";
+import React, { useState } from 'react'
+import {BrowserRouter as Router, Routes, Route, NavLink} from "react-router-dom";
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
-import Tooltip from 'react-bootstrap/Tooltip'
 import Popover from 'react-bootstrap/Popover'
 import Container from "react-bootstrap/Container"
 
 import navlogo from './images/jesterhead-200.png'
-import info from './images/info.png'
 
 import { log } from './util'
 import { PrankRunner } from './prankrunner'
 import './App.css'
-import { FeedbackForm, Donate } from './feedback'
+import { FeedbackForm} from './feedback'
 
 export const version = .01
 
@@ -85,12 +77,6 @@ export function App(): JSX.Element {
     </Router>
   );
 }
-
-const renderTooltip = (props) => (
-  <Tooltip id="button-tooltip" {...props}>
-    Simple tooltip
-  </Tooltip>
-);
 
 const aboutpopover = (
   <Popover id="popover-basic">

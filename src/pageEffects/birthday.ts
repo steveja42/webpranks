@@ -1,5 +1,4 @@
-import FormCheckLabel from 'react-bootstrap/esm/FormCheckLabel'
-import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
+import { PageInfo, setBackgroundAndCreateDomObjects } from '../modhelper'
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`, physics: { arcade: { debug: false } } }
 
@@ -36,13 +35,7 @@ export class PageScene extends Phaser.Scene {
 
 		const { domBackgroundRects, domImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false)
 		this.pageObjects = this.add.group().addMultiple(domBackgroundRects).addMultiple(domImages)
-
-		const cake = this.makeCake()
-		//cake.setVelocity(100, 200)
 		this.addMessage("Happy Birthday")
-
-		
-
 	}
 
 	private moveObjects(time: number) {
@@ -65,6 +58,7 @@ export class PageScene extends Phaser.Scene {
 
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public update(time: number, delta: number) {
 
 		this.moveObjects(time)

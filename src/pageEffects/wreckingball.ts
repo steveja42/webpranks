@@ -1,4 +1,4 @@
-import { PageInfo, log, center, getRandomInt, setBackgroundAndCreateDomObjects, ms, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
+import { PageInfo, log, center, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
 
 export function doPageEffect(page: PageInfo): Phaser.Scene {
 	const pageScene = new PageScene(page)
@@ -150,7 +150,7 @@ export class PageScene extends Phaser.Scene {
 
 	keepBallMovingFast() {
 		const ballAngle = Phaser.Math.RadToDeg(this.wreckingBall.body.angle)
-		const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
+		//const ballSpeed = Math.abs(this.wreckingBall.body.velocity.x) + Math.abs(this.wreckingBall.body.velocity.y)
 		if (this.timeElapsed - this.lastTime > 100) {
 			this.lastTime = this.timeElapsed
 			//log(`at angle ${ballAngle.toFixed(2)} (x ${this.wreckingBall.body.velocity.x.toFixed(2)} y ${this.wreckingBall.body.velocity.y.toFixed(2)} ) - ${ballSpeed.toFixed(2)} `)
@@ -172,7 +172,6 @@ export class PageScene extends Phaser.Scene {
 
 	addTheGround(width, height): GameObjectwithMatterBody {
 		const groundHeight = 10
-		const wallWidth = 10
 		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0xc5227)
 		return this.matter.add.gameObject(ground, {
 			isStatic: true,
@@ -258,7 +257,6 @@ export class PageScene extends Phaser.Scene {
 			}
 		}) as GameObjectwithMatterBody
 		ballId = this.wreckingBall.body.id
-		const con = this.matter.add.constraint(prevObject, this.wreckingBall.body, undefined, 1)//,40,.4) wreckingballWidth / 2 + 16
 		this.chain.push(this.wreckingBall)
 		this.wreckingBall.body.onCollideCallback = this.onCollide
 	}

@@ -1,7 +1,7 @@
 import { log } from './util';
 
-//const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live': 'https://www.resultify.live'
-const server = 'https://tdnode.onrender.com' //https://sj-td.herokuapp.com'  //'http://localhost:8080' // 'https://sj-td.herokuapp.com' 
+const server = 'https://tdnode.onrender.com' 
+//const server = 'http://localhost:8080'   //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live':
 
 
 export async function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{

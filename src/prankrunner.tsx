@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { log } from './util'
 import { getKeyBoardHandler, getClickTouchHandler } from './io'
-import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
-import { Form, Alert } from 'react-bootstrap'
+import { Alert } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
-import { domToObjects, scratchCanvas, PageInfo } from './domtoobjects'
+import { domToObjects, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
-import { setupWorld, resetScene, resetAndLoadImagesForNewPageScene } from './phaseri'
+import { setupWorld, resetAndLoadImagesForNewPageScene } from './phaseri'
 import { useParams, useNavigate ,useNavigationType, useLocation } from "react-router-dom";
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
@@ -110,7 +109,7 @@ export function PrankRunner(props: any) {
 		//setShowPopout(true)
 		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
 		const handleClickOrTouch = getClickTouchHandler(dispatchPhase)
-		const handleUnload = (e: BeforeUnloadEvent) => { console.log('window unloading'); setShowPopout(false) }
+		const handleUnload = () => { console.log('window unloading'); setShowPopout(false) }
 
 		window.addEventListener('beforeunload', handleUnload)
 		document.addEventListener("keydown", handleKeyDown, false)
@@ -162,6 +161,8 @@ export function PrankRunner(props: any) {
 					currentScene.scene.resume()
 					currentScene.sound.resumeAll()
 					currentScene.matter?.world?.resume()
+					currentScene.physics?.world?.resume()
+
 					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state: { whichPrank, inputURL, isRunning }})
 				}
 				break
@@ -172,6 +173,7 @@ export function PrankRunner(props: any) {
 					currentScene.scene.pause()
 					currentScene.sound.pauseAll()
 					currentScene.matter?.world?.pause()
+					currentScene.physics?.world?.pause()
 					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, inputURL, isRunning }})
 				}
 				break
@@ -179,7 +181,7 @@ export function PrankRunner(props: any) {
 	}, [phase])
 
 	useEffect(() => {
-		log(`path changed: ${location.pathname}`);
+		//log(`path changed: ${location.pathname}`);
 		if ( navType === "POP") {
 			dispatchPhase(PhaseTogglePause)
 		}
@@ -287,7 +289,7 @@ export function PrankRunner(props: any) {
 	}
 
 	const pageLoaded = (!!pageInfo)
-	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, dispatchPhase }
+	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase}
 
 	return <div id="foo">
 
@@ -314,7 +316,7 @@ export function PrankRunner(props: any) {
 			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
 				<div>
 					<p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
-					<Button onClick={e => logDomTree(pageInfo.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
+					<Button onClick={() => logDomTree(pageInfo.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
 				</div>
 				<img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
 				<img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { log } from './util'
+import { useState, useEffect } from 'react'
+//import { log } from './util'
 
 /**
  *  a hook that returns dimensions of the window to components, updating when the window is resized
@@ -35,8 +35,6 @@ export const useMousePosition = (win) => {
 	useEffect(() => {
 		const setFromEvent = (e) => setPosition({ x: e.clientX, y: e.clientY });
 		win?.addEventListener("mousemove", setFromEvent);
-		const x = win?.frameElement
-		//log(`addevent ${x}`)
 		return () => {
 			win?.removeEventListener("mousemove", setFromEvent);
 		};
