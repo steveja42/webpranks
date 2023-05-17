@@ -257,6 +257,8 @@ export class PageScene extends Phaser.Scene {
 			}
 		}) as GameObjectwithMatterBody
 		ballId = this.wreckingBall.body.id
+		this.matter.add.constraint(prevObject, this.wreckingBall.body, undefined, 1)//,40,.4) wreckingballWidth / 2 + 16
+
 		this.chain.push(this.wreckingBall)
 		this.wreckingBall.body.onCollideCallback = this.onCollide
 	}
