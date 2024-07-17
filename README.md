@@ -1,6 +1,6 @@
 #  Web Pranks
 
-[Web Pranks](https://www.webfun.fun/) is a website that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
+Web Pranksis a website, [webfun.click](https://www.webfun.click/) , that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
 
   
 
@@ -8,7 +8,7 @@
 
   
 
-Web Pranks was designed so other developers can easily add their own pranks to it. Each prank is basically a [Phaser3](https://phaser.io/phaser3) scene. To add your own prank, export a function named *doPageEffect* in a Typescript or JavaScript file.
+Web Pranks was designed so developers can easily add their own pranks to it. Each prank is basically a [Phaser3](https://phaser.io/phaser3) scene. To add your own prank, export a function named *doPageEffect* in a Typescript or JavaScript file.
 
     export  function  doPageEffect(page:  PageInfo):  Phaser.Scene
 
