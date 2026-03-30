@@ -86,7 +86,11 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	if (useArcade || useMatter) {
 		if (useArcade) {
 			pageInfo.domElementsImages.forEach((domElement, i) => {
-				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, '__BASE')
+				const texKey = `dom${i}`
+				const tex = scene.textures.get(texKey)
+				const glTex = tex?.source?.[0]?.glTexture
+				log(`creating ArcadeImage ${texKey}: texExists=${tex?.key !== '__MISSING'} glTexture=${!!glTex}`)
+				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), texKey, '__BASE')
 				domArcadeImages.push(img)
 			})
 			domBackgroundRects.forEach((rect) => {
@@ -182,15 +186,15 @@ export function breakUp(xImpact, yImpact, gameObject: GameObjectwithMatterBody):
 	const splits = getSplits(width, height)
 	if (gameObject.type === 'Image') {
 		const texture = gameObject.texture
-		const baseName = texture.frameTotal
 		const frameX = gameObject.frame?.cutX || 0
 		const frameY = gameObject.frame?.cutY || 0
 		splits.forEach((split, i) => {
-			const frame = texture.add(baseName + i, 0, frameX + split.x, frameY + split.y, split.width, split.height)
-		
-				newObjects.push(scene.add.image(x + split.x, y + split.y, texture, frame.name))
+			const newTextureKey = `${texture.key}_frag_${Date.now()}_${i}`
+			const newTexture = scene.textures.addImage(newTextureKey, texture.getSourceImage() as HTMLImageElement)
+			newTexture.add('__BASE', 0, frameX + split.x, frameY + split.y, split.width, split.height)
+			newObjects.push(scene.add.image(x + split.x, y + split.y, newTextureKey))
 		})
-	} 
+	}
 	else  {
 		const fillColor = gameObject.fillColor
 		splits.forEach((split, i) => {

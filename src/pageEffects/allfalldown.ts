@@ -23,7 +23,7 @@ export class PageScene extends Phaser.Scene {
 
 	public preload() {
 		log(`preload`)
-		this.load.audio("falling", ['assets/audio/fallingwhistle2.ogg', 'assets/audio/fallingwhistle2.mp3'], {
+		this.load.audio("falling", ['/assets/audio/fallingwhistle2.ogg', '/assets/audio/fallingwhistle2.mp3'], {
 			instances: 5
 		})
 	}

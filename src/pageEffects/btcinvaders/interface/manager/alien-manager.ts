@@ -55,6 +55,7 @@ export class AlienManager {
                 yoyo: true,
                 repeat: -1
             })
+            return true
         })
     }
 }

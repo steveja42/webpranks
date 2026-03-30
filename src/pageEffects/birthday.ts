@@ -1,3 +1,4 @@
+import Phaser from 'phaser'
 import { PageInfo, setBackgroundAndCreateDomObjects } from '../modhelper'
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`, physics: { arcade: { debug: false } } }
@@ -22,12 +23,12 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public preload() {
-		this.load.image('red', 'assets/particles/red.png')
-		this.load.atlas('flares', 'assets/particles/flares.png', 'assets/particles/flares.json')
-		this.load.image('fire', 'assets/particles/muzzleflash3.png')
-		this.load.image('cake', 'assets/birthday-cake.png')
-		this.load.image('candle', 'assets/candle.jpg')
-		this.load.audio("song", ["assets/audio/happy-birthday-rock.mp3", "assets/audio/happy-birthday-rock.ogg"])
+		this.load.image('red', '/assets/particles/red.png')
+		this.load.atlas('flares', '/assets/particles/flares.png', '/assets/particles/flares.json')
+		this.load.image('fire', '/assets/particles/muzzleflash3.png')
+		this.load.image('cake', '/assets/birthday-cake.png')
+		this.load.image('candle', '/assets/candle.jpg')
+		this.load.audio("song", ["/assets/audio/happy-birthday-rock.mp3", "/assets/audio/happy-birthday-rock.ogg"])
 	}
 
 	public create() {
@@ -84,10 +85,9 @@ export class PageScene extends Phaser.Scene {
 	private makeCandle(x, y) {
 		const candle = this.add.image(x, y, "candle").setScale(.1, .1)
 		y -= 53
-		this.add.particles('fire').createEmitter({
+		const emitter = this.add.particles(x, y, 'fire', {
 			alpha: { start: 1, end: 0 },
 			scale: { start: 0.1, end: .25 },
-			//tint: { start: 0xff945e, end: 0xff945e },
 			speed: 20,
 			accelerationY: -100,
 			angle: { min: -85, max: -95 },
@@ -95,17 +95,13 @@ export class PageScene extends Phaser.Scene {
 			lifespan: { min: 300, max: 400 },
 			blendMode: 'NORMAL',
 			frequency: 110,
-			//maxParticles: 10,
-			x,
-			y,
-		}).startFollow(candle, 0, -53)
+		})
+		emitter.startFollow(candle, 0, -53)
 		return candle
 	}
 
 	private addMessage(message){
 		const emitConfig = { speed: 20, scale: { start: .1, end: .4 }, blendMode: 'NORMAL', lifespan: { min: 300, max: 500 }	}
-		const particleManager = this.add.particles('red')
-		
 
 		const text = this.add.text(400, 100, message, {
 			fontFamily: 'Quicksand',
@@ -118,14 +114,12 @@ export class PageScene extends Phaser.Scene {
 		})
 		const zmessage = this.physics.add.existing(text) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody
 
-
-		particleManager.createEmitter(emitConfig).startFollow(zmessage)
-		particleManager.createEmitter(emitConfig).startFollow(zmessage, text.width)
-		particleManager.createEmitter(emitConfig).startFollow(zmessage, text.width, text.height)
-		particleManager.createEmitter(emitConfig).startFollow(zmessage,  0, text.height)
+		this.add.particles(0, 0, 'red', emitConfig).startFollow(text)
+		this.add.particles(0, 0, 'red', emitConfig).startFollow(text, text.width)
+		this.add.particles(0, 0, 'red', emitConfig).startFollow(text, text.width, text.height)
+		this.add.particles(0, 0, 'red', emitConfig).startFollow(text, 0, text.height)
 
 		zmessage.body.setVelocity(100, 200).setBounce(1, 1).setCollideWorldBounds(true);
-
 	}
 }
 

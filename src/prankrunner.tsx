@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { log } from './util'
 import { getKeyBoardHandler, getClickTouchHandler } from './io'
@@ -10,18 +11,19 @@ import { domToObjects, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
-import { setupWorld, resetAndLoadImagesForNewPageScene } from './phaseri'
-import { useParams, useNavigate ,useNavigationType, useLocation } from "react-router-dom";
+import { setupWorld, resetAndLoadImagesForNewPageScene, setCurrentScene as setPhaseriScene, resetPhaseri } from './phaseri'
+import { useRouter, usePathname } from 'next/navigation'
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
-const isMobile = Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1;
-
+const isMobile = typeof window !== 'undefined' && (Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1);
 
 let game: Phaser.Game
-type PrankUIParams = {
-	prank: string
-	url: string
-	isRunning: string
+type PrankRunnerProps = {
+	prank: string | undefined
+	url: string | undefined
+	isRunning: string | undefined
+	showControls?: boolean
+	setShowControls?: (v: boolean) => void
 };
 
 export enum Phase {
@@ -74,16 +76,13 @@ function phaseReducer(oldPhase, newPhase): Phase {
 /**
  * Calls server to get the page at URL,
  *  and then pranks the page by manipulating the display of the page
- * @param props 
  */
+export function PrankRunner(props: PrankRunnerProps) {
+	const { prank: prankParam, url: urlParam, isRunning: isRunningParam } = props
+	const router = useRouter()
+	const pathname = usePathname()
 
-export function PrankRunner(props: any) {
-	const {showControls, setShowControls} = props
-
-	const location = useLocation();
-	const navigate = useNavigate ();
-	const navType = useNavigationType()
-	const params = useParams<PrankUIParams>();
+	const [showControls, setShowControls] = useState(true)
 	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotEntered)
 	const [targetUrl, setTargetUrl] = useState("")
 	const [inputURL, setInputURL] = useState("")
@@ -106,7 +105,6 @@ export function PrankRunner(props: any) {
 
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(`component load`)
-		//setShowPopout(true)
 		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
 		const handleClickOrTouch = getClickTouchHandler(dispatchPhase)
 		const handleUnload = () => { console.log('window unloading'); setShowPopout(false) }
@@ -115,33 +113,34 @@ export function PrankRunner(props: any) {
 		document.addEventListener("keydown", handleKeyDown, false)
 		window.addEventListener("click", handleClickOrTouch, false)
 		window.addEventListener("touchstart", handleClickOrTouch, false)
-		//
+
 		let url = ""
-		if (params.url) {
-			url = decodeURIComponent(params.url)
+		if (urlParam) {
+			url = decodeURIComponent(urlParam)
 			setInputURL(url)
 			setTargetUrl(url)
-			//loadingPromise = loadPage(url)
 		}
 		let i
-		if (params.prank && !isNaN(i = parseInt(params.prank)) && i > -1 && i < effectModules.length) {
+		if (prankParam && !isNaN(i = parseInt(prankParam)) && i > -1 && i < effectModules.length) {
 			setWhichPrank(i)
 		}
 		if (i !== undefined || url)
-			navigate(`/${i}/${params.url || ""}/0`,{ replace: true, state: { whichPrank: i, inputURL: url, isRunning: false }})
-		const shouldRun = params.isRunning === '1'
-		if (shouldRun && params.url && i !== undefined) {
+			router.replace(`/${i}/${urlParam || ""}`)
+		const shouldRun = isRunningParam === '1'
+		if (shouldRun && urlParam && i !== undefined) {
 			dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
 		}
-
-
-	
 
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown, false);
 			window.removeEventListener('beforeunload', handleUnload);
 			window.removeEventListener("click", handleClickOrTouch, false)
 			window.removeEventListener("touchstart", handleClickOrTouch, false)
+			if (game) {
+				game.destroy(true)
+				game = undefined
+				resetPhaseri()
+			}
 		};
 	}, []);
 
@@ -162,8 +161,6 @@ export function PrankRunner(props: any) {
 					currentScene.sound.resumeAll()
 					currentScene.matter?.world?.resume()
 					currentScene.physics?.world?.resume()
-
-					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state: { whichPrank, inputURL, isRunning }})
 				}
 				break
 			case Phase.prankPaused:
@@ -174,24 +171,27 @@ export function PrankRunner(props: any) {
 					currentScene.sound.pauseAll()
 					currentScene.matter?.world?.pause()
 					currentScene.physics?.world?.pause()
-					navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, inputURL, isRunning }})
 				}
 				break
 		}
 	}, [phase])
 
 	useEffect(() => {
-		//log(`path changed: ${location.pathname}`);
-		if ( navType === "POP") {
+		const handlePopState = () => {
 			dispatchPhase(PhaseTogglePause)
 		}
-		//ga.send(["pageview", location.pathname]);
-	}, [location])
+		window.addEventListener('popstate', handlePopState)
+		return () => window.removeEventListener('popstate', handlePopState)
+	}, [])
 
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
-		document.title = `${targetUrl}` || "Web Pranks";
-		navigate(`/${whichPrank}/${encodeURIComponent(targetUrl)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, targetUrl, isRunning} })
+		document.title = targetUrl || "Web Pranks";
+		if (targetUrl) {
+			const desired = `/${whichPrank}/${encodeURIComponent(targetUrl)}`
+			if (pathname !== desired)
+				router.replace(desired)
+		}
 
 		if (!isLoading && targetUrl) {
 			dispatchPhase(Phase.targetUrlEntered)
@@ -206,8 +206,6 @@ export function PrankRunner(props: any) {
 			loadPage(targetUrl, width, height)
 		}
 	}, [targetUrl]);
-
-
 
 	//load webpage when url changes
 	function loadPage(url: string, width = windowWidth, height = windowHeight) {
@@ -231,7 +229,7 @@ export function PrankRunner(props: any) {
 				if (!game)
 					game = setupWorld(phaserParent.current, width, height)
 
-				return resetAndLoadImagesForNewPageScene(newPageInfo, currentScene)
+				return resetAndLoadImagesForNewPageScene(newPageInfo)
 			}).then(newPageInfo => {
 				setPageInfo(newPageInfo)
 				setIsLoading(null)
@@ -246,15 +244,12 @@ export function PrankRunner(props: any) {
 		return loadingPromise
 	}
 
-
 	useEffect(() => {
-		navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}/${isRunning ? 1 : 0}`, { replace: true, state:{ whichPrank, inputURL, isRunning} })
+		if (inputURL)
+			router.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
 	}, [whichPrank]);
 
-
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
-		//xphase = Phase.startingPrank  //use global so keyboard handler sees it right away
-		//dispatchPhase("next")
 		try {
 			let altPageInfo
 			if (loadingPromise)
@@ -263,26 +258,24 @@ export function PrankRunner(props: any) {
 				altPageInfo = pageInfo
 			if (altPageInfo) {
 				log(`running prank ${effectModules[iPrank].title}`)
-				if (currentScene) {
-					currentScene.scene.remove()
-					setCurrentScene(null)
-				}
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
+						const scene = module.doPageEffect(altPageInfo)
+						setPhaseriScene(scene)
+						setCurrentScene(scene)
 						setShowControls(false);
 						dispatchPhase(Phase.prankRunning)
-						navigate(`/${iPrank}/${encodeURIComponent(inputURL)}/1`, {state:{whichPrank: iPrank, inputURL, isRunning: true }})
-						return setCurrentScene(module.doPageEffect(altPageInfo))
 					})
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
 			log(error.message)
 			dispatchPhase(Phase.error)
+			setPhaseriScene(null)
 			setCurrentScene(null)
 		}
-
 	}
+
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault()
 		dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
@@ -311,7 +304,6 @@ export function PrankRunner(props: any) {
 
 	/** This returns the HTML for the popout debugging window*/
 	function getPopout() {
-
 		return (
 			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
 				<div>
@@ -324,5 +316,3 @@ export function PrankRunner(props: any) {
 		);
 	}
 }
-
-

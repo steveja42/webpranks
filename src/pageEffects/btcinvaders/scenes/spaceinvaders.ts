@@ -41,7 +41,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL("assets/spaceinvaders");
+        this.load.setBaseURL("/assets/spaceinvaders");
         this.load.image(AssetType.Starfield, "/images/starfield.png");
         this.load.image(AssetType.Bullet, "/images/bullet.png");
         this.load.image(AssetType.EnemyBullet, "/images/enemy-bullet.png");

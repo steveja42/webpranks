@@ -17,12 +17,12 @@ export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Ga
 		physics: {
 			default: 'arcade',
 			arcade: {
-				gravity: { y: 300 },
+				gravity: { x: 0, y: 300 },
 				//debug: true
 			},
 			matter: {
 				debug: true,
-				gravity: { y: 0.5 }
+				gravity: { x: 0, y: 0.5 }
 			}
 		},
 		callbacks: { postBoot: onPostBoot },
@@ -41,24 +41,44 @@ export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Ga
 
 }
 let prevPage: PageInfo
+let prevScene: Phaser.Scene
+
+export function setCurrentScene(scene: Phaser.Scene) {
+	prevScene = scene
+}
+
+export function resetPhaseri() {
+	prevPage = undefined
+	prevScene = undefined
+}
 
 function onPostBoot(game: Phaser.Game) {
 	log(`-----------phaser game booting done`)
 	resolveGameLoadedCallback(game)
 }
 
-export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo, currentScene: Phaser.Scene): Promise<PageInfo> {
+export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Promise<PageInfo> {
 	if (!pageInfo.game) {
 		pageInfo.game = await gameLoadedPromise
 	}
+	log(`resetAndLoadImagesForNewPageScene: prevPage=${!!prevPage} prevScene=${!!prevScene}`)
 	if (prevPage) {
-		log(`textures: ${Object.keys(pageInfo.game.textures.list).length - 3}`)
-		if (currentScene)
-			currentScene.scene.remove()	  //page.game.scene.remove(currentScene.name)
+		const textureKeys = Object.keys(pageInfo.game.textures.list)
+		log(`textures before cleanup (${textureKeys.length}): ${textureKeys.join(', ')}`)
+		if (prevScene) {
+			log(`stopping scene ${prevScene.scene.key}`)
+			prevScene.scene.stop()
+			prevScene.scene.remove()
+			prevScene = null
+		}
+		// Collect keys first, then remove — avoids mutating the list while iterating.
+		const keysToRemove: string[] = []
 		pageInfo.game.textures.each((texture) => {
 			if (! /^__/.test(texture.key))
-				pageInfo.game.textures.remove(texture)  //remove all textures except the defaults, which start with __
+				keysToRemove.push(texture.key)
 		}, this)
+		log(`removing textures: ${keysToRemove.join(', ')}`)
+		keysToRemove.forEach(key => pageInfo.game.textures.remove(key))
 	}
 
 	prevPage = pageInfo
@@ -77,12 +97,16 @@ export async function loadTextures(game: Phaser.Game, imageURLs: string[], baseN
 	const regex = new RegExp(`^${baseName}\\d+`)
 	const texturesLoaded = new Promise(resolve => {
 		game.textures.on('addtexture', (key: string) => {
-			if (regex.test(key))  // ensure key is one we added
+			if (regex.test(key)) {  // ensure key is one we added
+				const tex = game.textures.get(key)
+				const glTex = tex?.source?.[0]?.glTexture
+				log(`addtexture: ${key} glTexture=${!!glTex} source=${!!tex?.source?.[0]}`)
 				if (--imagesYetToLoadCount === 0) {
 					game.textures.off('addtexture')
 					log(`-----------texture loading done`)
 					resolve(key)
 				}
+			}
 		})
 	})
 	let i = 0

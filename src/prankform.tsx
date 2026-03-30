@@ -8,7 +8,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import { effectModules } from './pageEffects/modulelist'
 import { Phase } from './prankrunner'
-import popinImage from './images/jester-320.png'
+const popinImage = '/jester-320.png'
 
 const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key={index} placement="auto" trigger={['hover', 'click', 'focus']} overlay={<Tooltip>Simple tooltip	</Tooltip>}>
 	<option key={index} value={index}>{effectModule.title}</option>

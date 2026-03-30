@@ -1,3 +1,4 @@
+import Phaser from 'phaser'
 import { PageInfo, log, center, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
 
 export function doPageEffect(page: PageInfo): Phaser.Scene {
@@ -51,9 +52,9 @@ export class PageScene extends Phaser.Scene {
 
 	public preload() {
 		log(`start`)
-		this.load.image('chainlink', 'assets/chainlink32.png');
-		this.load.audio("smash", ["assets/audio/glass-smash-6266.mp3", "assets/audio/glass-smash-6266.ogg"])
-		this.load.audio("oog", ["assets/audio/oooggg.mp3", "assets/audio/oooggg.ogg"])
+		this.load.image('chainlink', '/assets/chainlink32.png');
+		this.load.audio("smash", ["/assets/audio/glass-smash-6266.mp3", "/assets/audio/glass-smash-6266.ogg"])
+		this.load.audio("oog", ["/assets/audio/oooggg.mp3", "/assets/audio/oooggg.ogg"])
 	}
 
 	public async create() {
@@ -106,21 +107,24 @@ export class PageScene extends Phaser.Scene {
 	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
 		const TimeBetweenCollisions = 1500
 		log(`${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
-		const scene = data.bodyA.gameObject.scene
+		const scene = data.bodyA.gameObject.scene as PageScene
 		const time = Date.now()
-		const collidee:GameObjectwithMatterBody = (data.bodyA.id === ballId)?data.bodyB.gameObject : data.bodyA.gameObject
+		const collidee = ((data.bodyA.id === ballId) ? data.bodyB.gameObject : data.bodyA.gameObject) as unknown as GameObjectwithMatterBody
+		if (!collidee || collidee.active === false)
+			return
 		if (collidee === scene.fulcrum || collidee === scene.ground || (collidee?.data?.values?.collisionTime && time - collidee.data.values.collisionTime < TimeBetweenCollisions))
-			return 
+			return
 		//scene.explosion.play()sdf
 		scene.sound.play("smash")
 		const snafu: any = data
+		if (!snafu.activeContacts?.length) return
 		const newlyCreatedObjects = breakUp(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
 		if (newlyCreatedObjects) {
 			const x= collidee.x //+ collidee.width /2
 			const y= collidee.y// + collidee.height/2
 			for (const newGameObject of newlyCreatedObjects){
 				newGameObject.setData("collisionTime",time)
-				const foo:GameObjectwithMatterBody = scene.matter.add.gameObject(newGameObject, domMatterOptions)
+				const foo = scene.matter.add.gameObject(newGameObject, domMatterOptions) as unknown as GameObjectwithMatterBody
 				let speed = scene.wreckingBall.body.speed
 				if (scene.wreckingBall.x > foo.x)
 					speed = -speed
@@ -186,6 +190,7 @@ export class PageScene extends Phaser.Scene {
 
 	allowCursorMovement(object) {
 		const increment = 5
+		if (!cursors) return
 		if (cursors.left.isDown) {
 			object.setPosition(object.x - increment, object.y);
 		}

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/dev/webpranks -type f -name *.json -o -name *.toml -o -name *.md -o -name .*)",
+      "Bash(find /c/dev/webpranks -not -path */node_modules* -type d)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)"
+    ]
+  }
+}

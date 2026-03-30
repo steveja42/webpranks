@@ -22,7 +22,7 @@ export function log(x: string | unknown): void {
  * doesn't work for async functions
  */
 function getFunctionName() {
-
+	
 	let functionName = ''
 	try {
 
