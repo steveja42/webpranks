@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { ShowControlsContext } from './layouts/RootLayout'
 import { log } from './util'
 import { getKeyBoardHandler, getClickTouchHandler } from './io'
 import Button from 'react-bootstrap/Button'
@@ -83,7 +84,13 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const location = useLocation()
 	const { prank: paramPrank, url: paramUrl, isRunning: paramIsRunning } = useParams<{ prank?: string; url?: string; isRunning?: string }>()
 
-	const [showControls, setShowControls] = useState(true)
+	const { setShowControls: setNavbarVisible } = React.useContext(ShowControlsContext)
+	const [showControls, setShowControlsRaw] = useState(true)
+	function setShowControls(v: boolean) {
+		setShowControlsRaw(v)
+		setNavbarVisible(v)
+		document.body.style.overflow = v ? '' : 'hidden'
+	}
 	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotEntered)
 	const [targetUrl, setTargetUrl] = useState("")
 	const [inputURL, setInputURL] = useState("")

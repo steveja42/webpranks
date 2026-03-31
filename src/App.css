@@ -31,8 +31,6 @@ canvas {
 #navbar {
   border-bottom: 1px solid black;
   background-color: var(--navbarColor);
-margin-bottom: 1em;
-
 }
 #navlogo {
   height: 50px;
