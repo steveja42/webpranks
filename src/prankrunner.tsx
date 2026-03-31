@@ -1,5 +1,5 @@
-'use client'
 import React, { useState, useEffect, useRef, useReducer } from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { log } from './util'
 import { getKeyBoardHandler, getClickTouchHandler } from './io'
 import Button from 'react-bootstrap/Button'
@@ -11,13 +11,13 @@ import { domToObjects, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
-import { setupWorld, resetAndLoadImagesForNewPageScene, setCurrentScene as setPhaseriScene, resetPhaseri } from './phaseri'
-import { useRouter, usePathname } from 'next/navigation'
+import { setupWorld, resetAndLoadImagesForNewPageScene, setCurrentScene as setPhaseriScene } from './phaseri'
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 const isMobile = typeof window !== 'undefined' && (Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1);
 
 let game: Phaser.Game
+let lastLoadedUrl: string | null = null
 type PrankRunnerProps = {
 	prank: string | undefined
 	url: string | undefined
@@ -79,8 +79,9 @@ function phaseReducer(oldPhase, newPhase): Phase {
  */
 export function PrankRunner(props: PrankRunnerProps) {
 	const { prank: prankParam, url: urlParam, isRunning: isRunningParam } = props
-	const router = useRouter()
-	const pathname = usePathname()
+	const navigate = useNavigate()
+	const location = useLocation()
+	const { prank: paramPrank, url: paramUrl, isRunning: paramIsRunning } = useParams<{ prank?: string; url?: string; isRunning?: string }>()
 
 	const [showControls, setShowControls] = useState(true)
 	const [phase, dispatchPhase] = useReducer(phaseReducer, Phase.targetUrlNotEntered)
@@ -125,7 +126,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			setWhichPrank(i)
 		}
 		if (i !== undefined || url)
-			router.replace(`/${i}/${urlParam || ""}`)
+			navigate(`/${i}/${urlParam || ""}`, { replace: true })
 		const shouldRun = isRunningParam === '1'
 		if (shouldRun && urlParam && i !== undefined) {
 			dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
@@ -136,11 +137,6 @@ export function PrankRunner(props: PrankRunnerProps) {
 			window.removeEventListener('beforeunload', handleUnload);
 			window.removeEventListener("click", handleClickOrTouch, false)
 			window.removeEventListener("touchstart", handleClickOrTouch, false)
-			if (game) {
-				game.destroy(true)
-				game = undefined
-				resetPhaseri()
-			}
 		};
 	}, []);
 
@@ -189,11 +185,12 @@ export function PrankRunner(props: PrankRunnerProps) {
 		document.title = targetUrl || "Web Pranks";
 		if (targetUrl) {
 			const desired = `/${whichPrank}/${encodeURIComponent(targetUrl)}`
-			if (pathname !== desired)
-				router.replace(desired)
+			if (location.pathname !== desired)
+				navigate(desired, { replace: true })
 		}
 
-		if (!isLoading && targetUrl) {
+		if (!isLoading && targetUrl && lastLoadedUrl !== targetUrl) {
+			lastLoadedUrl = targetUrl
 			dispatchPhase(Phase.targetUrlEntered)
 
 			let width
@@ -246,7 +243,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {
 		if (inputURL)
-			router.replace(`/${whichPrank}/${encodeURIComponent(inputURL)}`)
+			navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}`, { replace: true })
 	}, [whichPrank]);
 
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
@@ -258,6 +255,11 @@ export function PrankRunner(props: PrankRunnerProps) {
 				altPageInfo = pageInfo
 			if (altPageInfo) {
 				log(`running prank ${effectModules[iPrank].title}`)
+				if (currentScene) {
+					currentScene.scene.remove()
+					setCurrentScene(null)
+					setPhaseriScene(null)
+				}
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
 						const scene = module.doPageEffect(altPageInfo)

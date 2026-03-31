@@ -1,7 +1,16 @@
-// App.tsx — routing and layout are now handled by app/layout.tsx and app/*/page.tsx
+import { Routes, Route } from 'react-router-dom'
+import RootLayout from './layouts/RootLayout'
+import PrankPage from './pages/PrankPage'
+import FeedbackPage from './pages/FeedbackPage'
 
-export const version = 0.01
-
-export function About() {
-  return <div>about the app</div>
+export default function App() {
+	return (
+		<RootLayout>
+			<Routes>
+				<Route path="/:prank?/:url?/:isRunning?" element={<PrankPage />} />
+				<Route path="/feedback" element={<FeedbackPage />} />
+			</Routes>
+		</RootLayout>
+	)
 }
+

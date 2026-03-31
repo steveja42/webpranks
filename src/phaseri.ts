@@ -61,15 +61,23 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Pro
 	if (!pageInfo.game) {
 		pageInfo.game = await gameLoadedPromise
 	}
-	log(`resetAndLoadImagesForNewPageScene: prevPage=${!!prevPage} prevScene=${!!prevScene}`)
+	log(`----prevPage=${!!prevPage} prevScene=${!!prevScene}--------------------`)
+	if (prevScene) {
+		log(`stopping scene ${prevScene.scene.key}`)
+		prevScene.scene.stop()
+		prevScene.scene.remove()
+		prevScene = null
+	}
 	if (prevPage) {
 		const textureKeys = Object.keys(pageInfo.game.textures.list)
 		log(`textures before cleanup (${textureKeys.length}): ${textureKeys.join(', ')}`)
-		if (prevScene) {
-			log(`stopping scene ${prevScene.scene.key}`)
-			prevScene.scene.stop()
-			prevScene.scene.remove()
-			prevScene = null
+		// Guard: remove any lingering PageScene even if prevScene was already cleared
+		const sceneKeys = ['PageScene']
+		for (const key of sceneKeys) {
+			if (pageInfo.game.scene.getScene(key)) {
+				log(`removing lingering scene ${key}`)
+				pageInfo.game.scene.remove(key)
+			}
 		}
 		// Collect keys first, then remove — avoids mutating the list while iterating.
 		const keysToRemove: string[] = []

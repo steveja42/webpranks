@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import { post } from './network'
 
-const sitekey = process.env.NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY
+const sitekey = import.meta.env.VITE_GOOGLE_RECAPTCHA_SITE_KEY
 
 declare global {
 	interface Window {

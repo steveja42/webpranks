@@ -14,7 +14,14 @@
 			"name": "Next.js: debug client-side",
 			"type": "chrome",
 			"request": "launch",
-			"url": "http://localhost:3000"
+			"url": "http://localhost:3000",
+			"webRoot": "${workspaceFolder}",
+			"sourceMaps": true,
+			"outputCapture": "console",
+			"skipFiles": [
+				"${workspaceFolder}/node_modules/**/*.js",
+				"<node_internals>/**"
+			]
 		},
 		{
 			"name": "Next.js: debug full stack",
@@ -26,38 +33,15 @@
 				"action": "startDebugging",
 				"name": "Next.js: debug client-side"
 			}
-		},
-		{
-			"name": "Launch Edge",
-			"request": "launch",
-			"type": "pwa-msedge",
-			"url": "http://localhost:8080",
-			"webRoot": "${workspaceFolder}"
-		},
-		{
-			"type": "chrome",
-			"request": "launch",
-			"name": "Launch Chrome against localhost",
-			"url": "http://localhost:3000",
-			"webRoot": "${workspaceFolder}",
-			"smartStep": true, 
-			"skipFiles": [
-			  "<node_internals>/**",
-			  "node_modules/**"
-			]
-		},
-		{
-			"type": "chrome",
-			"request": "launch",
-			"name": "Serve- Launch Chrome against localhost",
-			"url": "http://localhost:5000",
-			"webRoot": "${workspaceFolder}"
 		}
 	],
 	"compounds": [
 		{
 			"name": "Next.js: full stack",
-			"configurations": ["Next.js: debug full stack", "Next.js: debug client-side"],
+			"configurations": [
+				"Next.js: debug full stack",
+				"Next.js: debug client-side"
+			],
 			"stopAll": true
 		}
 	]

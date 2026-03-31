@@ -39,18 +39,17 @@ export class MainScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL("assets/spaceinvaders");
-        this.load.image(AssetType.Bullet, "/images/bitcoin36.png");
-        this.load.image(AssetType.Ship, "/images/player.png");
-        this.load.spritesheet(AssetType.Kaboom, "/images/explode.png", {
+        this.load.image(AssetType.Bullet, "/assets/spaceinvaders/images/bitcoin36.png");
+        this.load.image(AssetType.Ship, "/assets/spaceinvaders/images/player.png");
+        this.load.spritesheet(AssetType.Kaboom, "/assets/spaceinvaders/images/explode.png", {
             frameWidth: 128,
             frameHeight: 128,
         });
 
         this.sound.volume = 0.5;
-        this.load.audio(SoundType.Shoot, "/audio/shoot.wav");
-        this.load.audio(SoundType.Kaboom, "/audio/explosion.wav");
-        this.load.audio(SoundType.InvaderKilled, "/audio/invaderkilled.wav");
+        this.load.audio(SoundType.Shoot, "/assets/spaceinvaders/audio/shoot.wav");
+        this.load.audio(SoundType.Kaboom, "/assets/spaceinvaders/audio/explosion.wav");
+        this.load.audio(SoundType.InvaderKilled, "/assets/spaceinvaders/audio/invaderkilled.wav");
     }
 
     create() {
