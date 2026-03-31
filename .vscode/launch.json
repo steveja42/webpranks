@@ -5,16 +5,16 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Next.js: debug server-side",
+			"name": "Vite: start dev server",
 			"type": "node-terminal",
 			"request": "launch",
 			"command": "pnpm dev"
 		},
 		{
-			"name": "Next.js: debug client-side",
+			"name": "Vite: debug client-side",
 			"type": "chrome",
 			"request": "launch",
-			"url": "http://localhost:3000",
+			"url": "http://localhost:5173",
 			"webRoot": "${workspaceFolder}",
 			"sourceMaps": true,
 			"outputCapture": "console",
@@ -24,23 +24,23 @@
 			]
 		},
 		{
-			"name": "Next.js: debug full stack",
+			"name": "Vite: full stack debug",
 			"type": "node-terminal",
 			"request": "launch",
 			"command": "pnpm dev",
 			"serverReadyAction": {
-				"pattern": "- Local:.+(https?://.+)",
+				"pattern": "Local:.+(https?://[^ ]+)",
 				"action": "startDebugging",
-				"name": "Next.js: debug client-side"
+				"name": "Vite: debug client-side"
 			}
 		}
 	],
 	"compounds": [
 		{
-			"name": "Next.js: full stack",
+			"name": "Vite: full stack",
 			"configurations": [
-				"Next.js: debug full stack",
-				"Next.js: debug client-side"
+				"Vite: full stack debug",
+				"Vite: debug client-side"
 			],
 			"stopAll": true
 		}
