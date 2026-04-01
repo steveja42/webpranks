@@ -22,9 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	useEffect(() => {
 		// Load GoatCounter analytics
 		const script1 = document.createElement('script')
-		script1.src = '//gc.zgo.at/count.js'
+		script1.src = '/count.js'
 		script1.async = true
-		script1.setAttribute('data-goatcounter', 'https://4242.goatcounter.com/count')
+		script1.setAttribute('data-goatcounter', '/count')
 		document.head.appendChild(script1)
 
 		// Load Google reCAPTCHA

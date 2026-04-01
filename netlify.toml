@@ -2,6 +2,19 @@
   command = "pnpm build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/count"
+  to = "/.netlify/functions/count"
+  status = 200
+
+[[redirects]]
+  from = "/count/*"
+  to = "/.netlify/functions/count/:splat"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
