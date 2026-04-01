@@ -75,6 +75,12 @@ export async function getJSON(route: string): Promise<[string, string]> {
 	 * @param {string} route route to use.
 	 * @return [response in JSON(null if error), error object]
 	 */
+export function startServerPing() {
+	const ping = () => post({}, 'init').catch(() => {});
+	ping();
+	setInterval(ping, 10 * 60 * 1000);
+}
+
  export async function post(data:Record<string,unknown>, route='feedback') {
 	
 	try {
