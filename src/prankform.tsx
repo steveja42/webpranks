@@ -87,35 +87,38 @@ export function PrankForm(props: any) {
 	return <div id="togglediv">
 
 		<Form onSubmit={onSubmit} className="myform" >
-
-			<Form.Group controlId="url">
-				<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
-				<Form.Control ref={inputRef} name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
-			</Form.Group>
-			<Form.Group controlId="prank">
-				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Choose a prank</Form.Label>
-				<Form.Control
-					as="select"
-					value={whichPrank}
-					onChange={e => {
-						const x = parseInt(e.target.value)
-						setWhichPrank(x)
-					}}
-					onClick={() => {
-						prankChosen = true
-					}}
-				>
-					{prankList}
-				</Form.Control>
-			</Form.Group>
-			<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered) ? "push_me" : ""} >
-				{isLoading ? 'Loading…' : 'Prank It'}
-				{isLoading && <Spinner animation="border" role="status " size="sm">
-					<span className="visually-hidden">Loading...</span>
-				</Spinner>}
-			</Button>
+			<div className="d-flex align-items-end gap-2">
+				{process.env.NODE_ENV === 'development' ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
+				<div className="d-flex align-items-end gap-2 flex-grow-1 justify-content-center">
+					<Form.Group controlId="url">
+						<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
+						<Form.Control ref={inputRef} name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
+					</Form.Group>
+					<Form.Group controlId="prank">
+						<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Choose a prank</Form.Label>
+						<Form.Control
+							as="select"
+							value={whichPrank}
+							onChange={e => {
+								const x = parseInt(e.target.value)
+								setWhichPrank(x)
+							}}
+							onClick={() => {
+								prankChosen = true
+							}}
+						>
+							{prankList}
+						</Form.Control>
+					</Form.Group>
+					<Button type="submit" value="Submit" disabled={isLoading || !pageLoaded} className={(prankChosen && pageLoaded && phase === Phase.targetUrlEntered) ? "push_me" : ""} >
+						{isLoading ? 'Loading…' : 'Prank It'}
+						{isLoading && <Spinner animation="border" role="status " size="sm">
+							<span className="visually-hidden">Loading...</span>
+						</Spinner>}
+					</Button>
+				</div>
+			</div>
 		</Form>
-		{process.env.NODE_ENV === 'development' ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
 		{phase !== Phase.prankPaused ?<img id="popinimage" src={popinImage} alt="" /> :null}
 
 	</div>
