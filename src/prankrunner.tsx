@@ -188,6 +188,16 @@ export function PrankRunner(props: PrankRunnerProps) {
 	}, [])
 
 	useEffect(() => {
+		if (location.pathname === '/') {
+			setInputURL('')
+			setTargetUrl('')
+			lastLoadedUrl = null
+			dispatchPhase(Phase.targetUrlNotEntered)
+			setShowControls(true)
+		}
+	}, [location.pathname])
+
+	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
 		document.title = targetUrl || "Web Pranks";
 		if (targetUrl) {
