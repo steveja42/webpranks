@@ -128,11 +128,18 @@ export function PrankRunner(props: PrankRunnerProps) {
 			setTargetUrl(url)
 		}
 		let i: number | undefined
-		if (prankParam && !isNaN(i = parseInt(prankParam)) && i > -1 && i < effectModules.length) {
-			setWhichPrank(i)
+		if (prankParam) {
+			const bySlug = effectModules.findIndex(m => m.slug === prankParam)
+			const byIndex = parseInt(prankParam)
+			if (bySlug > -1) {
+				i = bySlug
+			} else if (!isNaN(byIndex) && byIndex > -1 && byIndex < effectModules.length) {
+				i = byIndex
+			}
+			if (i !== undefined) setWhichPrank(i)
 		}
 		if (i !== undefined || url)
-			navigate(`/${i}/${urlParam || ""}`, { replace: true })
+			navigate(`/${effectModules[i ?? 0].slug}/${urlParam || ""}`, { replace: true })
 		const shouldRun = isRunningParam === '1'
 		if (shouldRun && urlParam && i !== undefined) {
 			dispatchPhase(Phase.startPrankAfterMouseOrKeyPress)
@@ -203,7 +210,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
 		if (targetUrl) {
-			const desired = `/${whichPrank}/${encodeURIComponent(targetUrl)}`
+			const desired = `/${effectModules[whichPrank].slug}/${encodeURIComponent(targetUrl)}`
 			if (location.pathname !== desired)
 				navigate(desired, { replace: true })
 		}
@@ -262,7 +269,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {
 		if (inputURL)
-			navigate(`/${whichPrank}/${encodeURIComponent(inputURL)}`, { replace: true })
+			navigate(`/${effectModules[whichPrank].slug}/${encodeURIComponent(inputURL)}`, { replace: true })
 	}, [whichPrank]);
 
 	async function runPrank(iPrank = whichPrank, loadingPromise = isLoading) {
