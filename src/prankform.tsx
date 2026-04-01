@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import { log } from './util'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
@@ -22,6 +22,16 @@ export function PrankForm(props: any) {
 
 	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase} = props
 
+	const inputRef = useRef<HTMLInputElement>(null)
+
+	useEffect(() => {
+		const el = inputRef.current
+		if (!el) return
+		const handler = () => processURL(el.value)
+		el.addEventListener('change', handler)
+		return () => el.removeEventListener('change', handler)
+	}, [])
+
 	const onFocus = () => {
 		if (inputURL.trim() === '') {
 			setInputURL(protocol)
@@ -32,22 +42,24 @@ export function PrankForm(props: any) {
 		setInputURL(e.target.value)
 	}
 
-	function onURLWasInput() {
-		if ((inputURL.trim() === protocol) || (inputURL.trim() === ""))
+	function processURL(value: string) {
+		if ((value.trim() === protocol) || (value.trim() === ""))
 			return
-		let url = inputURL
-		if (! /^https?:\/\//i.test(inputURL)) {
-			url = "https://" + inputURL
+		let url = value
+		if (! /^https?:\/\//i.test(value)) {
+			url = "https://" + value
 		}
-		if (! /\./.test(inputURL)) {
+		if (! /\./.test(value)) {
 			url = url + ".com"
 		}
-
-		if (inputURL !== url) {
+		if (value !== url) {
 			setInputURL(url)
 		}
 		setTargetUrl(url)
+	}
 
+	function onURLWasInput() {
+		processURL(inputURL)
 	}
 	//const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 	const onKeyDown = (e) => {
@@ -78,7 +90,7 @@ export function PrankForm(props: any) {
 
 			<Form.Group controlId="url">
 				<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
-				<Form.Control name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
+				<Form.Control ref={inputRef} name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
 			</Form.Group>
 			<Form.Group controlId="prank">
 				<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Choose a prank</Form.Label>
