@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
 	plugins: [react()],
 	resolve: {
 		alias: {
@@ -11,6 +11,9 @@ export default defineConfig({
 	},
 	build: {
 		target: 'ES2020',
-		outDir: 'dist'
+		outDir: 'dist',
+	},
+	esbuild: {
+		drop: command === 'build' ? ['console', 'debugger'] : []
 	}
-})
+}))
