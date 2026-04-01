@@ -73,8 +73,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	return pageInfo
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAttributes(node: any) {
+function getAttributes(node: Element) {
 	const posAttr = node.getAttribute('__pos__')
 	if (!posAttr)
 		return null
@@ -186,7 +185,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 
 function findParentNodeWithAttributes(node: Node | null): HTMLElement | null {
 	if (node && (node as Element).tagName === "DIV") {
-		const { boundingRect } = getAttributes(node) || { boundingRect: null }
+		const { boundingRect } = getAttributes(node as Element) || { boundingRect: null }
 		if (isOnScreen(boundingRect))
 			if (boundingRect?.width && boundingRect?.height)
 				return node as HTMLElement

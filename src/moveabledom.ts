@@ -148,8 +148,7 @@ export class PositionedElements {
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  walkDom2(startNode: any, func: (node: any, level: number) => void, level: number): void {
+  walkDom2(startNode: HTMLElement, func: (node: HTMLElement, level: number) => void, level: number): void {
     //
     func.bind(this)(startNode, level);
     if (!startNode.hasChildNodes())
@@ -158,7 +157,7 @@ export class PositionedElements {
 
     ++level;
     for (const child of startNode.childNodes) {
-      this.walkDom2(child, func, level);
+      this.walkDom2(child as HTMLElement, func, level);
     }
   }
 }  // end class

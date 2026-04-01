@@ -61,10 +61,9 @@ export async function walkDom2(startNode: Node, func: (node: Node, level: number
  * @param node 
  * @param level 
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function logNode(node: any, level: number, usePosAttr: unknown = false) {
+function logNode(node: Node, level: number, usePosAttr: unknown = false) {
 
-	let value = node.nodeValue?.trim()
+	let value = (node as Text).nodeValue?.trim()
 	if (node.nodeType === nodeTypes.text && !value) // skip blank text nodes
 		return;
 	const indentDelta = '   ';
@@ -73,28 +72,28 @@ function logNode(node: any, level: number, usePosAttr: unknown = false) {
 	const ownerWindow = node.ownerDocument?.defaultView
 	value = value ? `"${value}"` : "";
 
-	let id = node.name ? ` ${node.name}` : " ";
-	id += node.id ? `#${node.id}` : "";
-	id += node.className ? `.${node.className}` : "";
-
-
 	//The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
 	//clientHeight can be calculated as: CSS height + CSS padding - height of horizontal scrollbar (if present).
 	// boundingclientrect smallest rectangle which contains the entire element, including its padding and border-width
 	if (node.nodeType === nodeTypes.element) {
+		const el = node as HTMLElement
+
+		let id = el.getAttribute('name') ? ` ${el.getAttribute('name')}` : " ";
+		id += el.id ? `#${el.id}` : "";
+		id += el.className ? `.${el.className}` : "";
 
 		let positioning = ' ';
-		const parent = (level === 0) ? ` parent:${node.parentNode}` : ''
-		const computedStyle = ownerWindow?.getComputedStyle(node)
+		const parent = (level === 0) ? ` parent:${el.parentNode}` : ''
+		const computedStyle = ownerWindow?.getComputedStyle(el)
 		let clientRects
-		let boundingRect = node.getBoundingClientRect()
-		let paddingRect = { x: boundingRect.x + node.clientLeft, y: boundingRect.y + node.clientTop, width: node.clientWidth, height: node.clientHeight }
+		let boundingRect = el.getBoundingClientRect()
+		let paddingRect = { x: boundingRect.x + el.clientLeft, y: boundingRect.y + el.clientTop, width: el.clientWidth, height: el.clientHeight }
 		let bgColor
 		let bgImage
 		let background = ''
 
 		if (usePosAttr) {
-			const posAttr = node.getAttribute('__pos__')
+			const posAttr = el.getAttribute('__pos__')
 			if (posAttr) {
 				({ clientRects, boundingRect, paddingRect, bgColor, bgImage } = JSON.parse(posAttr))
 				if (bgColor)
@@ -114,17 +113,18 @@ function logNode(node: any, level: number, usePosAttr: unknown = false) {
 			}
 		}
 
-		const size = (node.width || node.height) ? `size: ${node.width} x ${node.height} ` : ' ';
+		const imgEl = el as HTMLImageElement
+		const size = (imgEl.width || imgEl.height) ? `size: ${imgEl.width} x ${imgEl.height} ` : ' ';
 		//  ${nodeTypeNames[node.nodeType]}
 		let br = ' ';
 		if (boundingRect) {
 			br = `boundingClientRect[${boundingRect.left},${boundingRect.top} ${boundingRect.right},${boundingRect.bottom}] `;
 		}
 
-		log(`${indent}${node.nodeName}${id}${positioning}${size} ${br}${parent} ${value} ${background}`);
+		log(`${indent}${el.nodeName}${id}${positioning}${size} ${br}${parent} ${value} ${background}`);
 	}
 	else if (node.nodeType === nodeTypes.text) {
-		log(`${indent} "${node.wholeText}"`);
+		log(`${indent} "${(node as Text).wholeText}"`);
 
 	}
 
