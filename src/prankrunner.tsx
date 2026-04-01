@@ -12,6 +12,13 @@ import { domToObjects, PageInfo } from './domtoobjects'
 import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
+
+const effectModuleLoaders: Record<string, () => Promise<{ doPageEffect: (pageInfo: PageInfo) => unknown }>> = {
+	'wreckingball': () => import('./pageEffects/wreckingball'),
+	'allfalldown': () => import('./pageEffects/allfalldown'),
+	'birthday': () => import('./pageEffects/birthday'),
+	'btcinvaders/scenes/btcinvaders': () => import('./pageEffects/btcinvaders/scenes/btcinvaders'),
+}
 import { setupWorld, resetAndLoadImagesForNewPageScene, setCurrentScene as setPhaseriScene } from './phaseri'
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
@@ -269,9 +276,9 @@ export function PrankRunner(props: PrankRunnerProps) {
 					setCurrentScene(undefined)
 					setPhaseriScene(undefined)
 				}
-				import(/* @vite-ignore */ './pageEffects/' + effectModules[iPrank].fileName)
+				effectModuleLoaders[effectModules[iPrank].fileName]()
 					.then(module => {
-						const scene = module.doPageEffect(altPageInfo)
+						const scene = module.doPageEffect(altPageInfo as PageInfo) as Phaser.Scene
 						setPhaseriScene(scene)
 						setCurrentScene(scene)
 						setShowControls(false);
