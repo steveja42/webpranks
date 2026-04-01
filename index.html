@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +30,10 @@
 	<link rel="icon" href="/favicon.ico">
 	<link rel="apple-touch-icon" href="/apple-touch-icon-120x120.png">
 
+	<!-- Hide crawler seed content once JS is available -->
+	<style>html:not(.no-js) #seo-seed { display: none }</style>
+	<script>document.documentElement.classList.remove('no-js')</script>
+
 	<!-- JSON-LD Structured Data -->
 	<script type="application/ld+json">
 	{
@@ -46,7 +50,31 @@
 	</script>
 </head>
 <body>
-	<div id="root"></div>
+	<div id="root">
+		<!-- Static seed for search engine crawlers. React replaces this on mount. -->
+		<div id="seo-seed" class="App">
+			<header>
+				<nav class="mynav navbar navbar-expand-sm">
+					<a class="navbar-brand" href="/">
+						<img src="/jesterhead-200.png" alt="Web Pranks Logo - Colorful Jester Hat" width="40" height="40" />
+						Web Pranks
+					</a>
+				</nav>
+			</header>
+			<main style="padding:2rem;max-width:860px;margin:0 auto">
+				<h1>Prank Any Website with Funny Visual Effects</h1>
+				<p>Pick any website, choose a prank, and watch the chaos unfold — all on your screen only. No actual websites are harmed.</p>
+				<h2>Available Pranks</h2>
+				<ul>
+					<li><strong>Wrecking Ball</strong> — Smash the page to pieces with a wrecking ball.</li>
+					<li><strong>All Fall Down</strong> — Every element on the page tumbles and falls.</li>
+					<li><strong>Happy Birthday</strong> — Throw a surprise birthday party on any website.</li>
+					<li><strong>BTC Invaders</strong> — Blast the page with a Bitcoin-themed space invaders attack.</li>
+				</ul>
+				<p>Enter a website URL, pick your prank, and hit <strong>Prank It</strong>. Changes only appear on your own device — completely harmless fun.</p>
+			</main>
+		</div>
+	</div>
 	<script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
