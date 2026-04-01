@@ -148,6 +148,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {
 		log(`--------->phase changed to ${Phase[phase]}`)
+		const activePhases = [Phase.startPrankAfterMouseOrKeyPress, Phase.startingPrank, Phase.prankRunning, Phase.prankPaused]
+		document.title = activePhases.includes(phase) && targetUrl
+			? targetUrl
+			: "Web Pranks - Prank Any Website with Funny Visual Effects"
 		switch (phase) {
 			case Phase.startPrankAfterMouseOrKeyPress:
 				setShowControls(false);
@@ -176,7 +180,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				}
 				break
 		}
-	}, [phase])
+	}, [phase, targetUrl])
 
 	useEffect(() => {
 		const handlePopState = () => {
@@ -198,7 +202,6 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {
 		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
-		document.title = targetUrl || "Web Pranks";
 		if (targetUrl) {
 			const desired = `/${whichPrank}/${encodeURIComponent(targetUrl)}`
 			if (location.pathname !== desired)
