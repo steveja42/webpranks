@@ -89,6 +89,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const [pageImage, setPageImage] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState<Promise<void | PageInfo> | boolean | null>(null)
 	const [showPopout, setShowPopout] = useState(false)
+	const [noContinuePrompt, setNoContinuePrompt] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene | undefined>()
 	const [showFailure, setShowFailure] = useState("")
 	const phaserParent = useRef<HTMLDivElement>(null)
@@ -292,7 +293,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	}
 
 	const pageLoaded = (!!pageInfo)
-	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase}
+	const formProps = { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, noContinuePrompt, setNoContinuePrompt }
 
 	return <div id="foo">
 
@@ -306,7 +307,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 		{(phase === Phase.startPrankAfterMouseOrKeyPress) ?
 			<div>
 				<img id="pageImage" src={pageImage ?? undefined} className="Screenshot" alt="screen capture of the webpage at url" />
-				<h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>
+				{!noContinuePrompt && <h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>}
 			</div> : null}
 
 		<div className="game" ref={phaserParent} />

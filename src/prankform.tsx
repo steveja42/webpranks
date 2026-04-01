@@ -20,7 +20,7 @@ let prankChosen = false
 export function PrankForm(props: any) {
 	const protocol = 'http://'
 
-	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase} = props
+	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, noContinuePrompt, setNoContinuePrompt } = props
 
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -116,6 +116,13 @@ export function PrankForm(props: any) {
 							<span className="visually-hidden">Loading...</span>
 						</Spinner>}
 					</Button>
+					<Form.Check
+						type="checkbox"
+						id="noContinuePrompt"
+						label="no continue prompt"
+						checked={noContinuePrompt}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNoContinuePrompt(e.target.checked)}
+					/>
 				</div>
 			</div>
 		</Form>
