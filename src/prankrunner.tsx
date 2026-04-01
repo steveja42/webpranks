@@ -27,51 +27,41 @@ type PrankRunnerProps = {
 	setShowControls?: (v: boolean) => void
 };
 
-export enum Phase {
-	targetUrlNotEntered,
-	targetUrlEntered,
-	startPrankAfterMouseOrKeyPress,
-	startingPrank,
-	prankRunning,
-	prankPaused,
-	error
-}
-export let globalPhase = Phase.targetUrlNotEntered   //keep phase in global for io handlers to access
-export const PhaseNext = "next"
-export const PhaseTogglePause = "togglepause"
+import { Phase, phaseState, PhaseNext, PhaseTogglePause } from './phase'
+export { Phase, PhaseNext, PhaseTogglePause }
 
 function phaseReducer(oldPhase: Phase, newPhase: Phase | string): Phase {
 	switch (newPhase) {
 		case PhaseNext:
-			globalPhase = Phase.startingPrank;
+			phaseState.current = Phase.startingPrank;
 			break
 		case PhaseTogglePause:
 			if (oldPhase === Phase.prankRunning)
-				globalPhase = Phase.prankPaused
+				phaseState.current = Phase.prankPaused
 			else if (oldPhase === Phase.prankPaused)
-				globalPhase = Phase.prankRunning
+				phaseState.current = Phase.prankRunning
 			else
-				globalPhase = oldPhase
+				phaseState.current = oldPhase
 			break
 
 		case Phase.targetUrlEntered:
 			if (oldPhase === Phase.startPrankAfterMouseOrKeyPress)
-				globalPhase = oldPhase
+				phaseState.current = oldPhase
 			else
-				globalPhase = newPhase
+				phaseState.current = newPhase
 			break
 		case Phase.targetUrlNotEntered:
 		case Phase.startPrankAfterMouseOrKeyPress:
 		case Phase.startingPrank:
 		case Phase.prankRunning:
 		case Phase.prankPaused:
-			globalPhase = newPhase
+			phaseState.current = newPhase
 			break
 
 		default:
 			throw new Error();
 	}
-	return globalPhase
+	return phaseState.current
 }
 
 /**
@@ -278,7 +268,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 					setCurrentScene(undefined)
 					setPhaseriScene(undefined)
 				}
-				import('./pageEffects/' + effectModules[iPrank].fileName)
+				import(/* @vite-ignore */ './pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
 						const scene = module.doPageEffect(altPageInfo)
 						setPhaseriScene(scene)
