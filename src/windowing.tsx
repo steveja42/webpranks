@@ -29,11 +29,11 @@ function getWindowDimensions() {
 	};
 }
 
-export const useMousePosition = (win) => {
+export const useMousePosition = (win: Window | null) => {
 	const [position, setPosition] = useState({ x: 0, y: 0 });
 
 	useEffect(() => {
-		const setFromEvent = (e) => setPosition({ x: e.clientX, y: e.clientY });
+		const setFromEvent = (e: MouseEvent) => setPosition({ x: e.clientX, y: e.clientY });
 		win?.addEventListener("mousemove", setFromEvent);
 		return () => {
 			win?.removeEventListener("mousemove", setFromEvent);

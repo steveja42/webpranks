@@ -1,10 +1,10 @@
 import { AssetType } from "../assets";
 
 export class ScoreManager {
-  scoreText: Phaser.GameObjects.Text;
-  line1Text: Phaser.GameObjects.Text;
-  line2Text: Phaser.GameObjects.Text;
-  lives: Phaser.Physics.Arcade.Group;
+  scoreText!: Phaser.GameObjects.Text;
+  line1Text!: Phaser.GameObjects.Text;
+  line2Text!: Phaser.GameObjects.Text;
+  lives!: Phaser.Physics.Arcade.Group;
 
   get noMoreLives() {
     return this.lives.countActive(true) === 0;

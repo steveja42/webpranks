@@ -20,7 +20,7 @@ export const nodeTypes = {
  * @param param parameter passed to the callback function
  *  
  */
-export function walkDom(startNode, func, level = 0, param = undefined) {
+export function walkDom(startNode: Node, func: (node: Node, level: number, param?: unknown) => void, level = 0, param: unknown = undefined) {
 	func(startNode, level, param);
 	if (!startNode.hasChildNodes())
 		return;
@@ -42,9 +42,9 @@ export function walkDom(startNode, func, level = 0, param = undefined) {
  * @param parentReturn what the parent returned is passed to the callback function
  *  
  */
-export async function walkDom2(startNode, func, level = 0, param = undefined, parentReturn = undefined) {
+export async function walkDom2(startNode: Node, func: (node: Node, level: number, param?: unknown, parentReturn?: unknown) => Promise<unknown> | unknown, level = 0, param: unknown = undefined, parentReturn: unknown = undefined) {
 	let ret = func(startNode, level, param, parentReturn)
-	if (ret?.then)
+	if (ret && typeof ret === 'object' && 'then' in ret)
 		ret = await ret
 	if (!startNode.hasChildNodes())
 		return;
@@ -61,7 +61,8 @@ export async function walkDom2(startNode, func, level = 0, param = undefined, pa
  * @param node 
  * @param level 
  */
-function logNode(node, level: number, usePosAttr = false) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function logNode(node: any, level: number, usePosAttr: unknown = false) {
 
 	let value = node.nodeValue?.trim()
 	if (node.nodeType === nodeTypes.text && !value) // skip blank text nodes
@@ -69,7 +70,7 @@ function logNode(node, level: number, usePosAttr = false) {
 	const indentDelta = '   ';
 	const indent = indentDelta.repeat(level);
 
-	const ownerWindow = node.ownerDocument.defaultView
+	const ownerWindow = node.ownerDocument?.defaultView
 	value = value ? `"${value}"` : "";
 
 	let id = node.name ? ` ${node.name}` : " ";

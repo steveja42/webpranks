@@ -18,18 +18,15 @@
     "jsx": "react-jsx",
     "strict": true,
     "useDefineForClassFields": true,
-    "types": ["vite/client"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "types": ["vite/client"]
   },
   "include": [
     "src"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/App.test.tsx",
+    "src/setupTests.ts",
+    "src/reportWebVitals.ts"
   ]
 }

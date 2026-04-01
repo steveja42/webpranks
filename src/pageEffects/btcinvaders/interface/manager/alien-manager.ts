@@ -44,7 +44,7 @@ export class AlienManager {
     }
 
     private _animate() {
-        this.aliens.children.iterate((c: Alien) => {
+        this.aliens.children.iterate((c: Phaser.GameObjects.GameObject) => {
             this._scene.tweens.add({
                 targets: c,
                 ease: "Linear",

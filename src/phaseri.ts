@@ -6,9 +6,9 @@ import { log } from './util'
 
 
 let gameLoadedPromise: Promise<Phaser.Game>
-let resolveGameLoadedCallback
+let resolveGameLoadedCallback: ((game: Phaser.Game) => void) | undefined
 
-export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Game {
+export function setupWorld(parentElement: HTMLElement, width: number, height: number): Phaser.Game {
 	const config: Phaser.Types.Core.GameConfig = {
 		type: Phaser.AUTO,
 		parent: parentElement,
@@ -26,7 +26,7 @@ export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Ga
 			}
 		},
 		callbacks: { postBoot: onPostBoot },
-		scene: null, // { key: "rootScene", visible: false },
+		scene: undefined, // { key: "rootScene", visible: false },
 		//	backgroundColor: 0xfff8ff  //0xfff8dc  //'cornsilk',
 
 	};
@@ -40,10 +40,10 @@ export function setupWorld(parentElement: HTMLElement, width, height): Phaser.Ga
 	return game
 
 }
-let prevPage: PageInfo
-let prevScene: Phaser.Scene
+let prevPage: PageInfo | undefined
+let prevScene: Phaser.Scene | undefined
 
-export function setCurrentScene(scene: Phaser.Scene) {
+export function setCurrentScene(scene: Phaser.Scene | undefined) {
 	prevScene = scene
 }
 
@@ -54,7 +54,7 @@ export function resetPhaseri() {
 
 function onPostBoot(game: Phaser.Game) {
 	log(`-----------phaser game booting done`)
-	resolveGameLoadedCallback(game)
+	resolveGameLoadedCallback!(game)
 }
 
 export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Promise<PageInfo> {
@@ -66,33 +66,33 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Pro
 		log(`stopping scene ${prevScene.scene.key}`)
 		prevScene.scene.stop()
 		prevScene.scene.remove()
-		prevScene = null
+		prevScene = undefined
 	}
 	if (prevPage) {
-		const textureKeys = Object.keys(pageInfo.game.textures.list)
+		const textureKeys = Object.keys(pageInfo.game!.textures.list)
 		log(`textures before cleanup (${textureKeys.length}): ${textureKeys.join(', ')}`)
 		// Guard: remove any lingering PageScene even if prevScene was already cleared
 		const sceneKeys = ['PageScene']
 		for (const key of sceneKeys) {
-			if (pageInfo.game.scene.getScene(key)) {
+			if (pageInfo.game!.scene.getScene(key)) {
 				log(`removing lingering scene ${key}`)
-				pageInfo.game.scene.remove(key)
+				pageInfo.game!.scene.remove(key)
 			}
 		}
 		// Collect keys first, then remove — avoids mutating the list while iterating.
 		const keysToRemove: string[] = []
-		pageInfo.game.textures.each((texture) => {
+		pageInfo.game!.textures.each((texture) => {
 			if (! /^__/.test(texture.key))
 				keysToRemove.push(texture.key)
-		}, this)
+		}, {})
 		log(`removing textures: ${keysToRemove.join(', ')}`)
-		keysToRemove.forEach(key => pageInfo.game.textures.remove(key))
+		keysToRemove.forEach(key => pageInfo.game!.textures.remove(key))
 	}
 
 	prevPage = pageInfo
 	log(`loading textures`)
 	if (pageInfo.domElementsImages.length)
-		await loadTextures(pageInfo.game, pageInfo.domElementsImages.map((value) => value.imageURL))
+		await loadTextures(pageInfo.game!, pageInfo.domElementsImages.map((value) => value.imageURL))
 	else
 		log(`wierd, no domElementsImages, not loading textures`)
 	//gs = new PageScene(page, nextSceneName)
@@ -141,7 +141,7 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 };
 
 export class PageScene extends Phaser.Scene {
-	private square: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body };
+	private square!: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body };
 
 	constructor(public page: PageInfo, readonly name: string) {
 		super(mySceneConfig);
@@ -160,7 +160,7 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public update() {
-		const cursorKeys = this.input.keyboard.createCursorKeys();
+		const cursorKeys = this.input.keyboard!.createCursorKeys();
 
 		if (cursorKeys.up.isDown) {
 			this.square.body.setVelocityY(-500);

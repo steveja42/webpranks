@@ -31,7 +31,7 @@ function getFunctionName() {
 	} catch (error) {
 		const replaced = /^\s*at\s*/
 		// The calling function we're interested in is up a few levels
-		functionName = error.stack.split('\n')[3].replace(replaced, '')
+		functionName = (error as Error).stack!.split('\n')[3].replace(replaced, '')
 		functionName = functionName.replace(/\s\(.*\)/, '')
 	}
 	return functionName

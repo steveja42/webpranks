@@ -27,7 +27,7 @@ export enum CollisionCategory {
 	movingDom = 16
 }
 /** returns center of start and end */
-export function center(start, end) {
+export function center(start: number, end: number) {
 
 	return start + (end - start) / 2
 }
@@ -47,7 +47,7 @@ export async function ms(milliSeconds: number) {
 	});
 }
 
-export function getRandomInt(max) {
+export function getRandomInt(max: number) {
 	return Math.floor(Math.random() * max);
 }
 
@@ -131,7 +131,7 @@ type Rect = {
  * @param width 
  * @param height 
  */
-export function getSplits(width, height,xImpact=undefined, yImpact=undefined): Rect[] {
+export function getSplits(width: number, height: number, xImpact: number | undefined = undefined, yImpact: number | undefined = undefined): Rect[] {
 	const halfWidth = width / 2
 	const halfHeight = height / 2
 	let xSplit = halfWidth
@@ -169,7 +169,7 @@ export function getSplits(width, height,xImpact=undefined, yImpact=undefined): R
  * @param yImpact 
  * @param gameObject 
  */
-export function breakUp(xImpact, yImpact, gameObject: GameObjectwithMatterBody): Phaser.GameObjects.GameObject[] {
+export function breakUp(xImpact: number, yImpact: number, gameObject: GameObjectwithMatterBody): Phaser.GameObjects.GameObject[] | null {
 
 	const MinArea = 50
 	if (gameObject.type !== 'Image' && gameObject.type !== 'Rectangle')
@@ -191,7 +191,7 @@ export function breakUp(xImpact, yImpact, gameObject: GameObjectwithMatterBody):
 		splits.forEach((split, i) => {
 			const newTextureKey = `${texture.key}_frag_${Date.now()}_${i}`
 			const newTexture = scene.textures.addImage(newTextureKey, texture.getSourceImage() as HTMLImageElement)
-			newTexture.add('__BASE', 0, frameX + split.x, frameY + split.y, split.width, split.height)
+			newTexture!.add('__BASE', 0, frameX + split.x, frameY + split.y, split.width, split.height)
 			newObjects.push(scene.add.image(x + split.x, y + split.y, newTextureKey))
 		})
 	}

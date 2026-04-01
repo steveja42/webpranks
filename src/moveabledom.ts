@@ -63,7 +63,7 @@ export class PositionedElements {
         const keys = Object.keys(posInfo.savedStyles);
         for (const key of keys) {
           if (posInfo.savedStyles[key])
-            node.style[key] = posInfo.savedStyles[key];
+            (node.style as unknown as Record<string, string>)[key] = posInfo.savedStyles[key];
         }
       }
     })
@@ -148,7 +148,8 @@ export class PositionedElements {
     })
   }
 
-  walkDom2(startNode, func, level: number): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  walkDom2(startNode: any, func: (node: any, level: number) => void, level: number): void {
     //
     func.bind(this)(startNode, level);
     if (!startNode.hasChildNodes())

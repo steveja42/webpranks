@@ -4,7 +4,7 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `
 
 export function doPageEffect(pageInfo: PageInfo) {
 	const pageScene = new PageScene(pageInfo)
-	pageInfo.game.scene.add(mySceneConfig.key, pageScene)
+	pageInfo.game!.scene.add(mySceneConfig.key!, pageScene)
 	return pageScene
 }
 const speedChangeDelta = 2000
@@ -15,7 +15,7 @@ export class PageScene extends Phaser.Scene {
 	timeSinceLastFall = 0
 	time2 = 0
 	falls=0
-	fallingSound
+	fallingSound!: Phaser.Sound.BaseSound
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
@@ -37,7 +37,7 @@ export class PageScene extends Phaser.Scene {
 			object.setInteractive()
 			this.input.setDraggable(object)
 		})
-		this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+		this.input.on('drag', function (_pointer: Phaser.Input.Pointer, gameObject: Phaser.GameObjects.GameObject & { x: number; y: number }, dragX: number, dragY: number) {
 
 			gameObject.x = dragX;
 			gameObject.y = dragY;

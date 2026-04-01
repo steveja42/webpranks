@@ -5,7 +5,7 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `
 
 export function doPageEffect(pageInfo: PageInfo) {
 	const pageScene = new PageScene(pageInfo)
-	pageInfo.game.scene.add(mySceneConfig.key, pageScene)
+	pageInfo.game!.scene.add(mySceneConfig.key!, pageScene)
 	return pageScene
 }
 
@@ -13,11 +13,11 @@ export class PageScene extends Phaser.Scene {
 	bodiesToDo: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
 	removeDelta = 500
 	timeElapsed = 0
-	pageObjects: Phaser.GameObjects.Group
+	pageObjects!: Phaser.GameObjects.Group
 	lastMovement = 0
 	index = 0
-	width
-	height
+	width: number = 0
+	height: number = 0
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
 	}
@@ -82,7 +82,7 @@ export class PageScene extends Phaser.Scene {
 		return this.add.group().addMultiple(objects)  //{collideWorldBounds:true,bounceX:1, bounceY:1}
 	}
 
-	private makeCandle(x, y) {
+	private makeCandle(x: number, y: number) {
 		const candle = this.add.image(x, y, "candle").setScale(.1, .1)
 		y -= 53
 		const emitter = this.add.particles(x, y, 'fire', {
@@ -100,7 +100,7 @@ export class PageScene extends Phaser.Scene {
 		return candle
 	}
 
-	private addMessage(message){
+	private addMessage(message: string) {
 		const emitConfig = { speed: 20, scale: { start: .1, end: .4 }, blendMode: 'NORMAL', lifespan: { min: 300, max: 500 }	}
 
 		const text = this.add.text(400, 100, message, {
@@ -110,7 +110,7 @@ export class PageScene extends Phaser.Scene {
 			fontStyle: 'normal',
 			stroke: '#000000',
 			strokeThickness: 3,
-			shadow: { fill: true, offsetY: null, offsetX: null, stroke: false }
+			shadow: { fill: true, offsetY: undefined, offsetX: undefined, stroke: false }
 		})
 		const zmessage = this.physics.add.existing(text) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody
 

@@ -1,16 +1,16 @@
 
 import { globalPhase, Phase, PhaseTogglePause } from './prankrunner'
 
-export function getClickTouchHandler(dispatchPhase) {
+export function getClickTouchHandler(dispatchPhase: (phase: unknown) => void) {
 
-	return function handleClickTouch(event) {
+	return function handleClickTouch(_event: Event) {
 		if (globalPhase === Phase.startPrankAfterMouseOrKeyPress) {
 			dispatchPhase(Phase.startingPrank)
 			return
 		} 
 	}
 }
-export function getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase) {
+export function getKeyBoardHandler(setShowControls: (v: boolean) => void, setShowPopout: (v: boolean) => void, dispatchPhase: (phase: unknown) => void) {
 	/**
 	 * returns keydown handler that:
 	 *    opens popout debugging info window if Ctrl or Alt + "42" is pressed. 
@@ -19,6 +19,7 @@ export function getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase
 	 * @param event 
 	 */
 	let prevKey = ""
+	let controlsVisible = true
 
 	return function handleKeyDown(event: KeyboardEvent) {
 		if (globalPhase === Phase.startPrankAfterMouseOrKeyPress) {
@@ -33,7 +34,8 @@ export function getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase
 			dispatchPhase(PhaseTogglePause) 
 		}
 		else if (key === "Backspace" || key === "Cancel" || (key === " " && event.ctrlKey)) {
-			setShowControls(prev => { return !prev })
+			controlsVisible = !controlsVisible
+			setShowControls(controlsVisible)
 			return false
 		}
 		else if (key === "2" && (event.altKey || event.ctrlKey) && prevKey === "4")

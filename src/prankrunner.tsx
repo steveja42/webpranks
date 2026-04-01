@@ -40,7 +40,7 @@ export let globalPhase = Phase.targetUrlNotEntered   //keep phase in global for 
 export const PhaseNext = "next"
 export const PhaseTogglePause = "togglepause"
 
-function phaseReducer(oldPhase, newPhase): Phase {
+function phaseReducer(oldPhase: Phase, newPhase: Phase | string): Phase {
 	switch (newPhase) {
 		case PhaseNext:
 			globalPhase = Phase.startingPrank;
@@ -95,16 +95,16 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const [targetUrl, setTargetUrl] = useState("")
 	const [inputURL, setInputURL] = useState("")
 	const [whichPrank, setWhichPrank] = useState(0)
-	const [pageInfo, setPageInfo] = useState<PageInfo>(null)
-	const [pageImage, setPageImage] = useState(null)
-	const [isLoading, setIsLoading] = useState(null)
+	const [pageInfo, setPageInfo] = useState<PageInfo | null>(null)
+	const [pageImage, setPageImage] = useState<string | null>(null)
+	const [isLoading, setIsLoading] = useState<Promise<void | PageInfo> | boolean | null>(null)
 	const [showPopout, setShowPopout] = useState(false)
-	const [currentScene, setCurrentScene] = useState<Phaser.Scene>()
+	const [currentScene, setCurrentScene] = useState<Phaser.Scene | undefined>()
 	const [showFailure, setShowFailure] = useState("")
-	const phaserParent = useRef(null)
-	const debugPageImage = useRef(null)
-	const debugImage = useRef(null)
-	const bgDiv = useRef(null)
+	const phaserParent = useRef<HTMLDivElement>(null)
+	const debugPageImage = useRef<HTMLImageElement>(null)
+	const debugImage = useRef<HTMLImageElement>(null)
+	const bgDiv = useRef<HTMLDivElement>(null)
 	const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 	const { x: xMouse, y: yMouse } = useMousePosition(window);
 	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
@@ -113,8 +113,9 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(`component load`)
-		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatchPhase)
-		const handleClickOrTouch = getClickTouchHandler(dispatchPhase)
+		const dispatch = dispatchPhase as (phase: unknown) => void
+		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatch)
+		const handleClickOrTouch = getClickTouchHandler(dispatch)
 		const handleUnload = () => { console.log('window unloading'); setShowPopout(false) }
 
 		window.addEventListener('beforeunload', handleUnload)
@@ -128,7 +129,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			setInputURL(url)
 			setTargetUrl(url)
 		}
-		let i
+		let i: number | undefined
 		if (prankParam && !isNaN(i = parseInt(prankParam)) && i > -1 && i < effectModules.length) {
 			setWhichPrank(i)
 		}
@@ -210,8 +211,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 			lastLoadedUrl = targetUrl
 			dispatchPhase(Phase.targetUrlEntered)
 
-			let width
-			let height
+			let width: number | undefined
+			let height: number | undefined
 			if (isMobile) {
 				log(`is mobile`)
 				width = window.screen.width
@@ -230,7 +231,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			.then(result => {
 				setShowFailure("")
 				setPageImage(result[0])
-				return domToObjects(result[0], result[1], debugPageImage.current, debugImage.current, windowWidth, windowHeight, bgDiv.current)
+				return domToObjects(result[0], result[1], debugPageImage.current!, debugImage.current!, windowWidth, windowHeight, bgDiv.current!)
 			},
 				reason => {
 					log(`oh! an error occurred ${reason}`)
@@ -241,17 +242,17 @@ export function PrankRunner(props: PrankRunnerProps) {
 			)
 			.then(newPageInfo => {
 				if (!game)
-					game = setupWorld(phaserParent.current, width, height)
+					game = setupWorld(phaserParent.current!, width, height)
 
 				return resetAndLoadImagesForNewPageScene(newPageInfo)
 			}).then(newPageInfo => {
 				setPageInfo(newPageInfo)
 				setIsLoading(null)
-				setCurrentScene(null)
+				setCurrentScene(undefined)
 				return newPageInfo
 			})
 			.catch(error => {
-				log(error.message)
+				log((error as Error).message)
 				setPageInfo(null)
 			})
 		setIsLoading(loadingPromise)
@@ -274,8 +275,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 				log(`running prank ${effectModules[iPrank].title}`)
 				if (currentScene) {
 					currentScene.scene.remove()
-					setCurrentScene(null)
-					setPhaseriScene(null)
+					setCurrentScene(undefined)
+					setPhaseriScene(undefined)
 				}
 				import('./pageEffects/' + effectModules[iPrank].fileName)
 					.then(module => {
@@ -288,10 +289,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 					.catch(err => log(err.message))
 			}
 		} catch (error) {
-			log(error.message)
+			log((error as Error).message)
 			dispatchPhase(Phase.error)
-			setPhaseriScene(null)
-			setCurrentScene(null)
+			setPhaseriScene(undefined)
+			setCurrentScene(undefined)
 		}
 	}
 
@@ -306,7 +307,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	return <div id="foo">
 
 		<div id="bgDiv" ref={bgDiv} style={{ display: "none" }}></div>
-		<Alert show={showFailure !== ""} transition={null} variant="danger" onClose={() => setShowFailure("")} dismissible>
+		<Alert show={showFailure !== ""} transition={undefined} variant="danger" onClose={() => setShowFailure("")} dismissible>
 			<Alert.Heading>Error. {showFailure}</Alert.Heading>
 		</Alert>
 		{showPopout ? getPopout() : null}
@@ -314,7 +315,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 		{(phase === Phase.startPrankAfterMouseOrKeyPress) ?
 			<div>
-				<img id="pageImage" src={pageImage} className="Screenshot" alt="screen capture of the webpage at url" />
+				<img id="pageImage" src={pageImage ?? undefined} className="Screenshot" alt="screen capture of the webpage at url" />
 				<h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>
 			</div> : null}
 
@@ -326,8 +327,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 		return (
 			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
 				<div>
-					<p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - worldX}:{yMouse - worldY} </p>
-					<Button onClick={() => logDomTree(pageInfo.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
+					<p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - (worldX ?? 0)}:{yMouse - (worldY ?? 0)} </p>
+					<Button onClick={() => logDomTree(pageInfo!.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
 				</div>
 				<img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
 				<img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />

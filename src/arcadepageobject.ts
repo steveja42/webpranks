@@ -13,7 +13,7 @@ export type PageObject = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle
  * @param yImpact 
  * @param gameObject 
  */
-export function explode(xImpact, yImpact, gameObject: PageObject, gameGroup: Phaser.GameObjects.Group): PageObject[] {
+export function explode(xImpact: number, yImpact: number, gameObject: PageObject, gameGroup: Phaser.GameObjects.Group): PageObject[] | null {
 
     const pieces = breakUp(xImpact, yImpact, gameObject)
     const scene = gameObject.scene
@@ -49,7 +49,7 @@ export function explode(xImpact, yImpact, gameObject: PageObject, gameGroup: Pha
  * @param yImpact 
  * @param gameObject 
  */
-export function breakUp(xImpact, yImpact, gameObject: PageObject): PageObject[] {
+export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject): PageObject[] | null {
 
     const MinArea = 50
     if (gameObject.type !== 'Image' && gameObject.type !== 'Rectangle')
@@ -74,7 +74,7 @@ export function breakUp(xImpact, yImpact, gameObject: PageObject): PageObject[] 
         splits.forEach((split, i) => {
             const frame = texture.add(baseName + i, 0, frameX + split.x, frameY + split.y, split.width, split.height)
 
-            newObjects.push(scene.physics.add.image(x + split.x, y + split.y, texture, frame.name))
+            newObjects.push(scene.physics.add.image(x + split.x, y + split.y, texture, frame!.name))
         })
     }
     else {

@@ -2,7 +2,7 @@ import { PageInfo, log, setBackgroundAndCreateDomObjects, CollisionCategory, Col
 
 export function doPageEffect(page: PageInfo) {
 	const pageScene = new PageScene(page)
-	page.game.scene.add(mySceneConfig.key, pageScene)
+	page.game!.scene.add(mySceneConfig.key!, pageScene)
 	return pageScene
 }
 

@@ -70,7 +70,7 @@ export class FeedbackForm extends React.Component {
 			this.setState({ showSuccess: true })
 		}
 		else {
-			this.setState({ showFailure: error.toString() })
+			this.setState({ showFailure: String(error) })
 			this.setState({ showSuccess: false })
 		}
 

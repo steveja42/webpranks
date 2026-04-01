@@ -19,22 +19,22 @@ import { GameState } from "../interface/game-state";
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene`, physics: { arcade: { debug: false } } }
 export function doPageEffect(pageInfo: PageInfo) {
 	const pageScene = new MainScene(pageInfo)
-	pageInfo.game.scene.add(mySceneConfig.key, pageScene)
+	pageInfo.game!.scene.add(mySceneConfig.key!, pageScene)
 	return pageScene
 }
 
 export class MainScene extends Phaser.Scene {
-    state: GameState;
-    assetManager: AssetManager;
-    animationFactory: AnimationFactory;
-    scoreManager: ScoreManager;
+    state!: GameState;
+    assetManager!: AssetManager;
+    animationFactory!: AnimationFactory;
+    scoreManager!: ScoreManager;
     bulletTime = 0;
     firingTimer = 0;
-    starfield: Phaser.GameObjects.TileSprite;
-    player: Phaser.Physics.Arcade.Sprite;
-    alienManager: AlienManager;
-    cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-    fireKey: Phaser.Input.Keyboard.Key;
+    starfield!: Phaser.GameObjects.TileSprite;
+    player!: Phaser.Physics.Arcade.Sprite;
+    alienManager!: AlienManager;
+    cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+    fireKey!: Phaser.Input.Keyboard.Key;
 
     constructor(public pageInfo: PageInfo) {
         super(mySceneConfig);
@@ -69,8 +69,8 @@ export class MainScene extends Phaser.Scene {
             .setOrigin(0, 0);
         this.assetManager = new AssetManager(this);
         this.animationFactory = new AnimationFactory(this);
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.fireKey = this.input.keyboard.addKey(
+        this.cursors = this.input.keyboard!.createCursorKeys();
+        this.fireKey = this.input.keyboard!.addKey(
             Phaser.Input.Keyboard.KeyCodes.SPACE
         );
         this.player = Ship.create(this);
@@ -97,15 +97,15 @@ export class MainScene extends Phaser.Scene {
         this.physics.overlap(
             this.assetManager.bullets,
             this.alienManager.aliens,
-            this._bulletHitAliens,
-            null,
+            this._bulletHitAliens as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
             this
         );
         this.physics.overlap(
             this.assetManager.enemyBullets,
             this.player,
-            this._enemyBulletHitPlayer,
-            null,
+            this._enemyBulletHitPlayer as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
             this
         );
     }
@@ -136,7 +136,7 @@ export class MainScene extends Phaser.Scene {
         }
     }
 
-    private _enemyBulletHitPlayer(ship, enemyBullet: EnemyBullet) {
+    private _enemyBulletHitPlayer(ship: Phaser.Physics.Arcade.Sprite, enemyBullet: EnemyBullet) {
         const explosion: Kaboom = this.assetManager.explosions.get();
         enemyBullet.kill();
         const live: Phaser.GameObjects.Sprite = this.scoreManager.lives.getFirstAlive();

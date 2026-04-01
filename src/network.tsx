@@ -64,7 +64,7 @@ export async function getJSON(route: string): Promise<[string, string]> {
 	catch (error) {
 		console.error(`get: error occurred ${error}`);
 		return [
-			"", error]
+			"", String(error)]
 	}
 }
 

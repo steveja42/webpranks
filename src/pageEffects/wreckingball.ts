@@ -3,7 +3,7 @@ import { PageInfo, log, center, setBackgroundAndCreateDomObjects, CollisionCateg
 
 export function doPageEffect(page: PageInfo): Phaser.Scene {
 	const pageScene = new PageScene(page)
-	page.game.scene.add(mySceneConfig.key, pageScene)
+	page.game!.scene.add(mySceneConfig.key!, pageScene)
 	return pageScene
 }
 
@@ -20,7 +20,7 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	}
 }
 
-let cursors
+let cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
 const domDensity = .1
 const domRestitution = 0
 const domMatterOptions = {
@@ -38,12 +38,12 @@ export class PageScene extends Phaser.Scene {
 	timeElapsed = 0
 	lastTime = 0
 	lastInitialMovement = 0
-	ground: GameObjectwithMatterBody
-	fulcrum: GameObjectwithMatterBody
-	wreckingBall: GameObjectwithMatterBody
+	ground!: GameObjectwithMatterBody
+	fulcrum!: GameObjectwithMatterBody
+	wreckingBall!: GameObjectwithMatterBody
 	chain: GameObjectwithMatterBody[] = []
 	distanceMoved = 0
-	explosion
+	explosion!: Phaser.Sound.BaseSound
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
@@ -64,12 +64,12 @@ export class PageScene extends Phaser.Scene {
 		const maxAreaForObjects = width * height / 3
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
-		cursors = this.input.keyboard.createCursorKeys();
+		cursors = this.input.keyboard!.createCursorKeys();
 		//this.explosion = this.sound.add("death", { loop: false });
 		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 		backgroundRectangles.forEach(rect => {
 			if ((rect.width * rect.height) < maxAreaForObjects) {
-				this.matter.add.gameObject(rect, domMatterOptions) 
+				this.matter.add.gameObject(rect, domMatterOptions)
 			}
 		});
 		domElementImages.forEach(di => {
@@ -81,7 +81,7 @@ export class PageScene extends Phaser.Scene {
 
 		const wreckingballRadius = (width + height) / 30
 		const x = width / 2
-		const y = -200 
+		const y = -200
 		const chainLength = height / 2.5
 		this.addBallAndChain(x, y, wreckingballRadius, chainLength)
 		this.matter.world.engine.timing.timeScale = .2  //inital swing of ball is in slow motion
@@ -100,14 +100,14 @@ export class PageScene extends Phaser.Scene {
 
 /**
  * Called when the wrecking ball collides with a matter object
- * 
- * @param data 
+ *
+ * @param data
  */
 
 	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
 		const TimeBetweenCollisions = 1500
 		log(`${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
-		const scene = data.bodyA.gameObject.scene as PageScene
+		const scene = data.bodyA.gameObject!.scene as PageScene
 		const time = Date.now()
 		const collidee = ((data.bodyA.id === ballId) ? data.bodyB.gameObject : data.bodyA.gameObject) as unknown as GameObjectwithMatterBody
 		if (!collidee || collidee.active === false)
@@ -135,14 +135,14 @@ export class PageScene extends Phaser.Scene {
 		}
 		collidee.destroy()
 	}
-	
+
 /**
  * Move the fulcrum initially
- * @param duration 
- * @param totalDistance 
- * @param object 
+ * @param duration
+ * @param totalDistance
+ * @param object
  */
-	initialMovement(duration, totalDistance, object) {
+	initialMovement(duration: number, totalDistance: number, object: GameObjectwithMatterBody) {
 		const timeIncrement = 200
 		if (this.distanceMoved < totalDistance && this.timeElapsed - this.lastInitialMovement > timeIncrement) {
 			const distanceToMove = totalDistance / (duration / timeIncrement)
@@ -174,7 +174,7 @@ export class PageScene extends Phaser.Scene {
 		}
 	}
 
-	addTheGround(width, height): GameObjectwithMatterBody {
+	addTheGround(width: number, height: number): GameObjectwithMatterBody {
 		const groundHeight = 10
 		const ground = this.add.rectangle(center(0, width), center(height - groundHeight, height), width, groundHeight, 0xc5227)
 		return this.matter.add.gameObject(ground, {
@@ -188,7 +188,7 @@ export class PageScene extends Phaser.Scene {
 		}) as GameObjectwithMatterBody
 	}
 
-	allowCursorMovement(object) {
+	allowCursorMovement(object: GameObjectwithMatterBody) {
 		const increment = 5
 		if (!cursors) return
 		if (cursors.left.isDown) {
@@ -198,7 +198,7 @@ export class PageScene extends Phaser.Scene {
 			object.setPosition(object.x + increment, object.y);
 		}
 		else {
-			object.setVelocityX(0);
+			this.matter.setVelocity(object.body, 0, object.body.velocity.y);
 		}
 		if (cursors.up.isDown) {
 			object.setPosition(object.x, object.y - increment);
@@ -207,19 +207,19 @@ export class PageScene extends Phaser.Scene {
 			object.setPosition(object.x, object.y + increment);
 		}
 		else {
-			object.setVelocityY(0);
+			this.matter.setVelocity(object.body, object.body.velocity.x, 0);
 		}
 
 	}
 
 	/**
 		 *  Adds fulcrum attached to wrecking ball with a chain
-		 * @param x 
-		 * @param y 
-		 * @param wreckingballRadius 
-		 * @param chainLength 
+		 * @param x
+		 * @param y
+		 * @param wreckingballRadius
+		 * @param chainLength
 		 */
-	addBallAndChain(x, y, wreckingballRadius, chainLength) {
+	addBallAndChain(x: number, y: number, wreckingballRadius: number, chainLength: number) {
 		const MetalDensity = 5
 		const fulcrumRadius = 10
 		const chainlinkRadius = 16
@@ -240,7 +240,7 @@ export class PageScene extends Phaser.Scene {
 		let prevObject = this.fulcrum.body
 		for (let i = 0; i < numLinks; i++) {
 			x -= prevRadius + chainlinkRadius
-			const chainLink = this.matter.add.image(x, y, 'chainlink', null, {
+			const chainLink = this.matter.add.image(x, y, 'chainlink', undefined, {
 				density: MetalDensity, collisionFilter: {
 					group: CollisonGroup.Dom,
 					category: CollisionCategory.none
@@ -269,6 +269,3 @@ export class PageScene extends Phaser.Scene {
 	}
 
 }
-
-
-
