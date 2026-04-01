@@ -314,10 +314,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 		{showPopout ? getPopout() : null}
 		{showControls ? <PrankForm {...formProps} /> : null}
 
-		{(phase === Phase.startPrankAfterMouseOrKeyPress) ?
+		{(phase === Phase.startPrankAfterMouseOrKeyPress || phase === Phase.startingPrank) ?
 			<div>
 				<img id="pageImage" src={pageImage ?? undefined} className="Screenshot" alt="screen capture of the webpage at url" />
-				{!noContinuePrompt && <h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>}
+				{!noContinuePrompt && phase === Phase.startPrankAfterMouseOrKeyPress && <h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>}
 			</div> : null}
 
 		<div className="game" ref={phaserParent} />
