@@ -1,6 +1,6 @@
 #  Web Pranks
 
-Web Pranksis a website, [webfun.click](https://www.webfun.click/) , that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
+Web Pranks is a website, [webfun.click](https://www.webfun.click/) , that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
 
   
 
@@ -21,70 +21,32 @@ Pranks are in the *src/pageEffects* folder and you can look there for examples. 
 
 ##  Building the app
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-  
+This project uses [Vite](https://vitejs.dev/) + React with TypeScript. Use `pnpm` for all package management.
 
 ##  Available Scripts
 
-  
-
 In the project directory, you can run:
 
-  
+###  `pnpm dev`
 
-###  `yarn start`
+Runs the app in development mode.
 
-  
+Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
 
-Runs the app in the development mode.\
+The page will hot-reload if you make edits.
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+###  `pnpm build`
 
-  
-
-The page will reload if you make edits.\
-
-You will also see any lint errors in the console.
-
-  
-
-###  `yarn test`
-
-  
-
-Launches the test runner in the interactive watch mode.\
-
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-  
-
-###  `yarn build`
-
-  
-
-Builds the app for production to the `build` folder.\
+Builds the app for production to the `dist` folder.
 
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
-  
+###  `pnpm preview`
 
-The build is minified and the filenames include the hashes.\
-
-Your app is ready to be deployed!
-
-  
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-  
+Locally previews the production build.
 
 ##  Learn More
 
-  
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-  
+You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
