@@ -18,6 +18,7 @@
     "jsx": "react-jsx",
     "strict": true,
     "useDefineForClassFields": true,
+    "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
       "@/*": [

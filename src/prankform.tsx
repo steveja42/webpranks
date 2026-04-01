@@ -62,7 +62,7 @@ export function PrankForm(props: any) {
 		processURL(inputURL)
 	}
 	//const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-	const onKeyDown = (e) => {
+	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			onURLWasInput()
 			e.preventDefault();
@@ -88,7 +88,7 @@ export function PrankForm(props: any) {
 
 		<Form onSubmit={onSubmit} className="myform" >
 			<div className="d-flex align-items-end gap-2">
-				{process.env.NODE_ENV === 'development' ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
+				{import.meta.env.DEV ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
 				<div className="d-flex align-items-end gap-2 flex-grow-1 justify-content-center">
 					<Form.Group controlId="url">
 						<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
