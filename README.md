@@ -1,10 +1,25 @@
-#  Web Pranks
+# Web Pranks
 
-Web Pranks is a website, [webfun.click](https://www.webfun.click/) , that lets you appear to prank other websites. For example, enter *cnn.com* as the Website Address, choose *Wrecking Ball* for the Prank, and then a wrecking ball will appear to smash the current CNN website- though all changes actually only happen on the local device.
+**[webfun.click](https://webfun.click/)** — Prank any website with wild visual effects. Watch CNN get smashed by a wrecking ball. Make Reddit fall to pieces. Throw a surprise birthday party on your least-favorite homepage.
 
-  
+> All the mayhem, zero consequences. Every effect happens only on your own screen — no actual websites are harmed.
 
-##  How to add your own prank to Web Pranks!
+## Available Pranks
+
+| Prank | What it does |
+|---|---|
+| **Wrecking Ball** | A swinging wrecking ball smashes the page apart using physics |
+| **All Fall Down** | Every element on the page detaches and falls to the ground |
+| **Happy Birthday** | Balloons, confetti, and a birthday cake crash the party |
+| **BTC Invaders** | A Space Invaders-style arcade game takes over the page |
+
+## Try it now
+
+Go to **[webfun.click](https://webfun.click/)**, enter any URL, and hit **Prank It**.
+
+---
+
+## For Developers — Add Your Own Prank
 
   
 

@@ -1,6 +1,7 @@
 {
   "short_name": "Web Pranks",
-  "name": "Web Pranks- have fun with the web",
+  "name": "Web Pranks - Have Fun with the Web",
+  "description": "Prank any website with funny visual effects. All harmless — changes only happen on your screen.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,7 +19,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"

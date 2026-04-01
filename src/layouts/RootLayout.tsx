@@ -71,13 +71,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 const aboutpopover = (
 	<Popover id="popover-basic">
-		<Popover.Header as="h3">About</Popover.Header>
+		<Popover.Header as="h3">About Web Pranks</Popover.Header>
 		<Popover.Body>
-			<p>Ready for a little fun, humour or levity?
-				Just enter the web address of your favorite (or least favorite) website, choose a prank<sup>*</sup>, and see what happens...<br />
-				Then you can press <em>Back</em> or <em>Esc</em> to pause.</p>
-			Whatever you do, don't go to your friends device and prank them!<br /><br />
-			* Any apparent changes to websites only happen on your own device and don't effect the actual websites for other people. No animals were harmed in the making of this website.
+			<p>
+				Ever wanted to smash a website with a wrecking ball? Make the whole thing fall apart?
+				Throw an uninvited birthday party on someone's homepage?
+			</p>
+			<p>
+				Pick any website, choose your prank, and watch the chaos unfold — all on your screen only.
+				Press <em>Back</em> or <em>Esc</em> to pause the mayhem.
+			</p>
+			<p>
+				<strong>Available pranks:</strong> Wrecking Ball &bull; All Fall Down &bull; Happy Birthday &bull; BTC Invaders
+			</p>
+			<small>
+				* All visual effects happen only on your own device. No actual websites are harmed, no animals
+				were harmed, and absolutely nobody's feelings need be hurt.<sup>†</sup>
+				<br />
+				<sup>†</sup> Unless you turn the screen toward your boss.
+			</small>
 		</Popover.Body>
 	</Popover>
 )

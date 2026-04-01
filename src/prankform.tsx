@@ -91,11 +91,11 @@ export function PrankForm(props: any) {
 				{import.meta.env.DEV ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
 				<div className="d-flex align-items-end gap-2 flex-grow-1 justify-content-center">
 					<Form.Group controlId="url">
-						<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Choose a website to prank</Form.Label>
+						<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Which website?</Form.Label>
 						<Form.Control ref={inputRef} name="targetUrl" type="url" value={inputURL} onKeyDown={onKeyDown} onFocus={onFocus} onBlur={onBlur} onChange={onChange} onAnimationStart={onAnimationStart} placeholder="Enter a Website" required />
 					</Form.Group>
 					<Form.Group controlId="prank">
-						<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Choose a prank</Form.Label>
+						<Form.Label className={(!prankChosen && phase === Phase.targetUrlEntered) ? "do_me" : ""}>Pick a prank</Form.Label>
 						<Form.Control
 							as="select"
 							value={whichPrank}
