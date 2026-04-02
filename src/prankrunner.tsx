@@ -167,8 +167,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 				runPrank()
 				break
 			case Phase.prankRunning:
-				if (window.location.hash !== '#running')
-					history.pushState(null, '', window.location.pathname + '#running')
+				if (!history.state?.prankRunning)
+					history.pushState({ prankRunning: true }, '', window.location.pathname + '#running')
 				if (currentScene?.scene?.isPaused()) {
 					log(ll.info, `resuming scene`)
 					setShowControls(false)
