@@ -120,7 +120,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 
 	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : null
 
-	if (!isTextNode && bgColor && color !== pageInfo.bgColor) {    //create a rectangle to fill in the background,
+	if (!isTextNode && bgColor && color !== pageInfo.bgColor && !isLargeBackgroundElement(boundingRect)) {    //create a rectangle to fill in the background,
 		/*const ctx = stuff.canvas.getContext('2d')
 		ctx.fillStyle = bgColor
 		ctx.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height) */
@@ -135,7 +135,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		return true
 	}
 
-	if (bgImage) {
+	if (bgImage && !isLargeBackgroundElement(boundingRect)) {
 		if (boundingRect.width < 1 || boundingRect.height < 1)
 			return parentAdded
 		const canvas = await html2canvas(divForBackgroundScreenshot, {
@@ -164,7 +164,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		//div.clientWidth = boundingRect.width
 	}
 
-	if (isTextNode || spriteAbleElements.includes(node.nodeName)) {
+	if ((isTextNode || spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)) {
 		const imageURL = getImagePortion(pageInfo.pageImage, boundingRect)
 		if (debugThis) {
 			log(`adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
@@ -205,6 +205,12 @@ function findParentNodeWithAttributes(node: Node | null): HTMLElement | null {
 }
 function isOnScreen(boundingRect: DOMRect | null) {
 	return (boundingRect && boundingRect.width && boundingRect.height && boundingRect.x <= fooWidth && boundingRect.y <= fooHeight && boundingRect.x >= 0 && boundingRect.y >= 0)
+}
+
+function isLargeBackgroundElement(boundingRect: DOMRect): boolean {
+	const viewportArea = fooWidth * fooHeight
+	const elementArea = boundingRect.width * boundingRect.height
+	return elementArea > viewportArea * 0.5
 }
 
 export const scratchCanvas = document.createElement('canvas')
