@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
@@ -19,6 +19,7 @@ export const ShowControlsContext = React.createContext<{
 function AboutNavItem() {
 	const [show, setShow] = useState(false)
 	const hideTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+	const navigate = useNavigate()
 
 	const scheduleHide = () => {
 		hideTimer.current = setTimeout(() => setShow(false), 150)
@@ -78,7 +79,7 @@ function AboutNavItem() {
 			<Navbar.Text
 				onMouseEnter={() => { cancelHide(); setShow(true) }}
 				onMouseLeave={scheduleHide}
-				onClick={() => setShow(v => !v)}
+				onClick={() => navigate('/about')}
 				style={{ cursor: 'pointer' }}
 			>
 				About
