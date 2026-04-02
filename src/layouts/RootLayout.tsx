@@ -16,6 +16,77 @@ export const ShowControlsContext = React.createContext<{
 	setShowControls: (v: boolean) => void
 }>({ showControls: true, setShowControls: () => {} })
 
+function AboutNavItem() {
+	const [show, setShow] = useState(false)
+	const hideTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	const scheduleHide = () => {
+		hideTimer.current = setTimeout(() => setShow(false), 150)
+	}
+	const cancelHide = () => {
+		if (hideTimer.current) clearTimeout(hideTimer.current)
+	}
+
+	const popover = (
+		<Popover
+			id="about-popover"
+			onMouseEnter={cancelHide}
+			onMouseLeave={scheduleHide}
+		>
+			<Popover.Header as="h3">About Web Pranks</Popover.Header>
+			<Popover.Body>
+				<p>
+					<strong>Web Pranks</strong> is an interactive website prank tool and visual simulator.
+					Ever wanted to virtually smash a website with a wrecking ball or play
+					BTC Invaders on any URL?
+				</p>
+				<p>
+					Pick any website address, choose a prank effect, and watch the chaos unfold.
+					It's a harmless way to "wreck" any site for funny screenshots or videos—all on
+					your screen only. Press <em>Back</em> or <em>Esc</em> to pause the mayhem.
+				</p>
+				<p>
+					<strong>Available Pranks:</strong>
+					<br />
+					• <strong>Wrecking Ball</strong> (Physics-based destruction)
+					<br />
+					• <strong>All Fall Down</strong> (Gravity simulator)
+					<br />
+					• <strong>Happy Birthday</strong> (Surprise party overlay)
+					<br />
+					• <strong>BTC Invaders</strong> (Bitcoin space shooter)
+				</p>
+				<small>
+					* All visual effects happen locally on your device. No actual websites are modified.
+					Safe, client-side fun for jokers and developers.
+					<br />
+					<sup>†</sup> Use responsibly around bosses and IT departments.
+				</small>
+				<div className="mt-2">
+					<a href="/about">Read more on our About Page</a>
+				</div>
+			</Popover.Body>
+		</Popover>
+	)
+
+	return (
+		<OverlayTrigger
+			placement="auto"
+			show={show}
+			overlay={popover}
+		>
+			<Navbar.Text
+				onMouseEnter={() => { cancelHide(); setShow(true) }}
+				onMouseLeave={scheduleHide}
+				onClick={() => setShow(v => !v)}
+				style={{ cursor: 'pointer' }}
+			>
+				About
+			</Navbar.Text>
+		</OverlayTrigger>
+	)
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	const [showControls, setShowControls] = useState(true)
 
@@ -50,9 +121,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 									Web Pranks
 								</Navbar.Brand>
 								<Nav>
-									<OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={aboutpopover}>
-										<Navbar.Text>About</Navbar.Text>
-									</OverlayTrigger>
+									<AboutNavItem />
 									<OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={feedbackpopover}>
 										<Nav.Link as={Link} to="/feedback">Feedback</Nav.Link>
 									</OverlayTrigger>
@@ -69,40 +138,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	)
 }
 
-const aboutpopover = (
-    <Popover id="popover-basic">
-        <Popover.Header as="h3">About Web Pranks</Popover.Header>
-        <Popover.Body>
-            <p>
-                <strong>Web Pranks</strong> is an interactive website prank tool and visual simulator. 
-                Ever wanted to virtually smash a website with a wrecking ball or play 
-                BTC Invaders on any URL?
-            </p>
-            <p>
-                Pick any website address, choose a prank effect, and watch the chaos unfold. 
-                It's a harmless way to "wreck" any site for funny screenshots or videos—all on 
-                your screen only. Press <em>Back</em> or <em>Esc</em> to pause the mayhem.
-            </p>
-            <p>
-                <strong>Available Pranks:</strong> 
-                <br />
-                • <strong>Wrecking Ball</strong> (Physics-based destruction)
-                <br />
-                • <strong>All Fall Down</strong> (Gravity simulator)
-                <br />
-                • <strong>Happy Birthday</strong> (Surprise party overlay)
-                <br />
-                • <strong>BTC Invaders</strong> (Bitcoin space shooter)
-            </p>
-            <small>
-                * All visual effects happen locally on your device. No actual websites are modified. 
-                Safe, client-side fun for jokers and developers.
-                <br />
-                <sup>†</sup> Use responsibly around bosses and IT departments.
-            </small>
-        </Popover.Body>
-    </Popover>
-)
 
 const feedbackpopover = (
 	<Popover id="popover-basic">
