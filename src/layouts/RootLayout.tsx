@@ -70,28 +70,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 const aboutpopover = (
-	<Popover id="popover-basic">
-		<Popover.Header as="h3">About Web Pranks</Popover.Header>
-		<Popover.Body>
-			<p>
-				Ever wanted to smash a website with a wrecking ball? Make the whole thing fall apart?
-				Throw an uninvited birthday party on someone's homepage?
-			</p>
-			<p>
-				Pick any website, choose your prank, and watch the chaos unfold — all on your screen only.
-				Press <em>Back</em> or <em>Esc</em> to pause the mayhem.
-			</p>
-			<p>
-				<strong>Available pranks:</strong> Wrecking Ball &bull; All Fall Down &bull; Happy Birthday &bull; BTC Invaders
-			</p>
-			<small>
-				* All visual effects happen only on your own device. No actual websites are harmed, no animals
-				were harmed, and absolutely nobody's feelings need be hurt.<sup>†</sup>
-				<br />
-				<sup>†</sup> Unless you turn the screen toward your boss.
-			</small>
-		</Popover.Body>
-	</Popover>
+    <Popover id="popover-basic">
+        <Popover.Header as="h3">About Web Pranks</Popover.Header>
+        <Popover.Body>
+            <p>
+                <strong>Web Pranks</strong> is an interactive website prank tool and visual simulator. 
+                Ever wanted to virtually smash a website with a wrecking ball or play 
+                BTC Invaders on any URL?
+            </p>
+            <p>
+                Pick any website address, choose a prank effect, and watch the chaos unfold. 
+                It's a harmless way to "wreck" any site for funny screenshots or videos—all on 
+                your screen only. Press <em>Back</em> or <em>Esc</em> to pause the mayhem.
+            </p>
+            <p>
+                <strong>Available Pranks:</strong> 
+                <br />
+                • <strong>Wrecking Ball</strong> (Physics-based destruction)
+                <br />
+                • <strong>All Fall Down</strong> (Gravity simulator)
+                <br />
+                • <strong>Happy Birthday</strong> (Surprise party overlay)
+                <br />
+                • <strong>BTC Invaders</strong> (Bitcoin space shooter)
+            </p>
+            <small>
+                * All visual effects happen locally on your device. No actual websites are modified. 
+                Safe, client-side fun for jokers and developers.
+                <br />
+                <sup>†</sup> Use responsibly around bosses and IT departments.
+            </small>
+        </Popover.Body>
+    </Popover>
 )
 
 const feedbackpopover = (
