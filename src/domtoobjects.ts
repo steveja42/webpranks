@@ -86,7 +86,7 @@ function getAttributes(node: Element) {
 
 
 /**
- *  Creates image from a DOM node if it one that should be displayed and creates a backgroundRect for objects that have a background color.
+ *  Creates image from a DOM node if it is one that should be displayed and creates a backgroundRect for objects that have a background color.
  *
  * @param node
  * @param level - how many levels deep are we in the dom tree
@@ -136,7 +136,9 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 	}
 
 	if (bgImage) {
-	const canvas = await html2canvas(divForBackgroundScreenshot, {
+		if (boundingRect.width < 1 || boundingRect.height < 1)
+			return parentAdded
+		const canvas = await html2canvas(divForBackgroundScreenshot, {
 			width: boundingRect.width, height: boundingRect.height, onclone: function (clonedDoc) {
 				const xDiv = clonedDoc.getElementById(divForBackgroundScreenshot.id)
 				if (xDiv) {
