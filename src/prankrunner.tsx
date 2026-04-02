@@ -167,6 +167,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 				runPrank()
 				break
 			case Phase.prankRunning:
+				if (window.location.hash !== '#running')
+					history.pushState(null, '', window.location.pathname + '#running')
 				if (currentScene?.scene?.isPaused()) {
 					log(ll.info, `resuming scene`)
 					setShowControls(false)
@@ -177,6 +179,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				}
 				break
 			case Phase.prankPaused:
+				history.replaceState(null, '', window.location.pathname)
 				if (currentScene && !currentScene.scene.isPaused()) {
 					log(ll.info, `pausing scene`)
 					setShowControls(true)
@@ -191,11 +194,18 @@ export function PrankRunner(props: PrankRunnerProps) {
 
 	useEffect(() => {
 		const handlePopState = () => {
-			dispatchPhase(PhaseTogglePause)
+			if (!targetUrl) return
+			const prankPath = '/' + effectModules[whichPrank].slug + '/' + encodeURIComponent(targetUrl)
+			if (window.location.pathname !== prankPath) return
+			if (window.location.hash === '#running') {
+				dispatchPhase(Phase.prankRunning)
+			} else {
+				dispatchPhase(Phase.prankPaused)
+			}
 		}
 		window.addEventListener('popstate', handlePopState)
 		return () => window.removeEventListener('popstate', handlePopState)
-	}, [])
+	}, [targetUrl, whichPrank])
 
 	useEffect(() => {
 		if (location.pathname === '/') {
