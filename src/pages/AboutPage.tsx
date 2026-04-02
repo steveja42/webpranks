@@ -1,6 +1,6 @@
 export default function AboutPage() {
 	return (
-		<div className="container py-5" style={{ maxWidth: '800px' }}>
+		<div className="container py-5 prose-page" style={{ maxWidth: '800px' }}>
 			<h1>About Web Pranks: The Ultimate Website Visual Simulator</h1>
 			<p className="lead">
 				Welcome to Web Pranks, the internet's favorite sandbox for harmless digital mischief. We built

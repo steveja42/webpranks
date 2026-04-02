@@ -3,7 +3,7 @@ import { FeedbackForm } from '../feedback'
 
 export default function FeedbackPage() {
 	return (
-		<Container>
+		<Container className="prose-page py-4">
 			<FeedbackForm />
 		</Container>
 	)

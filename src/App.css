@@ -255,6 +255,20 @@ body, .form-control:not(active) ,.form-control:focus {
   text-align: center;
 }
 
+.prose-page {
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #111 !important;
+  background-color: #fff;
+  text-align: left;
+}
+
+.prose-page h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.prose-page h2 { font-size: 1.4rem; margin-top: 2rem; margin-bottom: 0.5rem; }
+.prose-page h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.25rem; }
+.prose-page p, .prose-page li { font-size: 1.05rem; }
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
