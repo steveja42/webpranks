@@ -169,6 +169,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 			case Phase.prankRunning:
 				if (!history.state?.prankRunning)
 					history.pushState({ prankRunning: true }, '', window.location.pathname + '#running')
+				else
+					history.replaceState({ prankRunning: true }, '', window.location.pathname + '#running')
 				if (currentScene?.scene?.isPaused()) {
 					log(ll.info, `resuming scene`)
 					setShowControls(false)
@@ -179,7 +181,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				}
 				break
 			case Phase.prankPaused:
-				history.replaceState(null, '', window.location.pathname)
+				history.replaceState({ prankRunning: true }, '', window.location.pathname)
 				if (currentScene && !currentScene.scene.isPaused()) {
 					log(ll.info, `pausing scene`)
 					setShowControls(true)
