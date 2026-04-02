@@ -108,7 +108,7 @@ export class PageScene extends Phaser.Scene {
 
 	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionPair) {
 		const TimeBetweenCollisions = 1500
-		log(ll.debug, `${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
+		log(ll.debug, `${data.bodyA.id}${data.bodyA.id === ballId ? '(ball)' : ''} collided with ${data.bodyB.id}${data.bodyB.id === ballId ? '(ball)' : ''	}` )
 		const scene = data.bodyA.gameObject!.scene as PageScene
 		const time = Date.now()
 		const collidee = ((data.bodyA.id === ballId) ? data.bodyB.gameObject : data.bodyA.gameObject) as unknown as GameObjectwithMatterBody
@@ -118,9 +118,12 @@ export class PageScene extends Phaser.Scene {
 			return
 		//scene.explosion.play()sdf
 		scene.sound.play("smash")
-		const contact = (data.contacts as unknown as { vertex: MatterJS.Vector }[])?.[0]
+		const contacts = data.contacts as unknown as { vertex: MatterJS.Vector }[]
+		if (!contacts?.length) return
+		const contact = contacts[0]
 		const contactX = contact?.vertex.x ?? collidee.x
 		const contactY = contact?.vertex.y ?? collidee.y
+		collidee.setData("collisionTime", time)
 		const newlyCreatedObjects = breakUp(contactX, contactY, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
 		if (newlyCreatedObjects) {
 			const x= collidee.x //+ collidee.width /2

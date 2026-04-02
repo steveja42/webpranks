@@ -178,7 +178,7 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: GameObject
 	const height = gameObject.displayHeight
 	if (width * height < MinArea)
 		return null
-	log(ll.info, `breaking up ${gameObject.body.id} ${width} - ${height}`)
+	log(ll.info, `breaking up ${gameObject.body.id} ${width}x${height}`)
 	const scene = gameObject.scene
 	const x = gameObject.x
 	const y = gameObject.y
@@ -188,11 +188,10 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: GameObject
 		const texture = gameObject.texture
 		const frameX = gameObject.frame?.cutX || 0
 		const frameY = gameObject.frame?.cutY || 0
+		const fragBase = texture.frameTotal
 		splits.forEach((split, i) => {
-			const newTextureKey = `${texture.key}_frag_${Date.now()}_${i}`
-			const newTexture = scene.textures.addImage(newTextureKey, texture.getSourceImage() as HTMLImageElement)
-			newTexture!.add('__BASE', 0, frameX + split.x, frameY + split.y, split.width, split.height)
-			newObjects.push(scene.add.image(x + split.x, y + split.y, newTextureKey))
+			const frame = texture.add(fragBase + i, 0, frameX + split.x, frameY + split.y, split.width, split.height)
+			newObjects.push(scene.add.image(x + split.x, y + split.y, texture.key, frame!.name))
 		})
 	}
 	else  {
