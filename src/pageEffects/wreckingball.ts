@@ -71,6 +71,8 @@ export class PageScene extends Phaser.Scene {
 			if ((rect.width * rect.height) < maxAreaForObjects) {
 				this.matter.add.gameObject(rect, domMatterOptions)
 			}
+			else
+				log(ll.debug, `skipping background rectangle at ${rect.x}, ${rect.y} with area ${rect.width * rect.height} that exceeds max area of ${maxAreaForObjects}`)
 		});
 		domElementImages.forEach(di => {
 			di.setDensity(domDensity)
@@ -104,9 +106,9 @@ export class PageScene extends Phaser.Scene {
  * @param data
  */
 
-	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
+	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionPair) {
 		const TimeBetweenCollisions = 1500
-		log(ll.trace, `${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
+		log(ll.debug, `${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
 		const scene = data.bodyA.gameObject!.scene as PageScene
 		const time = Date.now()
 		const collidee = ((data.bodyA.id === ballId) ? data.bodyB.gameObject : data.bodyA.gameObject) as unknown as GameObjectwithMatterBody
@@ -116,9 +118,10 @@ export class PageScene extends Phaser.Scene {
 			return
 		//scene.explosion.play()sdf
 		scene.sound.play("smash")
-		const snafu: any = data
-		if (!snafu.activeContacts?.length) return
-		const newlyCreatedObjects = breakUp(snafu.activeContacts[0].vertex.x, snafu.activeContacts[0].vertex.y, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
+		const contact = (data.contacts as unknown as { vertex: MatterJS.Vector }[])?.[0]
+		const contactX = contact?.vertex.x ?? collidee.x
+		const contactY = contact?.vertex.y ?? collidee.y
+		const newlyCreatedObjects = breakUp(contactX, contactY, collidee) //   data.collision.normal, data.bodyA.bounds.min,data.bodyA.bounds.max)
 		if (newlyCreatedObjects) {
 			const x= collidee.x //+ collidee.width /2
 			const y= collidee.y// + collidee.height/2
