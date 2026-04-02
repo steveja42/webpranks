@@ -262,6 +262,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			.catch(error => {
 				log((error as Error).message)
 				setPageInfo(null)
+				setIsLoading(false)
 			})
 		setIsLoading(loadingPromise)
 		return loadingPromise
