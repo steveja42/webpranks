@@ -1,4 +1,4 @@
-import { log } from './util'
+import { log, ll } from './util'
 import { getSplits } from './modhelper'
 
 export type PageObject = Phaser.GameObjects.Image & Phaser.GameObjects.Rectangle & {
@@ -60,7 +60,7 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject
         return null
     const xTrue = gameObject.x - width/2
     const yTrue = gameObject.y - height/2
-    log(`breaking up  (${xTrue},${yTrue} - ${xTrue + width},${yTrue + height}) ${width} x ${height} at ${xImpact},${yImpact}`)  //${gameObject.body.id}
+    log(ll.trace, `breaking up  (${xTrue},${yTrue} - ${xTrue + width},${yTrue + height}) ${width} x ${height} at ${xImpact},${yImpact}`)  //${gameObject.body.id}
     const scene = gameObject.scene
     const x = gameObject.x
     const y = gameObject.y

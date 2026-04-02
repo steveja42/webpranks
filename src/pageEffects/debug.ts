@@ -1,4 +1,4 @@
-import { PageInfo, log, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup } from '../modhelper'
+import { PageInfo, log, ll, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup } from '../modhelper'
 
 export function doPageEffect(page: PageInfo) {
 	const pageScene = new PageScene(page)
@@ -28,17 +28,17 @@ export class PageScene extends Phaser.Scene {
 	
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
-		log('constructing scene')
+		log(ll.info, 'constructing scene')
 	}
 
 	public preload() {
-		log(`start`)
+		log(ll.info, `start`)
 		
 	}
 
 	public async create() {
 		
-		log('creating scene')
+		log(ll.info, 'creating scene')
 		const domDensity = .1
 		const domRestitution = 0
 //		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)

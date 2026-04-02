@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useReducer } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ShowControlsContext } from './layouts/RootLayout'
-import { log } from './util'
+import { log, ll } from './util'
 import { getKeyBoardHandler, getClickTouchHandler } from './io'
 import Button from 'react-bootstrap/Button'
 import { Alert } from 'react-bootstrap'
@@ -110,7 +110,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const isRunning = (phase === Phase.prankRunning)
 
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
-		log(`component load`)
+		log(ll.info, `component load`)
 		const dispatch = dispatchPhase as (phase: unknown) => void
 		const handleKeyDown = getKeyBoardHandler(setShowControls, setShowPopout, dispatch)
 		const handleClickOrTouch = getClickTouchHandler(dispatch)
@@ -154,7 +154,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	}, []);
 
 	useEffect(() => {
-		log(`--------->phase changed to ${Phase[phase]}`)
+		log(ll.info, `--------->phase changed to ${Phase[phase]}`)
 		const activePhases = [Phase.startPrankAfterMouseOrKeyPress, Phase.startingPrank, Phase.prankRunning, Phase.prankPaused]
 		document.title = activePhases.includes(phase) && targetUrl
 			? targetUrl
@@ -168,7 +168,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				break
 			case Phase.prankRunning:
 				if (currentScene?.scene?.isPaused()) {
-					log(`resuming scene`)
+					log(ll.info, `resuming scene`)
 					setShowControls(false)
 					currentScene.scene.resume()
 					currentScene.sound.resumeAll()
@@ -178,7 +178,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				break
 			case Phase.prankPaused:
 				if (currentScene && !currentScene.scene.isPaused()) {
-					log(`pausing scene`)
+					log(ll.info, `pausing scene`)
 					setShowControls(true)
 					currentScene.scene.pause()
 					currentScene.sound.pauseAll()
@@ -208,7 +208,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	}, [location.pathname])
 
 	useEffect(() => {
-		log(`new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
+		log(ll.info, `new url: ${targetUrl} ${window.screen.width} x ${window.screen.height} ${navigator.userAgent} `);
 		if (targetUrl) {
 			const desired = `/${effectModules[whichPrank].slug}/${encodeURIComponent(targetUrl)}`
 			if (location.pathname !== desired)
@@ -222,7 +222,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			let width: number | undefined
 			let height: number | undefined
 			if (isMobile) {
-				log(`is mobile`)
+				log(ll.info, `is mobile`)
 				width = window.screen.width
 				height = window.screen.height
 			}
@@ -242,7 +242,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				return domToObjects(result[0], result[1], debugPageImage.current!, debugImage.current!, windowWidth, windowHeight, bgDiv.current!)
 			},
 				reason => {
-					log(`oh! an error occurred ${reason}`)
+					log(ll.error, `oh! an error occurred ${reason}`)
 					setShowFailure(`Unable to find web page at ${url}`)
 					setIsLoading(false)
 					throw new Error(reason)
@@ -260,7 +260,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				return newPageInfo
 			})
 			.catch(error => {
-				log((error as Error).message)
+				log(ll.error, (error as Error).message)
 				setPageInfo(null)
 				setIsLoading(false)
 			})
@@ -281,7 +281,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 			else
 				altPageInfo = pageInfo
 			if (altPageInfo) {
-				log(`running prank ${effectModules[iPrank].title}`)
+				log(ll.info, `running prank ${effectModules[iPrank].title}`)
 				if (currentScene) {
 					currentScene.scene.remove()
 					setCurrentScene(undefined)
@@ -295,10 +295,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 						setShowControls(false);
 						dispatchPhase(Phase.prankRunning)
 					})
-					.catch(err => log(err.message))
+					.catch(err => log(ll.error, err.message))
 			}
 		} catch (error) {
-			log((error as Error).message)
+			log(ll.error, (error as Error).message)
 			dispatchPhase(Phase.error)
 			setPhaseriScene(undefined)
 			setCurrentScene(undefined)

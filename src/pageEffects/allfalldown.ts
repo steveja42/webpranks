@@ -1,4 +1,4 @@
-import { PageInfo, log, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
+import { PageInfo, log, ll, getRandomInt, setBackgroundAndCreateDomObjects } from '../modhelper'
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = { active: true, key: `PageScene` }
 
@@ -22,7 +22,7 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public preload() {
-		log(`preload`)
+		log(ll.info, `preload`)
 		this.load.audio("falling", ['/assets/audio/fallingwhistle2.ogg', '/assets/audio/fallingwhistle2.mp3'], {
 			instances: 5
 		})
@@ -57,7 +57,7 @@ export class PageScene extends Phaser.Scene {
 		if (this.timeSinceLastFall > this.timeBetweenFalls) {
 			this.timeSinceLastFall = 0
 			const i = getRandomInt(this.bodiesToDo.length)
-			log(`moving body ${i}`)
+			log(ll.trace, `moving body ${i}`)
 			this.falls++
 			const x = getRandomInt(200) - 100
 			const y = 300 + getRandomInt(500)

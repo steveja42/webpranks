@@ -1,9 +1,33 @@
 /**
-  * logs to console, prepends version, date and name of calling function
-  *
-  */
+ * logs to console, prepends date and name of calling function
+ */
 
-export function log(x: string | unknown): void {
+export const enum ll {
+	trace = 1,
+	debug = 2,
+	info  = 3,
+	warn  = 4,
+	error = 5,
+}
+
+let LOG_THRESHOLD: ll = ll.debug
+
+/** Change the minimum level that gets printed (e.g. call from browser console). */
+export function setLogThreshold(level: ll): void {
+	LOG_THRESHOLD = level
+}
+
+const LEVEL_PREFIX: Record<ll, string> = {
+	[ll.trace]: '[TRACE] ',
+	[ll.debug]: '[DEBUG] ',
+	[ll.info]:  '[INFO]  ',
+	[ll.warn]:  '[WARN]  ',
+	[ll.error]: '[ERROR] ',
+}
+
+export function log(level: ll, x: string | unknown): void {
+	if (level < LOG_THRESHOLD) return
+
 	let prepend = ``
 	const omitDate = false
 	if (!omitDate) {
@@ -14,7 +38,7 @@ export function log(x: string | unknown): void {
 	/*	if (x && typeof x === 'object') {
 			x = Object.keys(x).reduce((accumulator, currentValue) => accumulator + `${currentValue}: ${JSON.stringify(x[currentValue])}`, "")
 		} */
-	console.log(`${prepend} ${getFunctionName()}: ${x}`);
+	console.log(`${LEVEL_PREFIX[level]}${prepend} ${getFunctionName()}: ${x}`);
 }
 
 /**
@@ -22,7 +46,7 @@ export function log(x: string | unknown): void {
  * doesn't work for async functions
  */
 function getFunctionName() {
-	
+
 	let functionName = ''
 	try {
 

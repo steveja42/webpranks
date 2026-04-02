@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { PageInfo } from "./domtoobjects"
 import { setBackgroundAndCreateDomObjects } from './modhelper'
-import { log } from './util'
+import { log, ll } from './util'
 
 
 
@@ -53,7 +53,7 @@ export function resetPhaseri() {
 }
 
 function onPostBoot(game: Phaser.Game) {
-	log(`-----------phaser game booting done`)
+	log(ll.info, `-----------phaser game booting done`)
 	resolveGameLoadedCallback!(game)
 }
 
@@ -61,21 +61,21 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Pro
 	if (!pageInfo.game) {
 		pageInfo.game = await gameLoadedPromise
 	}
-	log(`----prevPage=${!!prevPage} prevScene=${!!prevScene}--------------------`)
+	log(ll.debug, `----prevPage=${!!prevPage} prevScene=${!!prevScene}--------------------`)
 	if (prevScene) {
-		log(`stopping scene ${prevScene.scene.key}`)
+		log(ll.info, `stopping scene ${prevScene.scene.key}`)
 		prevScene.scene.stop()
 		prevScene.scene.remove()
 		prevScene = undefined
 	}
 	if (prevPage) {
 		const textureKeys = Object.keys(pageInfo.game!.textures.list)
-		log(`textures before cleanup (${textureKeys.length}): ${textureKeys.join(', ')}`)
+		log(ll.debug, `textures before cleanup (${textureKeys.length}): ${textureKeys.join(', ')}`)
 		// Guard: remove any lingering PageScene even if prevScene was already cleared
 		const sceneKeys = ['PageScene']
 		for (const key of sceneKeys) {
 			if (pageInfo.game!.scene.getScene(key)) {
-				log(`removing lingering scene ${key}`)
+				log(ll.info, `removing lingering scene ${key}`)
 				pageInfo.game!.scene.remove(key)
 			}
 		}
@@ -85,16 +85,16 @@ export async function resetAndLoadImagesForNewPageScene(pageInfo: PageInfo): Pro
 			if (! /^__/.test(texture.key))
 				keysToRemove.push(texture.key)
 		}, {})
-		log(`removing textures: ${keysToRemove.join(', ')}`)
+		log(ll.debug, `removing textures: ${keysToRemove.join(', ')}`)
 		keysToRemove.forEach(key => pageInfo.game!.textures.remove(key))
 	}
 
 	prevPage = pageInfo
-	log(`loading textures`)
+	log(ll.info, `loading textures`)
 	if (pageInfo.domElementsImages.length)
 		await loadTextures(pageInfo.game!, pageInfo.domElementsImages.map((value) => value.imageURL))
 	else
-		log(`wierd, no domElementsImages, not loading textures`)
+		log(ll.warn, `wierd, no domElementsImages, not loading textures`)
 	//gs = new PageScene(page, nextSceneName)
 	//game.scene.add(nextSceneName, gs)
 	return pageInfo
@@ -108,10 +108,10 @@ export async function loadTextures(game: Phaser.Game, imageURLs: string[], baseN
 			if (regex.test(key)) {  // ensure key is one we added
 				const tex = game.textures.get(key)
 				const glTex = tex?.source?.[0]?.glTexture
-				log(`addtexture: ${key} glTexture=${!!glTex} source=${!!tex?.source?.[0]}`)
+				log(ll.trace, `addtexture: ${key} glTexture=${!!glTex} source=${!!tex?.source?.[0]}`)
 				if (--imagesYetToLoadCount === 0) {
 					game.textures.off('addtexture')
-					log(`-----------texture loading done`)
+					log(ll.info, `-----------texture loading done`)
 					resolve(key)
 				}
 			}
@@ -148,11 +148,11 @@ export class PageScene extends Phaser.Scene {
 	}
 
 	public preload() {
-		log(`start`)
+		log(ll.info, `start`)
 	}
 
 	public create() {
-		log('creating scene')
+		log(ll.info, 'creating scene')
 		setBackgroundAndCreateDomObjects(this, this.page)
 
 		this.square = this.add.rectangle(400, 400, 100, 100, 0xFFFFFF) as Phaser.GameObjects.Rectangle  & { body: Phaser.Physics.Arcade.Body };

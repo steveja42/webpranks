@@ -1,4 +1,4 @@
-import { log } from './util'
+import { log, ll } from './util'
 
 export const nodeTypes = {
 	element: 1, //An Element node such as <p> or <div>.
@@ -121,10 +121,10 @@ function logNode(node: Node, level: number, usePosAttr: unknown = false) {
 			br = `boundingClientRect[${boundingRect.left},${boundingRect.top} ${boundingRect.right},${boundingRect.bottom}] `;
 		}
 
-		log(`${indent}${el.nodeName}${id}${positioning}${size} ${br}${parent} ${value} ${background}`);
+		log(ll.trace, `${indent}${el.nodeName}${id}${positioning}${size} ${br}${parent} ${value} ${background}`);
 	}
 	else if (node.nodeType === nodeTypes.text) {
-		log(`${indent} "${(node as Text).wholeText}"`);
+		log(ll.trace, `${indent} "${(node as Text).wholeText}"`);
 
 	}
 
@@ -143,7 +143,7 @@ export function logDomTree(startNode: HTMLElement, usePosAttr = true): void {
 	const clientTop = docEl.clientTop || body.clientTop || 0;
 	const clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-	log(`logDomTree in document ${doc} window ${ownerWindow} clientTop ${clientTop} clientLeft ${clientLeft} scrollLeft ${scrollLeft} scrollTop ${scrollTop}`)
+	log(ll.debug, `logDomTree in document ${doc} window ${ownerWindow} clientTop ${clientTop} clientLeft ${clientLeft} scrollLeft ${scrollLeft} scrollTop ${scrollTop}`)
 	walkDom(startNode, logNode, 0, usePosAttr);
 }
 

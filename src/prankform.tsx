@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react'
-import { log } from './util'
+import { log, ll } from './util'
 //import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
@@ -79,7 +79,7 @@ export function PrankForm(props: any) {
 	}
 
 	const onAnimationStart = (animEvent: React.AnimationEvent<HTMLInputElement>) => {
-		log(`anim start ${animEvent.animationName}  - ${inputURL}`)
+		log(ll.debug, `anim start ${animEvent.animationName}  - ${inputURL}`)
 		if (animEvent.animationName === 'AutoFillStart')
 			onURLWasInput()
 	}

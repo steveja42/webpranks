@@ -1,4 +1,4 @@
-import { log } from './util'
+import { log, ll } from './util'
 //import { Engine, Render, Bodies, World, Body, Runner } from "matter-js"
 import { walkDom2, nodeTypes } from './dom'
 import * as Phaser from 'phaser';
@@ -45,7 +45,7 @@ let divForBackgroundScreenshot: HTMLDivElement
 
 export async function domToObjects(imageURL: string, html: string, debugPageImage: HTMLImageElement, debugImage: HTMLImageElement, width: number, height: number, bgDiv: HTMLDivElement): Promise<PageInfo> {
 	//scratchCanvas = canvas
-	log(`start ${imageURL}`)
+	log(ll.info, `start ${imageURL}`)
 	const pageImage = debugPageImage || new Image()
 	const imageLoaded = setImage(pageImage, imageURL)
 	const parser = new DOMParser();
@@ -57,7 +57,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	//logDomTree(doc.body, true)
 	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : undefined
 	if (bgColor)
-		log(`page background color is ${bgColor} -${color}`)
+		log(ll.debug, `page background color is ${bgColor} -${color}`)
 	const pageInfo: PageInfo = {
 		pageImage,
 		domElementsImages: [],
@@ -69,7 +69,7 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	}
 	divForBackgroundScreenshot = bgDiv
 	await walkDom2(doc.body, domNodeToObjects as Parameters<typeof walkDom2>[1], 0, pageInfo)
-	log(`done ${imageURL} ${pageInfo.domElementsImages.length} dom elements and ${pageInfo.backgroundRects.length} background objects added`)
+	log(ll.info, `done ${imageURL} ${pageInfo.domElementsImages.length} dom elements and ${pageInfo.backgroundRects.length} background objects added`)
 	return pageInfo
 }
 
@@ -126,7 +126,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		ctx.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height) */
 
 		if (debugThis)
-			log(`adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+			log(ll.trace, `adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 
 		pageInfo.backgroundRects.push({ boundingRect, bgColor: color ?? 0 })
 	}
@@ -157,7 +157,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 			const imageLoaded = setImage(pageInfo.debugImage, imageURL)
 			await imageLoaded
 		}
-		log(`---adding background image "${bgImage}"" ${pageInfo.domElementsImages.length}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+		log(ll.trace, `---adding background image "${bgImage}"" ${pageInfo.domElementsImages.length}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 
 		pageInfo.domElementsImages.push({ boundingRect, imageURL })
 
@@ -167,7 +167,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 	if ((isTextNode || spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)) {
 		const imageURL = getImagePortion(pageInfo.pageImage, boundingRect)
 		if (debugThis) {
-			log(`adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+			log(ll.trace, `adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 			if (pageInfo.debugImage) {
 				const imageLoaded = setImage(pageInfo.debugImage, imageURL)
 				await imageLoaded

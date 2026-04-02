@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PageInfo, log, center, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
+import { PageInfo, log, ll, center, setBackgroundAndCreateDomObjects, CollisionCategory, CollisonGroup, GameObjectwithMatterBody, breakUp } from '../modhelper'
 
 export function doPageEffect(page: PageInfo): Phaser.Scene {
 	const pageScene = new PageScene(page)
@@ -47,18 +47,18 @@ export class PageScene extends Phaser.Scene {
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
-		log('constructing scene')
+		log(ll.info, 'constructing scene')
 	}
 
 	public preload() {
-		log(`start`)
+		log(ll.info, `start`)
 		this.load.image('chainlink', '/assets/chainlink32.png');
 		this.load.audio("smash", ["/assets/audio/glass-smash-6266.mp3", "/assets/audio/glass-smash-6266.ogg"])
 		this.load.audio("oog", ["/assets/audio/oooggg.mp3", "/assets/audio/oooggg.ogg"])
 	}
 
 	public async create() {
-		log('creating scene')
+		log(ll.info, 'creating scene')
 		this.sound.play("oog")
 		const { width, height } = this.sys.game.canvas
 		const maxAreaForObjects = width * height / 3
@@ -106,7 +106,7 @@ export class PageScene extends Phaser.Scene {
 
 	onCollide(data: Phaser.Types.Physics.Matter.MatterCollisionData) {
 		const TimeBetweenCollisions = 1500
-		log(`${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
+		log(ll.trace, `${data.bodyA.id} collided with ${data.bodyB.id} - ${ballId}`)
 		const scene = data.bodyA.gameObject!.scene as PageScene
 		const time = Date.now()
 		const collidee = ((data.bodyA.id === ballId) ? data.bodyB.gameObject : data.bodyA.gameObject) as unknown as GameObjectwithMatterBody
@@ -161,7 +161,7 @@ export class PageScene extends Phaser.Scene {
 		}
 		if (ballAngle < 10 && ballAngle > .5 && this.wreckingBall.body.velocity.x < 8 && this.wreckingBall.body.velocity.x > 0) {
 			this.matter.setVelocityX(this.wreckingBall.body, 10)  //applyForce(this.wreckingBall.body,{x:9, y:0})
-			log("woosh")
+			log(ll.debug, "woosh")
 		}
 	}
 	adjustChainLinksAngle() {

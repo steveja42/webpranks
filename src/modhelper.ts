@@ -1,7 +1,7 @@
 import { PageInfo } from "./domtoobjects";
-import { log } from './util'
+import { log, ll } from './util'
 export type { PageInfo } from "./domtoobjects"
-export { log } from './util'
+export { log, ll } from './util'
 
 export interface PrankSceneI {
 	name: string
@@ -89,7 +89,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 				const texKey = `dom${i}`
 				const tex = scene.textures.get(texKey)
 				const glTex = tex?.source?.[0]?.glTexture
-				log(`creating ArcadeImage ${texKey}: texExists=${tex?.key !== '__MISSING'} glTexture=${!!glTex}`)
+				log(ll.trace, `creating ArcadeImage ${texKey}: texExists=${tex?.key !== '__MISSING'} glTexture=${!!glTex}`)
 				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), texKey, '__BASE')
 				domArcadeImages.push(img)
 			})
@@ -178,7 +178,7 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: GameObject
 	const height = gameObject.displayHeight
 	if (width * height < MinArea)
 		return null
-	log(`breaking up ${gameObject.body.id} ${width} - ${height}`)
+	log(ll.info, `breaking up ${gameObject.body.id} ${width} - ${height}`)
 	const scene = gameObject.scene
 	const x = gameObject.x
 	const y = gameObject.y
