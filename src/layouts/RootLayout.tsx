@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				{showControls ? (
 					<div id="conditional">
 						<div id="fooalternate">
-							<Navbar id="navbar" className="mynav" expand="sm">
+							<Navbar id="navbar" className="mynav" expand="sm" variant="dark">
 								<Navbar.Brand as={Link} to="/">
 									<img id="navlogo" src={navlogo} alt="Web Pranks Logo - Colorful Jester Hat" width="163" height="200" />
 									Web Pranks

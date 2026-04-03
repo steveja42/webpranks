@@ -41,6 +41,7 @@ canvas {
 }
 .navbar-brand {
   font-size: 5vh;
+  color: rgba(255,255,255,0.55) !important;
 }
 .navbar-nav {
   font-size: 1.4rem;
