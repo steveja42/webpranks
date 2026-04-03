@@ -21,7 +21,8 @@ canvas {
 }
 @font-face {
   font-family: 'bangers';
-    src:url(./fonts/Bangers-Regular.ttf) format('truetype');
+  src: url(./fonts/Bangers-Regular.ttf) format('truetype');
+  font-display: swap;
 }
 
 #info {
