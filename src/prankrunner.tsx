@@ -8,7 +8,8 @@ import { Alert } from 'react-bootstrap'
 import * as network from './network'
 import { useWindowDimensions, useMousePosition } from './windowing'
 import Popout from './popout'
-import { domToObjects, PageInfo } from './domtoobjects'
+import type { PageInfo } from './domtoobjects'
+import type Phaser from 'phaser'
 import { logDomTree } from './dom'
 import { PrankForm } from './prankform'
 import { effectModules } from './pageEffects/modulelist'
@@ -19,7 +20,6 @@ const effectModuleLoaders: Record<string, () => Promise<{ doPageEffect: (pageInf
 	'birthday': () => import('./pageEffects/birthday'),
 	'btcinvaders/scenes/btcinvaders': () => import('./pageEffects/btcinvaders/scenes/btcinvaders'),
 }
-import { setupWorld, resetAndLoadImagesForNewPageScene, setCurrentScene as setPhaseriScene } from './phaseri'
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
 const isMobile = typeof window !== 'undefined' && (Math.min(window.screen.width, window.screen.height) < 768 || navigator.userAgent.indexOf("Mobi") > -1);
@@ -248,9 +248,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 		setPageInfo(null)
 		log(ll.info, `fetching page at url ${url} with size ${width} x ${height}`)
 		const loadingPromise = network.getImageandHtml(url, width, height)
-			.then(result => {
+			.then(async result => {
 				setShowFailure("")
 				setPageImage(result[0])
+				const { domToObjects } = await import('./domtoobjects')
 				return domToObjects(result[0], result[1], debugPageImage.current!, debugImage.current!, windowWidth, windowHeight, bgDiv.current!)
 			},
 				reason => {
@@ -260,7 +261,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 					throw new Error(reason)
 				}
 			)
-			.then(newPageInfo => {
+			.then(async newPageInfo => {
+				const { setupWorld, resetAndLoadImagesForNewPageScene } = await import('./phaseri')
 				if (!game)
 					game = setupWorld(phaserParent.current!, width, height)
 
@@ -294,6 +296,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				altPageInfo = pageInfo
 			if (altPageInfo) {
 				log(ll.info, `running prank ${effectModules[iPrank].title}`)
+				const { setCurrentScene: setPhaseriScene } = await import('./phaseri')
 				if (currentScene) {
 					currentScene.scene.remove()
 					setCurrentScene(undefined)
@@ -313,6 +316,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 		} catch (error) {
 			log(ll.error, (error as Error).message)
 			dispatchPhase(Phase.error)
+			const { setCurrentScene: setPhaseriScene } = await import('./phaseri')
 			setPhaseriScene(undefined)
 			setCurrentScene(undefined)
 		}
