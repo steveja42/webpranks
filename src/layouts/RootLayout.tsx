@@ -126,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				) : null}
 			</header>
 			<ShowControlsContext.Provider value={{ showControls, setShowControls }}>
-				{children}
+				<main>{children}</main>
 			</ShowControlsContext.Provider>
 		</div>
 	)
