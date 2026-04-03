@@ -246,7 +246,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	function loadPage(url: string, width = windowWidth, height = windowHeight) {
 		setPageImage(null)
 		setPageInfo(null)
-
+		log(ll.info, `fetching page at url ${url} with size ${width} x ${height}`)
 		const loadingPromise = network.getImageandHtml(url, width, height)
 			.then(result => {
 				setShowFailure("")
