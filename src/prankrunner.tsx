@@ -247,6 +247,12 @@ export function PrankRunner(props: PrankRunnerProps) {
 		setPageImage(null)
 		setPageInfo(null)
 		log(ll.info, `fetching page at url ${url} with size ${width} x ${height}`)
+
+		const phaseriPromise = import('./phaseri').then(({ setupWorld }) => {
+			if (!game)
+				game = setupWorld(phaserParent.current!, width, height)
+		}).catch(err => log(ll.error, `phaseri setup failed: ${err.message}`))
+
 		const loadingPromise = network.getImageandHtml(url, width, height)
 			.then(async result => {
 				setShowFailure("")
@@ -262,10 +268,8 @@ export function PrankRunner(props: PrankRunnerProps) {
 				}
 			)
 			.then(async newPageInfo => {
-				const { setupWorld, resetAndLoadImagesForNewPageScene } = await import('./phaseri')
-				if (!game)
-					game = setupWorld(phaserParent.current!, width, height)
-
+				await phaseriPromise
+				const { resetAndLoadImagesForNewPageScene } = await import('./phaseri')
 				return resetAndLoadImagesForNewPageScene(newPageInfo)
 			}).then(newPageInfo => {
 				setPageInfo(newPageInfo)
