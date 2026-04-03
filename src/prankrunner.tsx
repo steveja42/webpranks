@@ -306,6 +306,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 						setCurrentScene(scene)
 						setShowControls(false);
 						dispatchPhase(Phase.prankRunning)
+						window.goatcounter?.count({ path: 'prank-start/' + effectModules[iPrank].slug, title: 'Prank Start: ' + effectModules[iPrank].title, event: true })
 					})
 					.catch(err => log(ll.error, err.message))
 			}
