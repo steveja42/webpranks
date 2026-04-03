@@ -5,7 +5,6 @@ import Nav from 'react-bootstrap/Nav'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Popover from 'react-bootstrap/Popover'
 
-import 'bootstrap/dist/css/bootstrap.css'
 import '../index.css'
 import '../App.css'
 
