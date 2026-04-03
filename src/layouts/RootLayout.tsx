@@ -118,7 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						<div id="fooalternate">
 							<Navbar id="navbar" className="mynav" expand="sm">
 								<Navbar.Brand as={Link} to="/">
-									<img id="navlogo" src={navlogo} alt="Web Pranks Logo - Colorful Jester Hat" />
+									<img id="navlogo" src={navlogo} alt="Web Pranks Logo - Colorful Jester Hat" width="163" height="200" />
 									Web Pranks
 								</Navbar.Brand>
 								<Nav>

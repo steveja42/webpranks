@@ -34,6 +34,7 @@ canvas {
 }
 #navlogo {
   height: 50px;
+  width: auto;
   margin-right: .3em;
   object-fit: contain;
 }
