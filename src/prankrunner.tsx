@@ -341,7 +341,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				{!noContinuePrompt && phase === Phase.startPrankAfterMouseOrKeyPress && <h2 id="prompt" className="prompt"> Tap, Click or Type <br></br>any key to continue ...</h2>}
 			</div> : null}
 
-		<div className="game" ref={phaserParent} />
+		<div className="game" ref={phaserParent} style={{ visibility: phase === Phase.prankRunning || phase === Phase.prankPaused ? 'visible' : 'hidden' }} />
 	</div>
 
 	/** This returns the HTML for the popout debugging window*/
