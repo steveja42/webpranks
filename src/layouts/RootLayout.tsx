@@ -105,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 	return (
 		<div className="App">
+			<a href="#main-content" className="visually-hidden-focusable">Skip to main content</a>
 			<header>
 				{showControls ? (
 					<div id="conditional">
@@ -126,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				) : null}
 			</header>
 			<ShowControlsContext.Provider value={{ showControls, setShowControls }}>
-				<main>{children}</main>
+				<main id="main-content">{children}</main>
 			</ShowControlsContext.Provider>
 		</div>
 	)
