@@ -98,12 +98,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		script1.setAttribute('data-goatcounter', '/count')
 		document.head.appendChild(script1)
 
-		// Load Google reCAPTCHA
-		const script2 = document.createElement('script')
-		script2.src = 'https://www.google.com/recaptcha/api.js'
-		script2.async = true
-		document.head.appendChild(script2)
-
 		return () => {
 			// Cleanup if needed
 		}

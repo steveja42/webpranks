@@ -27,6 +27,11 @@ export class FeedbackForm extends React.Component {
 
 
 	componentDidMount() {
+		const script = document.createElement('script')
+		script.src = 'https://www.google.com/recaptcha/api.js'
+		script.async = true
+		document.head.appendChild(script)
+
 		setTimeout(() => {
 			window.grecaptcha.render('recaptcha', {
 				sitekey: sitekey
