@@ -3,6 +3,7 @@ export const effectModules = [
 	{ title: "All Fall Down", fileName: 'allfalldown', slug: 'all-fall-down' },
 	{ title: "Happy Birthday", fileName: 'birthday', slug: 'happy-birthday' },
 	{ title: "BTC Invaders", fileName: 'btcinvaders/scenes/btcinvaders', slug: 'btc-invaders' },
+	{ title: "Dino Rampage", fileName: 'godzilla', slug: 'dino-rampage' },
 	//{ title: "Space Invaders", fileName: 'btcinvaders/scenes/spaceinvaders' },
 //	{ title: "Debug", fileName: 'debug' }
  ]

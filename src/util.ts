@@ -10,7 +10,7 @@ export const enum ll {
 	error = 5,
 }
 
-let LOG_THRESHOLD: ll = ll.debug
+let LOG_THRESHOLD: ll = ll.trace
 
 /** Change the minimum level that gets printed (e.g. call from browser console). */
 export function setLogThreshold(level: ll): void {

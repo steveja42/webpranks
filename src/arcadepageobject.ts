@@ -60,7 +60,7 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject
         return null
     const xTrue = gameObject.x - width/2
     const yTrue = gameObject.y - height/2
-    log(ll.trace, `breaking up  (${xTrue},${yTrue} - ${xTrue + width},${yTrue + height}) ${width} x ${height} at ${xImpact},${yImpact}`)  //${gameObject.body.id}
+    log(ll.trace, `breaking up  (${xTrue.toFixed(0)},${yTrue.toFixed(0)} - ${(xTrue + width).toFixed(0)},${(yTrue + height).toFixed(0)}) ${width.toFixed(0)} x ${height.toFixed(0)} at ${xImpact.toFixed(0)},${yImpact.toFixed(0)}`)  //${gameObject.body.id}
     const scene = gameObject.scene
     const x = gameObject.x
     const y = gameObject.y

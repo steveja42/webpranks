@@ -19,6 +19,7 @@ const effectModuleLoaders: Record<string, () => Promise<{ doPageEffect: (pageInf
 	'allfalldown': () => import('./pageEffects/allfalldown'),
 	'birthday': () => import('./pageEffects/birthday'),
 	'btcinvaders/scenes/btcinvaders': () => import('./pageEffects/btcinvaders/scenes/btcinvaders'),
+	'godzilla': () => import('./pageEffects/godzilla'),
 }
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
