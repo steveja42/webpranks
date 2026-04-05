@@ -20,7 +20,6 @@ const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 	}
 }
 
-let cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined
 const domDensity = .1
 const domRestitution = 0
 const domMatterOptions = {
@@ -44,6 +43,7 @@ export class PageScene extends Phaser.Scene {
 	chain: GameObjectwithMatterBody[] = []
 	distanceMoved = 0
 	explosion!: Phaser.Sound.BaseSound
+	keys = new Set<string>()
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
@@ -64,7 +64,16 @@ export class PageScene extends Phaser.Scene {
 		const maxAreaForObjects = width * height / 3
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
-		cursors = this.input.keyboard!.createCursorKeys();
+		const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
+		const onKeyDown = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.add(e.key); };
+		const onKeyUp   = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.delete(e.key); };
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		window.addEventListener('keyup',   onKeyUp,   { capture: true });
+		window.addEventListener('blur',    () => this.keys.clear());
+		this.events.once(Phaser.Core.Events.DESTROY, () => {
+			window.removeEventListener('keydown', onKeyDown, { capture: true });
+			window.removeEventListener('keyup',   onKeyUp,   { capture: true });
+		});
 		//this.explosion = this.sound.add("death", { loop: false });
 		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
 		backgroundRectangles.forEach(rect => {
@@ -196,26 +205,24 @@ export class PageScene extends Phaser.Scene {
 
 	allowCursorMovement(object: GameObjectwithMatterBody) {
 		const increment = 5
-		if (!cursors) return
-		if (cursors.left.isDown) {
+		if (this.keys.has('ArrowLeft')) {
 			object.setPosition(object.x - increment, object.y);
 		}
-		else if (cursors.right.isDown) {
+		else if (this.keys.has('ArrowRight')) {
 			object.setPosition(object.x + increment, object.y);
 		}
 		else {
 			this.matter.setVelocity(object.body, 0, object.body.velocity.y);
 		}
-		if (cursors.up.isDown) {
+		if (this.keys.has('ArrowUp')) {
 			object.setPosition(object.x, object.y - increment);
 		}
-		else if (cursors.down.isDown) {
+		else if (this.keys.has('ArrowDown')) {
 			object.setPosition(object.x, object.y + increment);
 		}
 		else {
 			this.matter.setVelocity(object.body, object.body.velocity.x, 0);
 		}
-
 	}
 
 	/**

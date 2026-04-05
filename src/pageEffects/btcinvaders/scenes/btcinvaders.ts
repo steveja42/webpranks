@@ -33,6 +33,9 @@ export class MainScene extends Phaser.Scene {
     cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     fireKey!: Phaser.Input.Keyboard.Key;
     pageObjects!: Phaser.GameObjects.Group
+    // Track key state independently to work around extensions (e.g. Evernote)
+    // that intercept keyup and leave Phaser thinking keys are stuck down.
+    keys = new Set<string>();
 
     constructor(public pageInfo: PageInfo) {
         super(mySceneConfig);
@@ -61,17 +64,27 @@ export class MainScene extends Phaser.Scene {
         this.fireKey = this.input.keyboard!.addKey(
             Phaser.Input.Keyboard.KeyCodes.SPACE
         );
+
+        // Track key state ourselves in capture phase so extensions (e.g. Evernote)
+        // that swallow keyup events can't leave keys stuck.
+        const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ']);
+        const onKeyDown = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.add(e.key); };
+        const onKeyUp   = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.delete(e.key); };
+        window.addEventListener('keydown', onKeyDown, { capture: true });
+        window.addEventListener('keyup',   onKeyUp,   { capture: true });
+        window.addEventListener('blur',    () => this.keys.clear());
+        this.events.once(Phaser.Core.Events.DESTROY, () => {
+            window.removeEventListener('keydown', onKeyDown, { capture: true });
+            window.removeEventListener('keyup',   onKeyUp,   { capture: true });
+        });
         this.player = Ship.create(this);
         this.scoreManager = new ScoreManager(this);
 
-        this.fireKey.on("down", () => {
-            switch (this.state) {
-                case GameState.Win:
-                case GameState.GameOver:
-                    this.restart();
-                    break;
+        window.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (e.key === ' ' && (this.state === GameState.Win || this.state === GameState.GameOver)) {
+                this.restart();
             }
-        })
+        }, { capture: true });
         const { domArcadeBackgroundRects, domArcadeImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
        
         this.pageObjects = this.physics.add.group().addMultiple(domArcadeBackgroundRects).addMultiple(domArcadeImages)
@@ -93,18 +106,18 @@ export class MainScene extends Phaser.Scene {
     private _shipKeyboardHandler() {
         const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
         playerBody.setVelocity(0, 0);
-        if (this.cursors.left.isDown) {
+        if (this.keys.has('ArrowLeft')) {
             playerBody.setVelocityX(-200);
-        } else if (this.cursors.right.isDown) {
+        } else if (this.keys.has('ArrowRight')) {
             playerBody.setVelocityX(200);
         }
-        if (this.cursors.up.isDown) {
+        if (this.keys.has('ArrowUp')) {
             playerBody.setVelocityY(-200);
-        } else if (this.cursors.down.isDown) {
+        } else if (this.keys.has('ArrowDown')) {
             playerBody.setVelocityY(200);
         }
 
-        if (this.fireKey.isDown) {
+        if (this.keys.has(' ')) {
             this._fireBullet();
         }
     }
