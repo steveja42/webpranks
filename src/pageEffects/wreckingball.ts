@@ -30,7 +30,7 @@ const domMatterOptions = {
 	}
 }
 
-const initalMovementTime = 3000
+const initalMovementTime = 2000
 let	ballId = 0
 
 export class PageScene extends Phaser.Scene {
@@ -44,6 +44,9 @@ export class PageScene extends Phaser.Scene {
 	distanceMoved = 0
 	explosion!: Phaser.Sound.BaseSound
 	keys = new Set<string>()
+	fulcrumMoved = false
+	hintShown = false
+	hintEl: HTMLElement | null = null
 
 	constructor(public pageInfo: PageInfo) {
 		super(mySceneConfig);
@@ -64,6 +67,9 @@ export class PageScene extends Phaser.Scene {
 		const maxAreaForObjects = width * height / 3
 		this.matter.world.setBounds(0, 0, width, height, 5, false, false, false, false)
 		this.matter.add.mouseSpring({})
+		this.input.on('pointermove', (p: Phaser.Input.Pointer) => {
+			if (p.isDown) { this.fulcrumMoved = true; this.dismissHint(); }
+		});
 		const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
 		const onKeyDown = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.add(e.key); };
 		const onKeyUp   = (e: KeyboardEvent) => { if (gameKeys.has(e.key)) this.keys.delete(e.key); };
@@ -73,6 +79,7 @@ export class PageScene extends Phaser.Scene {
 		this.events.once(Phaser.Core.Events.DESTROY, () => {
 			window.removeEventListener('keydown', onKeyDown, { capture: true });
 			window.removeEventListener('keyup',   onKeyUp,   { capture: true });
+			this.dismissHint();
 		});
 		//this.explosion = this.sound.add("death", { loop: false });
 		const { domBackgroundRects: backgroundRectangles, domMatterImages: domElementImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo, false, true)
@@ -96,17 +103,51 @@ export class PageScene extends Phaser.Scene {
 		const chainLength = height / 2.5
 		this.addBallAndChain(x, y, wreckingballRadius, chainLength)
 		this.matter.world.engine.timing.timeScale = .2  //inital swing of ball is in slow motion
+
+		// Show hint if fulcrum hasn't been moved after 5 seconds
+		this.time.delayedCall(5000, () => {
+			if (!this.fulcrumMoved) this.showHint();
+		});
+	}
+
+	private showHint() {
+		if (this.hintShown) return;
+		this.hintShown = true;
+		const el = document.createElement('div');
+		this.hintEl = el;
+		el.style.cssText = [
+			'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+			'background:rgba(0,0,0,0.78)', 'color:#fff', 'font:16px/1.5 sans-serif',
+			'padding:12px 20px', 'border-radius:10px', 'z-index:99999',
+			'text-align:center', 'pointer-events:auto', 'cursor:pointer',
+			'box-shadow:0 4px 16px rgba(0,0,0,0.4)',
+		].join(';');
+		el.innerHTML = '&#x2328;&#xFE0F; Arrow keys move the crane &nbsp;&middot;&nbsp; &#x1F5B1;&#xFE0F; or drag with your mouse<br><small style="opacity:.7">Click to dismiss</small>';
+		el.addEventListener('click', () => this.dismissHint());
+		document.body.appendChild(el);
+	}
+
+	private dismissHint() {
+		if (this.hintEl) {
+			this.hintEl.remove();
+			this.hintEl = null;
+		}
 	}
 
 	public update(time: number, delta: number) {
 		this.timeElapsed += delta
 		this.adjustChainLinksAngle()
+		const prevX = this.fulcrum?.x
+		const prevY = this.fulcrum?.y
 		this.allowCursorMovement(this.fulcrum)
+		if (this.fulcrum && (this.fulcrum.x !== prevX || this.fulcrum.y !== prevY)) {
+			this.fulcrumMoved = true;
+			this.dismissHint();
+		}
 		if (this.timeElapsed < initalMovementTime)
 			this.initialMovement(initalMovementTime, 240, this.fulcrum)
 		if (this.timeElapsed > 3000)
 			this.matter.world.engine.timing.timeScale = 1
-
 	}
 
 /**
