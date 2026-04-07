@@ -51,19 +51,16 @@ export function explode(xImpact: number, yImpact: number, gameObject: PageObject
  */
 export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject): PageObject[] | null {
 
-    const MinArea = 50
     if (gameObject.type !== 'Image' && gameObject.type !== 'Rectangle')
         return null
     const width = gameObject.displayWidth
     const height = gameObject.displayHeight
-    if (width * height < MinArea)
+    if (width * height < 50)
         return null
     const xTrue = gameObject.x - width/2
     const yTrue = gameObject.y - height/2
-    log(ll.trace, `breaking up  (${xTrue.toFixed(0)},${yTrue.toFixed(0)} - ${(xTrue + width).toFixed(0)},${(yTrue + height).toFixed(0)}) ${width.toFixed(0)} x ${height.toFixed(0)} at ${xImpact.toFixed(0)},${yImpact.toFixed(0)}`)  //${gameObject.body.id}
+    log(ll.trace, `breaking up "${gameObject.name}" type=${gameObject.type} (${xTrue.toFixed(0)},${yTrue.toFixed(0)} - ${(xTrue + width).toFixed(0)},${(yTrue + height).toFixed(0)}) ${width.toFixed(0)} x ${height.toFixed(0)} at ${xImpact.toFixed(0)},${yImpact.toFixed(0)}`)  //${gameObject.body.id}
     const scene = gameObject.scene
-    const x = gameObject.x
-    const y = gameObject.y
     const newObjects: Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody[] = []
     const splits = getSplits(width, height, xImpact-xTrue, yImpact-yTrue)
     if (gameObject.type === 'Image') {
@@ -73,17 +70,21 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject
         const frameY = gameObject.frame?.cutY || 0
         splits.forEach((split, i) => {
             const frame = texture.add(baseName + i, 0, frameX + split.x, frameY + split.y, split.width, split.height)
-
-            newObjects.push(scene.physics.add.image(x + split.x, y + split.y, texture, frame!.name))
+            const cx = xTrue + split.x + split.width / 2
+            const cy = yTrue + split.y + split.height / 2
+            const piece = scene.physics.add.image(cx, cy, texture, frame!.name)
+            piece.name = `${gameObject.name}.${i}`
+            newObjects.push(piece)
         })
     }
     else {
         const fillColor = gameObject.fillColor
         splits.forEach((split, i) => {
-
-            newObjects.push(scene.physics.add.existing(scene.add.rectangle(x + split.x, y + split.y, split.width, split.height, fillColor)) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody)
-
-
+            const cx = xTrue + split.x + split.width / 2
+            const cy = yTrue + split.y + split.height / 2
+            const piece = scene.physics.add.existing(scene.add.rectangle(cx, cy, split.width, split.height, fillColor)) as Phaser.Types.Physics.Arcade.GameObjectWithDynamicBody
+            piece.name = `${gameObject.name}.${i}`
+            newObjects.push(piece)
         })
     }
 

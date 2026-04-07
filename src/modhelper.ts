@@ -138,8 +138,9 @@ export function getSplits(width: number, height: number, xImpact: number | undef
 	let ySplit = halfHeight
 
 	if (xImpact != undefined && yImpact != undefined) {
-		xSplit = xImpact
-		ySplit = halfWidth
+		const margin = 0.2
+		xSplit = Math.max(width * margin, Math.min(width * (1 - margin), xImpact))
+		ySplit = Math.max(height * margin, Math.min(height * (1 - margin), yImpact))
 	}
 
 

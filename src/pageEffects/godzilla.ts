@@ -1,11 +1,11 @@
 import Phaser from 'phaser'
 import { PageInfo, setBackgroundAndCreateDomObjects } from '../modhelper'
-import { explode, PageObject } from '../arcadepageobject'
+import { breakUp, PageObject } from '../arcadepageobject'
 
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: true,
     key: 'PageScene',
-    physics: { arcade: { debug: false } },
+    physics: { arcade: { debug: false, gravity: { x: 0, y: 30 } } },
 }
 
 export function doPageEffect(pageInfo: PageInfo): Phaser.Scene {
@@ -19,6 +19,7 @@ const Speed = 250
 export class PageScene extends Phaser.Scene {
     dino!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
     pageObjects!: Phaser.GameObjects.Group
+    floor!: Phaser.Physics.Arcade.StaticGroup
     keys = new Set<string>()
     dragging = false
 
@@ -38,7 +39,14 @@ export class PageScene extends Phaser.Scene {
         this.pageObjects = this.physics.add.group()
             .addMultiple(domArcadeBackgroundRects)
             .addMultiple(domArcadeImages)
-        ;[...domArcadeBackgroundRects, ...domArcadeImages].forEach(o => o.body.setAllowGravity(false))
+        domArcadeBackgroundRects.forEach((o, i) => {
+            o.name = `bgRect-${i}`
+            o.body.setAllowGravity(false)
+        })
+        domArcadeImages.forEach((o, i) => {
+            o.name = `domImg-${i}`
+            o.body.setAllowGravity(false)
+        })
 
         // Spawn dino scaled to ~20% of canvas height
         const dinoNativeH = 472
@@ -49,10 +57,12 @@ export class PageScene extends Phaser.Scene {
         this.dino = this.physics.add.image(width / 2, height / 2, 'dino')
             .setScale(scale)
             .setDepth(10)
-            .setCollideWorldBounds(true)
 
         // Random initial velocity
         const angle = Math.random() * Math.PI * 2
+        this.dino.body.setAllowGravity(false)
+        this.dino.body.setDamping(true)
+        this.dino.body.setDrag(0.4)
         this.dino.body.setVelocity(Math.cos(angle) * Speed, Math.sin(angle) * Speed)
         this.dino.body.setMaxVelocity(Speed, Speed)
 
@@ -77,6 +87,12 @@ export class PageScene extends Phaser.Scene {
                 this.dino.body.reset(p.x, p.y)
             }
         })
+
+        // Invisible floor at bottom of screen
+        this.floor = this.physics.add.staticGroup()
+        const floorRect = this.add.rectangle(width / 2, height + 10, width, 20)
+        this.physics.add.existing(floorRect, true)
+        this.floor.add(floorRect)
     }
 
     update() {
@@ -90,17 +106,23 @@ export class PageScene extends Phaser.Scene {
             const vy = this.keys.has('ArrowUp')   ? -Speed : this.keys.has('ArrowDown')  ? Speed : 0
             body.setVelocity(vx, vy)
         } else {
-            // Wander: bounce off world edges by reversing velocity
+            // Wander: bounce off world edges by reversing velocity only when moving toward the wall
             const { width, height } = this.sys.game.canvas
             const hw = this.dino.displayWidth / 2
             const hh = this.dino.displayHeight / 2
-            if (this.dino.x - hw <= 0 || this.dino.x + hw >= width) {
+            if (this.dino.x - hw <= 0 && body.velocity.x < 0) {
                 body.setVelocityX(-body.velocity.x)
-                this.dino.x = Phaser.Math.Clamp(this.dino.x, hw, width - hw)
+                this.dino.x = hw
+            } else if (this.dino.x + hw >= width && body.velocity.x > 0) {
+                body.setVelocityX(-body.velocity.x)
+                this.dino.x = width - hw
             }
-            if (this.dino.y - hh <= 0 || this.dino.y + hh >= height) {
+            if (this.dino.y - hh <= 0 && body.velocity.y < 0) {
                 body.setVelocityY(-body.velocity.y)
-                this.dino.y = Phaser.Math.Clamp(this.dino.y, hh, height - hh)
+                this.dino.y = hh
+            } else if (this.dino.y + hh >= height && body.velocity.y > 0) {
+                body.setVelocityY(-body.velocity.y)
+                this.dino.y = height - hh
             }
         }
 
@@ -118,11 +140,33 @@ export class PageScene extends Phaser.Scene {
         )
     }
 
+    private _lastSmashSound = 0
+
     private _onSmash(_dino: Phaser.Types.Physics.Arcade.ImageWithDynamicBody, pageObject: PageObject) {
+        this.pageObjects.remove(pageObject, false, false)
         const now = this.time.now
-        if (pageObject.getData('smashTime') && now - pageObject.getData('smashTime') < 500) return
-        pageObject.setData('smashTime', now)
-        this.sound.play('smash')
-        explode(this.dino.x, this.dino.y, pageObject, this.pageObjects)
+        if (now - this._lastSmashSound > 400) {
+            this.sound.play('smash')
+            this._lastSmashSound = now
+        }
+        const pieces = breakUp(this.dino.x, this.dino.y, pageObject)
+        pageObject.destroy()
+        pieces?.forEach(p => {
+            // Launch piece away from Godzilla's center
+            const dx = p.x - this.dino.x
+            const dy = p.y - this.dino.y
+            const len = Math.sqrt(dx * dx + dy * dy) || 1
+            const speed = 200 + Math.random() * 150
+            p.body.setVelocity((dx / len) * speed, (dy / len) * speed)
+            p.body.setCollideWorldBounds(true)
+            p.body.setBounce(0.6)
+            p.body.setDamping(true)
+            p.body.setDrag(0.35)
+            this.time.delayedCall(2000, () => {
+                if (p.active && !this.pageObjects.contains(p)) {
+                    this.pageObjects.add(p)
+                }
+            })
+        })
     }
 }
