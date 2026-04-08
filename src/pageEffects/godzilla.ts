@@ -40,11 +40,9 @@ export class PageScene extends Phaser.Scene {
             .addMultiple(domArcadeBackgroundRects)
             .addMultiple(domArcadeImages)
         domArcadeBackgroundRects.forEach((o, i) => {
-            o.name = `bgRect-${i}`
             o.body.setAllowGravity(false)
         })
         domArcadeImages.forEach((o, i) => {
-            o.name = `domImg-${i}`
             o.body.setAllowGravity(false)
         })
 
