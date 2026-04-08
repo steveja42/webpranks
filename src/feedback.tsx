@@ -27,6 +27,11 @@ export class FeedbackForm extends React.Component {
 
 
 	componentDidMount() {
+		if (!sitekey) {
+			this.setState({ showFailure: 'reCAPTCHA site key is not configured (VITE_GOOGLE_RECAPTCHA_SITE_KEY missing)' })
+			return
+		}
+
 		const script = document.createElement('script')
 		script.src = 'https://www.google.com/recaptcha/api.js'
 		script.async = true
@@ -48,9 +53,13 @@ export class FeedbackForm extends React.Component {
 	}
 
 	handleSubmit = async (event: React.SyntheticEvent) => {
+		event.preventDefault();
+		if (!window.grecaptcha) {
+			this.setState({ showFailure: 'reCAPTCHA is not loaded. Please refresh the page.' })
+			return
+		}
 		const grecaptchaResponse = window.grecaptcha.getResponse()
 		console.log(`"handling form" ${grecaptchaResponse.length} `)
-		event.preventDefault();
 		if (grecaptchaResponse.length === 0) {
 			this.setState({ showFailure: "Please check the reCAPTCHA" })
 			this.setState({ showSuccess: false })
