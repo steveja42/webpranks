@@ -81,7 +81,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	let i = 0
 	for (const backgroundRect of pageInfo.backgroundRects) {
 		const rect = scene.add.rectangle(center(backgroundRect.boundingRect.x, backgroundRect.boundingRect.right), center(backgroundRect.boundingRect.y, backgroundRect.boundingRect.bottom), backgroundRect.boundingRect.width, backgroundRect.boundingRect.height, backgroundRect.bgColor)
-		rect.name = `bg${i++}`
+		rect.name = `bgRect-${i++}`
 		domBackgroundRects.push(rect)	
 	}
 
@@ -93,7 +93,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 				const glTex = tex?.source?.[0]?.glTexture
 				log(ll.trace, `creating ArcadeImage ${texKey}: texExists=${tex?.key !== '__MISSING'} glTexture=${!!glTex}`)
 				const img = scene.physics.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), texKey, '__BASE')
-				img.name = `dom${i}`
+				img.name = `domArcadeImage-${i}`
 				domArcadeImages.push(img)
 			})
 			domBackgroundRects.forEach((rect) => {
@@ -109,7 +109,7 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 						category: CollisionCategory.dom
 					}
 				})
-				img.name = `dom${i}`
+				img.name = `domMatterImage-${i}`
 				domMatterImages.push(img)
 			})
 
@@ -118,9 +118,9 @@ export function setBackgroundAndCreateDomObjects(scene: Phaser.Scene, pageInfo: 
 	else {
 		pageInfo.domElementsImages.forEach((domElement, i) => {
 			const img = scene.add.image(center(domElement.boundingRect.x, domElement.boundingRect.right), center(domElement.boundingRect.y, domElement.boundingRect.bottom), `dom${i}`, '__BASE')
-			img.name = `dom${i}`		
+			img.name = `domImage-${i}`		
 			domImages.push(img)	
-		})
+		})	
 	}
 
 	return { domBackgroundRects, domArcadeBackgroundRects, domImages, domArcadeImages, domMatterImages }
