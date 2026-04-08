@@ -165,19 +165,15 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 	}
 
 	if ((isTextNode || spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)) {
-		const imageURL = getImagePortion(pageInfo.pageImage, boundingRect)
+		const { dataURL: imageURL, rect: trimmedRect } = getImagePortion(pageInfo.pageImage, boundingRect, pageInfo.bgColor)
 		if (debugThis) {
-			log(ll.trace, `adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
+			log(ll.trace, `adding image${pageInfo.domElementsImages.length}${isTextNode ? "textnode <- " : ""}  ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${trimmedRect.x}, ${trimmedRect.y})  ${trimmedRect.width} x ${trimmedRect.height} "${node.textContent.slice(0, 30)}"`)
 			if (pageInfo.debugImage) {
 				const imageLoaded = setImage(pageInfo.debugImage, imageURL)
 				await imageLoaded
 			}
 		}
-
-		//if (debugThis)
-		//options.collisionFilter.group = -2
-		//const body = Bodies.rectangle(boundingRect.x + boundingRect.width / 2, boundingRect.y + boundingRect.height / 2, boundingRect.width, boundingRect.height, options)
-		pageInfo.domElementsImages.push({ boundingRect, imageURL })
+		pageInfo.domElementsImages.push({ boundingRect: trimmedRect, imageURL })
 		return true
 	}
 	else
@@ -214,11 +210,38 @@ function isLargeBackgroundElement(boundingRect: DOMRect): boolean {
 }
 
 export const scratchCanvas = document.createElement('canvas')
-function getImagePortion(image: HTMLImageElement, rect: DOMRect) {
+function getImagePortion(image: HTMLImageElement, rect: DOMRect, bgColor?: number): { dataURL: string, rect: DOMRect } {
 	scratchCanvas.width = rect.width;
 	scratchCanvas.height = rect.height;
-	scratchCanvas.getContext('2d')!.drawImage(image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height,)
-	return scratchCanvas.toDataURL()
+	const ctx = scratchCanvas.getContext('2d')!
+	ctx.drawImage(image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height)
+	if (bgColor !== undefined) {
+		const bgR = (bgColor >> 16) & 0xff, bgG = (bgColor >> 8) & 0xff, bgB = bgColor & 0xff
+		const data = ctx.getImageData(0, 0, rect.width, rect.height).data
+		const w = rect.width, h = rect.height
+		let minX = w, maxX = 0, minY = h, maxY = 0
+		for (let y = 0; y < h; y++) {
+			for (let x = 0; x < w; x++) {
+				const i = (y * w + x) * 4
+				if (Math.abs(data[i] - bgR) > 8 || Math.abs(data[i+1] - bgG) > 8 || Math.abs(data[i+2] - bgB) > 8) {
+					if (x < minX) minX = x
+					if (x > maxX) maxX = x
+					if (y < minY) minY = y
+					if (y > maxY) maxY = y
+				}
+			}
+		}
+		if (minX <= maxX && minY <= maxY) {
+			const cw = maxX - minX + 1, ch = maxY - minY + 1
+			const trimmed = ctx.getImageData(minX, minY, cw, ch)
+			scratchCanvas.width = cw
+			scratchCanvas.height = ch
+			ctx.putImageData(trimmed, 0, 0)
+			const trimmedRect = new DOMRect(rect.x + minX, rect.y + minY, cw, ch)
+			return { dataURL: scratchCanvas.toDataURL(), rect: trimmedRect }
+		}
+	}
+	return { dataURL: scratchCanvas.toDataURL(), rect }
 }
 
 /**
