@@ -59,6 +59,14 @@ export class ScoreManager {
     this.resetLives();
   }
 
+  loseLife(): boolean {
+    const active = this.lives.getChildren().filter(c => (c as Phaser.GameObjects.Sprite).active)
+    if (active.length > 0) {
+      (active[active.length - 1] as Phaser.GameObjects.Sprite).destroy()
+    }
+    return this.noMoreLives
+  }
+
   resetLives() {
     const SIZE_X = this._scene.game.canvas.width;
     this.lives.clear(true, true)

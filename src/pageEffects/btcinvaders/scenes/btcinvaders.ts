@@ -1,7 +1,7 @@
 
 /* adapted from github.com/trungk18/space-invaders-phaser-3*/
 import { PageInfo, setBackgroundAndCreateDomObjects } from '../../../modhelper'
-import { PageObject, explode } from '../../../arcadepageobject'
+import { PageObject, breakUp } from '../../../arcadepageobject'
 
 import { AssetType, SoundType } from "../interface/assets";
 import { Bullet } from "../interface/bullet";
@@ -33,6 +33,7 @@ export class MainScene extends Phaser.Scene {
     cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     fireKey!: Phaser.Input.Keyboard.Key;
     pageObjects!: Phaser.GameObjects.Group
+    pieces!: Phaser.GameObjects.Group
     // Track key state independently to work around extensions (e.g. Evernote)
     // that intercept keyup and leave Phaser thinking keys are stuck down.
     keys = new Set<string>();
@@ -94,8 +95,15 @@ export class MainScene extends Phaser.Scene {
             }
         }, { capture: true });
         const { domArcadeBackgroundRects, domArcadeImages } = setBackgroundAndCreateDomObjects(this, this.pageInfo)
-       
         this.pageObjects = this.physics.add.group().addMultiple(domArcadeBackgroundRects).addMultiple(domArcadeImages)
+        this.pieces = this.physics.add.group()
+        this.physics.add.overlap(
+            this.pieces,
+            this.player,
+            this._pieceHitShip as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            () => this.player.active && !!this.player.body,
+            this
+        )
         this.player.setDepth(1)
     }
 
@@ -108,10 +116,17 @@ export class MainScene extends Phaser.Scene {
             undefined,
             this
         );
-
+        this.physics.overlap(
+            this.assetManager.bullets,
+            this.pieces,
+            this._bulletHitPageObject as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
+            this
+        );
     }
 
     private _shipKeyboardHandler() {
+        if (!this.player.active) return;
         const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
         playerBody.setVelocity(0, 0);
         if (this.keys.has('ArrowLeft')) {
@@ -160,20 +175,63 @@ export class MainScene extends Phaser.Scene {
     }
 
     private _bulletHitPageObject(bullet: Bullet, pageObject: PageObject) {
+        if (!pageObject.active) return
+        const impactX = bullet.x
+        const impactY = bullet.y - bullet.height / 2
+        const isFirstHit = bullet.active
+        if (isFirstHit) {
+            const explosion: Kaboom = this.assetManager.explosions.get();
+            bullet.kill();
+            explosion.setX(impactX);
+            explosion.setY(impactY);
+            explosion.play(AnimationType.Kaboom)
+            this.sound.play(SoundType.InvaderKilled)
+            this.scoreManager.increaseScore();
+        }
+        this.pageObjects.remove(pageObject, false, false)
+        this.pieces.remove(pageObject, false, false)
+        const newPieces = breakUp(impactX, impactY, pageObject)
+        pageObject.destroy()
+        newPieces?.forEach(p => {
+            const dx = p.x - impactX
+            const dy = p.y - impactY
+            const len = Math.sqrt(dx * dx + dy * dy) || 1
+            const speed = 300 + Math.random() * 200
+            p.setDepth(5)
+            this.pieces.add(p)
+            p.body.setVelocity((dx / len) * speed, (dy / len) * speed)
+            p.body.setAllowGravity(true)
+            p.body.setGravityY(30)
+            p.body.setCollideWorldBounds(true)
+            p.body.setBounce(0.6)
+            p.body.setDamping(true)
+            p.body.setDrag(0.6)
+        })
+    }
+
+    private _pieceHitShip(_ship: Phaser.Physics.Arcade.Sprite, piece: PageObject) {
+        this.pieces.remove(piece, false, false)
+        if (!this.player.active || !this.player.body) {
+            piece.destroy()
+            return
+        }
+        const px = this.player.x, py = this.player.y
+        piece.destroy()
+        this.player.disableBody(true, true)
         const explosion: Kaboom = this.assetManager.explosions.get();
-        bullet.kill();
-        // alien.kill(explosion);
-        explosion.setX(bullet.x);
-        explosion.setY(bullet.y);
+        explosion.setX(px);
+        explosion.setY(py);
         explosion.play(AnimationType.Kaboom)
-        this.sound.play(SoundType.InvaderKilled)
-        explode(bullet.x, bullet.y - bullet.height/2, pageObject, this.pageObjects)
-        this.scoreManager.increaseScore();
-        /* if (!this.alienManager.hasAliveAliens) {
-             this.scoreManager.increaseScore(1000);
-             this.scoreManager.setWinText();
-             this.state = GameState.Win;
-         } */
+        this.sound.play(SoundType.Kaboom)
+        const gameOver = this.scoreManager.loseLife()
+        if (gameOver) {
+            this.scoreManager.setGameOverText()
+            this.state = GameState.GameOver
+        } else {
+            this.time.delayedCall(1000, () => {
+                this.player.enableBody(true, this.scale.width / 2, this.scale.height - 40, true, true)
+            })
+        }
     }
 
     private _fireBullet() {

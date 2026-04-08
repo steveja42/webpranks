@@ -74,6 +74,7 @@ export function breakUp(xImpact: number, yImpact: number, gameObject: PageObject
             const cy = yTrue + split.y + split.height / 2
             const piece = scene.physics.add.image(cx, cy, texture, frame!.name)
             piece.name = `${gameObject.name}.${i}`
+            log(ll.trace, `created piece ${piece.name} at (${cx.toFixed(0)},${cy.toFixed(0)}) with frame ${frame!.name}`)
             newObjects.push(piece)
         })
     }
