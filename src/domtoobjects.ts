@@ -213,7 +213,7 @@ export const scratchCanvas = document.createElement('canvas')
 function getImagePortion(image: HTMLImageElement, rect: DOMRect, bgColor?: number): { dataURL: string, rect: DOMRect } {
 	scratchCanvas.width = rect.width;
 	scratchCanvas.height = rect.height;
-	const ctx = scratchCanvas.getContext('2d')!
+	const ctx = scratchCanvas.getContext('2d', { willReadFrequently: true })!
 	ctx.drawImage(image, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height)
 	if (bgColor !== undefined) {
 		const bgR = (bgColor >> 16) & 0xff, bgG = (bgColor >> 8) & 0xff, bgB = bgColor & 0xff
