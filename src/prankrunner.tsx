@@ -98,6 +98,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const [pageImage, setPageImage] = useState<string | null>(null)
 	const [isLoading, setIsLoading] = useState<Promise<void | PageInfo> | boolean | null>(null)
 	const [showPopout, setShowPopout] = useState(false)
+	const [dragInfo, setDragInfo] = useState<import('./pageEffects/debug').DragInfo | null>(null)
 	const [noContinuePrompt, setNoContinuePrompt] = useState(false)
 	const [currentScene, setCurrentScene] = useState<Phaser.Scene | undefined>()
 	const [showFailure, setShowFailure] = useState("")
@@ -110,6 +111,12 @@ export function PrankRunner(props: PrankRunnerProps) {
 	const { x: worldX, y: worldY } = phaserParent?.current?.getBoundingClientRect() || {}
 
 	const isRunning = (phase === Phase.prankRunning)
+
+	useEffect(() => {
+		const handler = (e: Event) => setDragInfo((e as CustomEvent).detail)
+		window.addEventListener('debug:drag', handler)
+		return () => window.removeEventListener('debug:drag', handler)
+	}, [])
 
 	useEffect(() => {    /** ------------------------------- effect run on component load ------------------------------------*/
 		log(ll.info, `component load`)
@@ -260,7 +267,7 @@ export function PrankRunner(props: PrankRunnerProps) {
 				setShowFailure("")
 				setPageImage(result[0])
 				const { domToObjects } = await import('./domtoobjects')
-				return domToObjects(result[0], result[1], debugPageImage.current!, debugImage.current!, windowWidth, windowHeight, bgDiv.current!)
+				return domToObjects(result[0], result[1], debugPageImage.current!, debugImage.current!, width, height, bgDiv.current!)
 			},
 				reason => {
 					log(ll.error, `oh! an error occurred ${reason}`)
@@ -358,9 +365,10 @@ export function PrankRunner(props: PrankRunnerProps) {
 	function getPopout() {
 		return (
 			<Popout title='WebPranks Info' width={windowWidth} height={windowHeight} closeWindow={() => setShowPopout(false)}>
-				<div>
-					<p> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - (worldX ?? 0)}:{yMouse - (worldY ?? 0)} </p>
-					<Button onClick={() => logDomTree(pageInfo!.doc.body)} disabled={!pageInfo?.doc?.body}>log dom</Button>
+				<div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+					<p style={{ margin: 0 }}> Window size: {windowWidth}:{windowHeight} World Mouse position: {xMouse - (worldX ?? 0)}:{yMouse - (worldY ?? 0)} </p>
+					{dragInfo && <p style={{ margin: 0 }}><strong>Dragging:</strong> {dragInfo.name} &nbsp; x:{dragInfo.x} y:{dragInfo.y} &nbsp; {dragInfo.width}×{dragInfo.height}</p>}
+					<Button onClick={() => logDomTree(pageInfo!.doc.body)} disabled={!pageInfo?.doc?.body} style={{ marginLeft: 'auto', marginRight: '1rem' }}>log dom</Button>
 				</div>
 				<img id="debugImage" ref={debugImage} className="Screenshot" alt="debug" />
 				<img id="pageImage" ref={debugPageImage} className="Screenshot" alt="screen capture of the webpage at url" />
