@@ -5,7 +5,6 @@ import { breakUp, PageObject } from '../arcadepageobject'
 const mySceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: true,
     key: 'PageScene',
-    physics: { arcade: { debug: false, gravity: { x: 0, y: 30 } } },
 }
 
 export function doPageEffect(pageInfo: PageInfo): Phaser.Scene {
@@ -19,7 +18,7 @@ const Speed = 250
 export class PageScene extends Phaser.Scene {
     dino!: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
     pageObjects!: Phaser.GameObjects.Group
-    floor!: Phaser.Physics.Arcade.StaticGroup
+    floor!: Phaser.Physics.Arcade.Image
     keys = new Set<string>()
     dragging = false
 
@@ -76,6 +75,12 @@ export class PageScene extends Phaser.Scene {
             window.removeEventListener('keyup',   onKeyUp,   { capture: true })
         })
 
+        // Thick static floor to prevent tunneling
+        this.floor = this.physics.add.image(width / 2, height + 25, '__DEFAULT')
+            .setDisplaySize(width, 50)
+            .setVisible(false)
+        ;(this.floor.body as Phaser.Physics.Arcade.Body).setImmovable(true).setAllowGravity(false)
+
         // Mouse drag
         this.input.on('pointerdown', () => { this.dragging = true })
         this.input.on('pointerup',   () => { this.dragging = false })
@@ -86,11 +91,6 @@ export class PageScene extends Phaser.Scene {
             }
         })
 
-        // Invisible floor at bottom of screen
-        this.floor = this.physics.add.staticGroup()
-        const floorRect = this.add.rectangle(width / 2, height + 10, width, 20)
-        this.physics.add.existing(floorRect, true)
-        this.floor.add(floorRect)
     }
 
     update() {
@@ -157,9 +157,12 @@ export class PageScene extends Phaser.Scene {
             const speed = 200 + Math.random() * 150
             p.body.setVelocity((dx / len) * speed, (dy / len) * speed)
             p.body.setCollideWorldBounds(true)
-            p.body.setBounce(0.6)
-            p.body.setDamping(true)
-            p.body.setDrag(0.35)
+            p.body.setBounce(0.5)
+            p.body.setDragY(90)
+            p.body.setAllowGravity(false)
+            this.physics.add.collider(p, this.floor, () => {
+                p.body.setVelocityY(-Math.abs(p.body.velocity.y) * 0.5)
+            })
             this.time.delayedCall(2000, () => {
                 if (p.active && !this.pageObjects.contains(p)) {
                     this.pageObjects.add(p)
