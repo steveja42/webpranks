@@ -18,7 +18,7 @@ const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key
 let prankChosen = false
 
 export function PrankForm(props: any) {
-	const protocol = 'http://'
+	const protocol = 'https://'
 
 	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, noContinuePrompt, setNoContinuePrompt } = props
 
