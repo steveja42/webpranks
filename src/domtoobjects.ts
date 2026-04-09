@@ -250,11 +250,10 @@ function getImagePortion(image: HTMLImageElement, rect: DOMRect, bgColor?: numbe
  * @param imageURL
  */
 function setImage(imageElement: HTMLImageElement, imageURL: string): Promise<unknown> {
-	let resolveImageLoaded: ((value: string) => void) | undefined
-	imageElement.onload = function () {
-		resolveImageLoaded!(imageElement.src)
-	}
-	const imageLoaded = new Promise((resolve) => resolveImageLoaded = resolve as (value: string) => void)
+	const imageLoaded = new Promise((resolve, reject) => {
+		imageElement.onload = () => resolve(imageElement.src)
+		imageElement.onerror = (e) => reject(new Error(`Failed to load image: ${imageURL} ${e}`))
+	})
 	imageElement.src = imageURL;
 	return imageLoaded
 }
