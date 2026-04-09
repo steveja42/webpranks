@@ -20,6 +20,7 @@ const effectModuleLoaders: Record<string, () => Promise<{ doPageEffect: (pageInf
 	'birthday': () => import('./pageEffects/birthday'),
 	'btcinvaders/scenes/btcinvaders': () => import('./pageEffects/btcinvaders/scenes/btcinvaders'),
 	'godzilla': () => import('./pageEffects/godzilla'),
+	...(import.meta.env.DEV ? { 'debug': () => import('./pageEffects/debug') } : {}),
 }
 
 network.post({ ping: "ping" }, 'init')   //ping the server that will fetch the page, in case it needs to be woken up or started
