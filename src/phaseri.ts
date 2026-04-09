@@ -21,7 +21,7 @@ export function setupWorld(parentElement: HTMLElement, width: number, height: nu
 				//debug: true
 			},
 			matter: {
-				debug: true,
+				//debug: true,
 				gravity: { x: 0, y: 0.5 }
 			}
 		},
