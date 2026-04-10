@@ -26,7 +26,7 @@ Netlify. Build config is in netlify.toml. Build command: `pnpm build`. Publish d
 TypeScript errors in pre-existing Phaser game code are suppressed via `skipLibCheck` and loose settings in `tsconfig.json`. Fix new code properly — don't add new type errors.
 
 ## Server
-The backend server (Node.js/Puppeteer) is at `..\tdnode` (i.e., `c:\dev\tdnode`). It handles screenshot + HTML capture via the `/puppet` endpoint.
+The backend server (Node.js/Puppeteer) is at `..\tdnode` (i.e., `c:\dev\tdnode`). It handles screenshot + HTML capture via the `/puppet` endpoint. The `__pos__` attribute injection logic is in `c:\dev\tdnode\src\puppet.ts`.
 
 ## Analytics
 GoatCounter is used for analytics. The script is loaded in `src/layouts/RootLayout.tsx` with `data-goatcounter="/count"`, which routes through the Netlify proxy at `netlify/functions/count.ts` to avoid ad blockers. The proxy forwards requests to `https://4242.goatcounter.com/count`.
