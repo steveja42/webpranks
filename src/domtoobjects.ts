@@ -97,7 +97,7 @@ function getAttributes(node: Element) {
 async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: PageInfo, parentAdded: boolean) {
 
 	const debugThis = true
-	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG', 'LI', 'TD', 'TH', 'BUTTON', 'INPUT', 'LABEL', 'LEGEND', 'SELECT', 'TEXTAREA', 'A', 'SPAN'] //, 'IFRAME'
+	const spriteAbleElements = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG', 'LI', 'TD', 'TH', 'BUTTON', 'INPUT', 'LABEL', 'LEGEND', 'SELECT', 'TEXTAREA', 'A', 'SPAN', 'HR'] //, 'IFRAME'
 	const isTextNode = node.nodeType === nodeTypes.text
 	//The Element.clientHeight read-only property is zero for elements with no CSS or inline layout boxes; otherwise, it's the inner height of an element in pixels. It includes padding but excludes borders, margins, and horizontal scrollbars (if present).
 	//clientHeight can be calculated as: CSS height + CSS padding - height of horizontal scrollbar (if present).
