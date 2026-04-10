@@ -1,16 +1,18 @@
 import { log } from './util';
 
 const server = 'https://tdnode.onrender.com' 
-//const server = 'http://localhost:8080'   //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live':
+//const server = 'http://localhost:80'   //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live':
 
 
-export async function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
-	let route = `puppet?url=${encodeURIComponent(targetUrl)}&action=snapshot&width=${windowWidth}&height=${windowHeight}`;
-	const imagePromise = getImage(route)
-	route = `puppet?url=${encodeURIComponent(targetUrl)}&action=render&width=${windowWidth}&height=${windowHeight}`;
-	const htmlPromise = getString(route)
-	return Promise.all([imagePromise, htmlPromise])
- }
+export function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
+	const route = `puppet?url=${encodeURIComponent(targetUrl)}&action=both&width=${windowWidth}&height=${windowHeight}`;
+	return fetch(`${server}/${route}`, { mode: 'cors', cache: 'no-cache' })
+		.then(response => response.ok ? response.json() : response.text().then(t => Promise.reject(t)))
+		.then(({ screenshot, html }) => {
+			const blob = new Blob([Uint8Array.from(atob(screenshot), c => c.charCodeAt(0))], { type: 'image/jpeg' });
+			return [URL.createObjectURL(blob), html] as [string, string];
+		});
+}
 
 
 /**
