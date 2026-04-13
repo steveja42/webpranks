@@ -1,10 +1,13 @@
 import { log } from './util';
 
-const server = 'https://tdnode.onrender.com' 
-//const server = 'http://localhost:80'   //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live':
+const useLocalServer = false
+
+let server = 'https://tdnode.onrender.com'
+if (useLocalServer)
+	server = 'http://localhost:80'   //const server = (window.location.hostname === "localhost") ? 'http://localhost:8080' : (process.env.NODE_ENV === "production")? 'https://www.resultlab.live':
 
 
-export function getImageandHtml(targetUrl:string, windowWidth:number, windowHeight: number) : Promise<[string, string]>{
+export function getImageandHtml(targetUrl: string, windowWidth: number, windowHeight: number): Promise<[string, string]> {
 	const route = `puppet?url=${encodeURIComponent(targetUrl)}&action=both&width=${windowWidth}&height=${windowHeight}`;
 	return fetch(`${server}/${route}`, { mode: 'cors', cache: 'no-cache' })
 		.then(response => response.ok ? response.json() : response.text().then(t => Promise.reject(t)))
@@ -46,8 +49,8 @@ export async function getImage(route: string): Promise<string> {
 	 */
 export async function getString(route: string): Promise<string> {
 
-		const response = await fetch(`${server}/${route}`);
-		return await response.text()
+	const response = await fetch(`${server}/${route}`);
+	return await response.text()
 }
 
 /**
@@ -78,15 +81,15 @@ export async function getJSON(route: string): Promise<[string, string]> {
 	 * @return [response in JSON(null if error), error object]
 	 */
 export function startServerPing() {
-	const ping = () => post({}, 'init').catch(() => {});
+	const ping = () => post({}, 'init').catch(() => { });
 	ping();
 	setInterval(ping, 10 * 60 * 1000);
 }
 
- export async function post(data:Record<string,unknown>, route='feedback') {
-	
+export async function post(data: Record<string, unknown>, route = 'feedback') {
+
 	try {
-		const response = await fetch(`${server}/${route}`, { 
+		const response = await fetch(`${server}/${route}`, {
 			method: 'POST',
 			body: JSON.stringify(data),
 			headers: {
@@ -97,12 +100,12 @@ export function startServerPing() {
 		});
 		if (response.ok)
 			return [true];
-		const text = await response.text()	
+		const text = await response.text()
 		return [false, `error: status ${response.status} ${response.statusText} ${text}`]
 	}
 
-catch (error) {
-	console.error(`post: error occurred with fetch ${error}`);
-	return [false, error]
-}
+	catch (error) {
+		console.error(`post: error occurred with fetch ${error}`);
+		return [false, error]
+	}
 }

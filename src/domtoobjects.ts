@@ -121,11 +121,8 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 
 	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : null
 
-	if (!isTextNode && bgColor && color !== pageInfo.bgColor && !isLargeBackgroundElement(boundingRect)) {    //create a rectangle to fill in the background,
-		/*const ctx = stuff.canvas.getContext('2d')
-		ctx.fillStyle = bgColor
-		ctx.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height) */
-
+	const willBeSprited = !isTextNode && (spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)
+	if (!isTextNode && bgColor && color !== pageInfo.bgColor && !isLargeBackgroundElement(boundingRect) && !willBeSprited) {    //create a rectangle to fill in the background,
 		if (debugThis)
 			log(ll.trace, `adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 
