@@ -1,6 +1,6 @@
 import { log } from './util';
 
-const useLocalServer = false
+export const useLocalServer = import.meta.env.VITE_USE_LOCAL_SERVER === 'true'
 
 let server = 'https://tdnode.onrender.com'
 if (useLocalServer)

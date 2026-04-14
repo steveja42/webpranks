@@ -8,6 +8,7 @@ import Popover from 'react-bootstrap/Popover'
 import '../index.css'
 import '../App.css'
 import { enableDebugMode } from '../debugMode'
+import { useLocalServer } from '../network'
 
 const navlogo = '/jesterhead-200.png'
 
@@ -121,6 +122,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 									<OverlayTrigger placement="auto" trigger={['hover', 'click']} overlay={feedbackpopover}>
 										<Nav.Link as={Link} to="/feedback">Feedback</Nav.Link>
 									</OverlayTrigger>
+									{useLocalServer && (
+										<Navbar.Text style={{ color: '#ff9800', fontWeight: 'bold', fontSize: '0.8em' }}>
+											⚠ LOCAL SERVER
+										</Navbar.Text>
+									)}
 								</Nav>
 							</Navbar>
 						</div>
