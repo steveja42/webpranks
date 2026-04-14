@@ -7,6 +7,7 @@ import Popover from 'react-bootstrap/Popover'
 
 import '../index.css'
 import '../App.css'
+import { enableDebugMode } from '../debugMode'
 
 const navlogo = '/jesterhead-200.png'
 
@@ -111,7 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					<div id="conditional">
 						<div id="fooalternate">
 							<Navbar id="navbar" className="mynav" expand="sm" variant="dark">
-								<Navbar.Brand as={Link} to="/">
+								<Navbar.Brand as={Link} to="/" onClick={(e: React.MouseEvent) => { if (e.altKey) { e.preventDefault(); enableDebugMode() } }}>
 									<img id="navlogo" src={navlogo} alt="Web Pranks Logo - Colorful Jester Hat" width="163" height="200" />
 									Web Pranks
 								</Navbar.Brand>

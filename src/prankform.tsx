@@ -1,19 +1,12 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { log, ll } from './util'
-//import Form from 'react-bootstrap/Form'
 import Spinner from 'react-bootstrap/Spinner'
 import Button from 'react-bootstrap/Button'
 import { Form } from 'react-bootstrap'
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
-import Tooltip from 'react-bootstrap/Tooltip'
-import { effectModules } from './pageEffects/modulelist'
+import { effectModules, debugModule } from './pageEffects/modulelist'
+import { isDebugMode } from './debugMode'
 import { Phase } from './phase'
 const popinImage = '/jester-320.png'
-
-const prankList = effectModules.map((effectModule, index) => <OverlayTrigger key={index} placement="auto" trigger={['hover', 'click', 'focus']} overlay={<Tooltip>Simple tooltip	</Tooltip>}>
-	<option key={index} value={index}>{effectModule.title}</option>
-</OverlayTrigger>)
-//const prankListx = effectModules.map((effectModule, index) => <option key={index} value={index}>{effectModule.title}</option>)
 
 let prankChosen = false
 
@@ -21,6 +14,14 @@ export function PrankForm(props: any) {
 	const protocol = 'https://'
 
 	const { isLoading, setTargetUrl, onSubmit, whichPrank, setWhichPrank, pageLoaded, inputURL, setInputURL, showPopout, setShowPopout, phase, noContinuePrompt, setNoContinuePrompt } = props
+
+	const [debugMode, setDebugMode] = useState(isDebugMode())
+
+	useEffect(() => {
+		const handler = () => setDebugMode(true)
+		window.addEventListener('debugmode:enabled', handler)
+		return () => window.removeEventListener('debugmode:enabled', handler)
+	}, [])
 
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -61,7 +62,6 @@ export function PrankForm(props: any) {
 	function onURLWasInput() {
 		processURL(inputURL)
 	}
-	//const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 	const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === 'Enter') {
 			onURLWasInput()
@@ -84,11 +84,16 @@ export function PrankForm(props: any) {
 			onURLWasInput()
 	}
 
+	const visibleModules = debugMode ? effectModules : effectModules.filter(m => m !== debugModule)
+	const prankList = visibleModules.map((effectModule) => (
+		<option key={effectModule.slug} value={effectModules.indexOf(effectModule)}>{effectModule.title}</option>
+	))
+
 	return <div id="togglediv">
 
 		<Form onSubmit={onSubmit} className="myform" >
 			<div className="d-flex align-items-end gap-2">
-				{import.meta.env.DEV ? <Button onClick={()=> setShowPopout(!showPopout)}>show debug window</Button> : null}
+				{debugMode ? <Button onClick={() => setShowPopout(!showPopout)}>show debug window</Button> : null}
 				<div className="d-flex align-items-end gap-2 flex-grow-1 justify-content-center">
 					<Form.Group controlId="url">
 						<Form.Label className={(phase === Phase.targetUrlNotEntered) ? "do_me" : ""}>Which website?</Form.Label>
@@ -126,12 +131,7 @@ export function PrankForm(props: any) {
 				</div>
 			</div>
 		</Form>
-		{phase !== Phase.prankPaused ?<img id="popinimage" src={popinImage} alt="" /> :null}
+		{phase !== Phase.prankPaused ? <img id="popinimage" src={popinImage} alt="" /> : null}
 
 	</div>
 }
-
-
-
-
-

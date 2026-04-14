@@ -7,8 +7,8 @@ const baseModules = [
 	//{ title: "Space Invaders", fileName: 'btcinvaders/scenes/spaceinvaders' },
 ]
 
-const debugModules = import.meta.env.DEV
-	? [{ title: "Debug (Drag)", fileName: 'debug', slug: 'debug' }]
-	: []
+export const debugModule = { title: "Debug (Drag)", fileName: 'debug', slug: 'debug' }
 
-export const effectModules = [...baseModules, ...debugModules]
+// effectModules always includes debug so it can be loaded by slug/index;
+// the UI filters it out unless isDebugMode() is true.
+export const effectModules = [...baseModules, debugModule]
