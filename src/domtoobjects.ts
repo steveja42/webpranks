@@ -70,6 +70,19 @@ export async function domToObjects(imageURL: string, html: string, debugPageImag
 	}
 	divForBackgroundScreenshot = bgDiv
 	await walkDom2(doc.body, domNodeToObjects as Parameters<typeof walkDom2>[1], 0, pageInfo)
+	// Remove background rects that are substantially covered by a sprite image — the sprite
+	// already carries its background visually, so the rect would just overlap it.
+	pageInfo.backgroundRects = pageInfo.backgroundRects.filter(bgRect => {
+		const r = bgRect.boundingRect
+		return !pageInfo.domElementsImages.some(img => {
+			const i = img.boundingRect
+			const overlapX = Math.max(0, Math.min(r.right, i.right) - Math.max(r.x, i.x))
+			const overlapY = Math.max(0, Math.min(r.bottom, i.bottom) - Math.max(r.y, i.y))
+			const overlapArea = overlapX * overlapY
+			const rectArea = r.width * r.height
+			return rectArea > 0 && overlapArea / rectArea > 0.5
+		})
+	})
 	log(ll.info, `done ${imageURL} ${pageInfo.domElementsImages.length} dom elements and ${pageInfo.backgroundRects.length} background objects added`)
 	return pageInfo
 }
@@ -121,8 +134,7 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 
 	const color = bgColor ? Phaser.Display.Color.RGBStringToColor(bgColor).color : null
 
-	const willBeSprited = !isTextNode && (spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)
-	if (!isTextNode && bgColor && color !== pageInfo.bgColor && !isLargeBackgroundElement(boundingRect) && !willBeSprited) {    //create a rectangle to fill in the background,
+	if (!isTextNode && bgColor && color !== pageInfo.bgColor && !isLargeBackgroundElement(boundingRect)) {    //create a rectangle to fill in the background,
 		if (debugThis)
 			log(ll.trace, `adding background ${bgColor} for ${node.id ? "#" + node.id : " "} ${node.parentNode?.nodeName}->${node.nodeName} at (${boundingRect.x}, ${boundingRect.y})  ${boundingRect.width} x ${boundingRect.height} "${node.textContent.slice(0, 30)}"`)
 
