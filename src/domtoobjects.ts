@@ -174,9 +174,10 @@ async function domNodeToObjects(node: HTMLElement, level: number, pageInfo: Page
 		//div.clientWidth = boundingRect.width
 	}
 
-	// If an <A> directly wraps any other spriteable element (heading, img, etc.),
-	// skip the A as a sprite leaf so the child is captured with its own bounding rect.
-	if (!isTextNode && node.nodeName === 'A' && Array.from(node.children).some(c => spriteAbleElements.includes(c.nodeName)))
+	// If a container element directly wraps any spriteable element, skip it as a sprite
+	// leaf so children are captured individually with their own bounding rects.
+	const containerElements = ['A', 'LI', 'TD', 'TH']
+	if (!isTextNode && containerElements.includes(node.nodeName) && Array.from(node.children).some(c => spriteAbleElements.includes(c.nodeName)))
 		return false
 
 	if ((isTextNode || spriteAbleElements.includes(node.nodeName)) && !isLargeBackgroundElement(boundingRect)) {
